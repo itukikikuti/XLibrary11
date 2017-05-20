@@ -40,7 +40,7 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	if (!RegisterClassEx(&windowClass)) return 0;
 
 	int windowWidth = 1280, windowHeight = 720;
-	DWORD windowStyle = WS_OVERLAPPED | WS_SYSMENU;
+	DWORD windowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX;
 	RECT clientRect = { 0, 0, windowWidth, windowHeight };
 	AdjustWindowRect(&clientRect, windowStyle, false);
 
