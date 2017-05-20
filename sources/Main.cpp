@@ -124,6 +124,7 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 			device->SetTransform(D3DTS_VIEW, &viewMatrix);
 
 			D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), windowWidth / (float)windowHeight, 0.0f, 100.0f);
+			D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), windowWidth / (float)windowHeight, 0.01f, 100.0f);
 			device->SetTransform(D3DTS_PROJECTION, &projectionMatrix);
 
 			device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 1, vertex, sizeof(Vertex));
