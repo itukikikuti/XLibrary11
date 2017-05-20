@@ -80,11 +80,31 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	}
 
 	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	device->SetRenderState(D3DRS_LIGHTING, false);
+	device->SetRenderState(D3DRS_LIGHTING, true);
 	device->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	device->SetRenderState(D3DRS_ZWRITEENABLE, true);
+	device->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(64, 64, 64));
 
 	ShowWindow(windowHandle, showCommand);
+
+	D3DMATERIAL9 material = {};
+	material.Diffuse.r = material.Ambient.r = 1.0f;
+	material.Diffuse.g = material.Ambient.g = 1.0f;
+	material.Diffuse.b = material.Ambient.b = 1.0f;
+	material.Diffuse.a = material.Ambient.a = 1.0f;
+	device->SetMaterial(&material);
+
+	D3DLIGHT9 light = {};
+	light.Type = D3DLIGHT_DIRECTIONAL;
+	light.Diffuse.r = 1.0f;
+	light.Diffuse.g = 1.0f;
+	light.Diffuse.b = 1.0f;
+	D3DXVECTOR3 direction;
+	D3DXVec3Normalize(&direction, &D3DXVECTOR3(0.25f, -1.0f, 0.5f));
+	light.Direction = direction;
+	light.Range = 1000.0f;
+	device->LightEnable(0, true);
+	device->SetLight(0, &light);
 
 	LPD3DXMESH mesh;
 	D3DXCreateBox(device, 1.0f, 1.0f, 1.0f, &mesh, nullptr);
@@ -109,10 +129,10 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 			device->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_STENCIL | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(128, 192, 255), 1.0f, 0);
 			device->BeginScene();
 
-			D3DXMatrixRotationY(&worldMatrix, frame * 0.05f);
+			D3DXMatrixRotationY(&worldMatrix, frame * 0.01f);
 			device->SetTransform(D3DTS_WORLD, &worldMatrix);
 
-			D3DXMatrixLookAtLH(&viewMatrix, &D3DXVECTOR3(0.0f, 1.0f, 5.0f), &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
+			D3DXMatrixLookAtLH(&viewMatrix, &D3DXVECTOR3(0.0f, 1.0f, -5.0f), &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 			device->SetTransform(D3DTS_VIEW, &viewMatrix);
 
 			D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), windowWidth / (float)windowHeight, 0.01f, 100.0f);
