@@ -105,9 +105,15 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	light.Range = 1000.0f;
 	device->LightEnable(0, true);
 	device->SetLight(0, &light);
-
+	
+	ID3DXBuffer *materials;
+	DWORD materialCount;
 	LPD3DXMESH mesh;
-	D3DXCreateBox(device, 1.0f, 1.0f, 1.0f, &mesh, nullptr);
+	if (FAILED(D3DXLoadMeshFromX("monkey.x", D3DXMESH_MANAGED, device, nullptr, &materials, nullptr, &materialCount, &mesh))) {
+		device->Release();
+		direct3D->Release();
+		return -1;
+	}
 
 	D3DXMATRIX worldMatrix;
 	D3DXMATRIX viewMatrix;
@@ -132,7 +138,7 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 			D3DXMatrixRotationY(&worldMatrix, frame * 0.01f);
 			device->SetTransform(D3DTS_WORLD, &worldMatrix);
 
-			D3DXMatrixLookAtLH(&viewMatrix, &D3DXVECTOR3(0.0f, 1.0f, -5.0f), &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
+			D3DXMatrixLookAtLH(&viewMatrix, &D3DXVECTOR3(0.0f, 1.0f, -2.0f), &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 			device->SetTransform(D3DTS_VIEW, &viewMatrix);
 
 			D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), windowWidth / (float)windowHeight, 0.01f, 100.0f);
