@@ -6,6 +6,12 @@
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "d3dx9.lib")
 
+struct  Vertex {
+	float x, y, z;
+	D3DCOLOR color;
+	float u, v;
+};
+
 bool CreateDevice(LPDIRECT3D9 direct3D, LPDIRECT3DDEVICE9 *device, HWND windowHandle, D3DPRESENT_PARAMETERS *presentParameter, D3DDEVTYPE deviceType, DWORD behaviourFlag) {
 	if (SUCCEEDED(direct3D->CreateDevice(D3DADAPTER_DEFAULT, deviceType, windowHandle, behaviourFlag, presentParameter, device))) {
 		return true;
@@ -80,10 +86,11 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	}
 
 	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	device->SetRenderState(D3DRS_LIGHTING, true);
+	device->SetRenderState(D3DRS_LIGHTING, false);
 	device->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	device->SetRenderState(D3DRS_ZWRITEENABLE, true);
 	device->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(64, 64, 64));
+	device->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
 
 	ShowWindow(windowHandle, showCommand);
 
@@ -106,10 +113,15 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	device->LightEnable(0, true);
 	device->SetLight(0, &light);
 	
-	ID3DXBuffer *materials;
-	DWORD materialCount;
-	LPD3DXMESH mesh;
-	if (FAILED(D3DXLoadMeshFromX("monkey.x", D3DXMESH_MANAGED, device, nullptr, &materials, nullptr, &materialCount, &mesh))) {
+	Vertex vertex[4] = {
+		{ -0.5f, 0.5f, 0.0f, D3DCOLOR_XRGB(255, 255, 255), 0.0f, 0.0f },
+		{ 0.5f, 0.5f, 0.0f, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0.0f },
+		{ -0.5f, -0.5f, 0.0f, D3DCOLOR_XRGB(255, 255, 255), 0.0f, 1.0f },
+		{ 0.5f, -0.5f, 0.0f, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 1.0f },
+	};
+
+	LPDIRECT3DTEXTURE9 texture;
+	if (FAILED(D3DXCreateTextureFromFile(device, "box.jpg", &texture))) {
 		device->Release();
 		direct3D->Release();
 		return -1;
@@ -121,7 +133,7 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	D3DXMatrixIdentity(&worldMatrix);
 	D3DXMatrixIdentity(&viewMatrix);
 	D3DXMatrixIdentity(&projectionMatrix);
-	
+
 	int frame = 0;
 	MSG windowMessage = {};
 	while (windowMessage.message != WM_QUIT) {
@@ -144,7 +156,10 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 			D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), windowWidth / (float)windowHeight, 0.01f, 100.0f);
 			device->SetTransform(D3DTS_PROJECTION, &projectionMatrix);
 
-			mesh->DrawSubset(0);
+			device->SetTexture(0, texture);
+			device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+
+			device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, vertex, sizeof(Vertex));
 
 			device->EndScene();
 			device->Present(nullptr, nullptr, nullptr, nullptr);
