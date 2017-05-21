@@ -7,9 +7,9 @@
 #pragma comment(lib, "d3dx9.lib")
 
 struct  Vertex {
-	float x, y, z;
-	D3DCOLOR color;
-	float u, v;
+	D3DXVECTOR3 position;
+	D3DXVECTOR3 normal;
+	D3DXVECTOR2 uv;
 };
 
 bool CreateDevice(LPDIRECT3D9 direct3D, LPDIRECT3DDEVICE9 *device, HWND windowHandle, D3DPRESENT_PARAMETERS *presentParameter, D3DDEVTYPE deviceType, DWORD behaviourFlag) {
@@ -86,11 +86,11 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	}
 
 	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	device->SetRenderState(D3DRS_LIGHTING, false);
+	device->SetRenderState(D3DRS_LIGHTING, true);
 	device->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	device->SetRenderState(D3DRS_ZWRITEENABLE, true);
 	device->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(64, 64, 64));
-	device->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+	device->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
 
 	ShowWindow(windowHandle, showCommand);
 
@@ -114,10 +114,10 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	device->SetLight(0, &light);
 	
 	Vertex vertex[4] = {
-		{ -0.5f, 0.5f, 0.0f, D3DCOLOR_XRGB(255, 255, 255), 0.0f, 0.0f },
-		{ 0.5f, 0.5f, 0.0f, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0.0f },
-		{ -0.5f, -0.5f, 0.0f, D3DCOLOR_XRGB(255, 255, 255), 0.0f, 1.0f },
-		{ 0.5f, -0.5f, 0.0f, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 1.0f },
+		{ D3DXVECTOR3(-0.5f, 0.5f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(0.5f, 0.5f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(-0.5f, -0.5f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(0.5f, -0.5f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(1.0f, 1.0f) },
 	};
 
 	LPDIRECT3DTEXTURE9 texture;
