@@ -85,7 +85,7 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 		}
 	}
 
-	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	device->SetRenderState(D3DRS_LIGHTING, true);
 	device->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	device->SetRenderState(D3DRS_ZWRITEENABLE, true);
@@ -113,12 +113,58 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	device->LightEnable(0, true);
 	device->SetLight(0, &light);
 	
-	Vertex vertex[4] = {
-		{ D3DXVECTOR3(-0.5f, 0.5f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(0.0f, 0.0f) },
-		{ D3DXVECTOR3(0.5f, 0.5f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(1.0f, 0.0f) },
-		{ D3DXVECTOR3(-0.5f, -0.5f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(0.0f, 1.0f) },
-		{ D3DXVECTOR3(0.5f, -0.5f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(1.0f, 1.0f) },
+	Vertex vertex[] = {
+		{ D3DXVECTOR3(-1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(-1.0f, -1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(1.0f, -1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(1.0f, 1.0f) },
+
+		{ D3DXVECTOR3(1.0f, 1.0f, -1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(1.0f, 1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(1.0f, -1.0f, -1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(1.0f, -1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
+
+		{ D3DXVECTOR3(1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(1.0f, -1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(-1.0f, -1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(1.0f, 1.0f) },
+
+		{ D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(-1.0f, 1.0f, -1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(-1.0f, -1.0f, 1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(-1.0f, -1.0f, -1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
+
+		{ D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(-1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
+
+		{ D3DXVECTOR3(-1.0f, -1.0f, -1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(1.0f, -1.0f, -1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(-1.0f, -1.0f, 1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(1.0f, -1.0f, 1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
 	};
+	const int vertexCount = sizeof(vertex) / sizeof(vertex[0]);
+	WORD index[] = {
+		0, 1, 2,
+		3, 2, 1,
+
+		4, 5, 6,
+		7, 6, 5,
+
+		8, 9, 10,
+		11, 10, 9,
+
+		12, 13, 14,
+		15, 14, 13,
+
+		16, 17, 18,
+		19, 18, 17,
+
+		20, 21, 22,
+		23, 22, 21,
+	};
+	const int indexCount = sizeof(index) / sizeof(index[0]);
 
 	LPDIRECT3DTEXTURE9 texture;
 	if (FAILED(D3DXCreateTextureFromFile(device, "box.jpg", &texture))) {
@@ -150,7 +196,7 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 			D3DXMatrixRotationY(&worldMatrix, frame * 0.01f);
 			device->SetTransform(D3DTS_WORLD, &worldMatrix);
 
-			D3DXMatrixLookAtLH(&viewMatrix, &D3DXVECTOR3(0.0f, 1.0f, -2.0f), &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
+			D3DXMatrixLookAtLH(&viewMatrix, &D3DXVECTOR3(0.0f, 2.0f, -10.0f), &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 			device->SetTransform(D3DTS_VIEW, &viewMatrix);
 
 			D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), windowWidth / (float)windowHeight, 0.01f, 100.0f);
@@ -159,7 +205,7 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 			device->SetTexture(0, texture);
 			device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 
-			device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, vertex, sizeof(Vertex));
+			device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vertexCount, indexCount / 3, index, D3DFMT_INDEX16, vertex, sizeof(Vertex));
 
 			device->EndScene();
 			device->Present(nullptr, nullptr, nullptr, nullptr);
