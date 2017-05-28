@@ -95,17 +95,12 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	ShowWindow(windowHandle, showCommand);
 
 	D3DMATERIAL9 material = {};
-	material.Diffuse.r = material.Ambient.r = 1.0f;
-	material.Diffuse.g = material.Ambient.g = 1.0f;
-	material.Diffuse.b = material.Ambient.b = 1.0f;
-	material.Diffuse.a = material.Ambient.a = 1.0f;
+	material.Diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
 	device->SetMaterial(&material);
 
 	D3DLIGHT9 light = {};
 	light.Type = D3DLIGHT_DIRECTIONAL;
-	light.Diffuse.r = 1.0f;
-	light.Diffuse.g = 1.0f;
-	light.Diffuse.b = 1.0f;
+	light.Diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
 	D3DXVECTOR3 direction;
 	D3DXVec3Normalize(&direction, &D3DXVECTOR3(0.25f, -1.0f, 0.5f));
 	light.Direction = direction;
