@@ -168,6 +168,13 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 		return -1;
 	}
 
+	LPD3DXEFFECT shader = {};
+	if (FAILED(D3DXCreateEffectFromFile(device, "shader.fx", nullptr, nullptr, D3DXSHADER_DEBUG, nullptr, &shader, nullptr))) {
+		device->Release();
+		direct3D->Release();
+		return -1;
+	}
+
 	D3DXMATRIX worldMatrix;
 	D3DXMATRIX viewMatrix;
 	D3DXMATRIX projectionMatrix;
@@ -189,18 +196,23 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 			device->BeginScene();
 
 			D3DXMatrixRotationY(&worldMatrix, frame * 0.01f);
-			device->SetTransform(D3DTS_WORLD, &worldMatrix);
-
 			D3DXMatrixLookAtLH(&viewMatrix, &D3DXVECTOR3(0.0f, 2.0f, -10.0f), &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
-			device->SetTransform(D3DTS_VIEW, &viewMatrix);
-
 			D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), windowWidth / (float)windowHeight, 0.01f, 100.0f);
-			device->SetTransform(D3DTS_PROJECTION, &projectionMatrix);
 
 			device->SetTexture(0, texture);
 			device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 
+			D3DXMATRIX mat = worldMatrix * viewMatrix * projectionMatrix;
+			UINT passCount;
+			shader->SetMatrix("mat", &mat);
+			shader->SetTechnique("main");
+			shader->Begin(&passCount, 0);
+			shader->BeginPass(0);
+
 			device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vertexCount, indexCount / 3, index, D3DFMT_INDEX16, vertex, sizeof(Vertex));
+
+			shader->EndPass();
+			shader->End();
 
 			device->EndScene();
 			device->Present(nullptr, nullptr, nullptr, nullptr);
