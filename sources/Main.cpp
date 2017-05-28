@@ -1,10 +1,13 @@
 #include <windows.h>
 #include <d3d9.h>
 #include <d3dx9.h>
+#include <dxerr.h>
 #include <math.h>
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "d3dx9.lib")
+#pragma comment(lib, "dxerr.lib")
+#pragma comment(lib, "legacy_stdio_definitions.lib")
 
 struct  Vertex {
 	D3DXVECTOR3 position;
@@ -25,6 +28,11 @@ LRESULT __stdcall WindowProcedure(HWND windowHandle, UINT windowMessage, WPARAM 
 		return 0;
 	}
 	return DefWindowProc(windowHandle, windowMessage, wParam, lParam);
+}
+
+void OutputErrorMessage(HRESULT hresult) {
+	OutputDebugString(DXGetErrorDescription(hresult));
+	MessageBox(nullptr, DXGetErrorDescription(hresult), "Error", MB_OK | MB_ICONINFORMATION);
 }
 
 int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showCommand) {
@@ -161,17 +169,23 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	};
 	const int indexCount = sizeof(index) / sizeof(index[0]);
 
+	HRESULT hresult = {};
+
 	LPDIRECT3DTEXTURE9 texture;
-	if (FAILED(D3DXCreateTextureFromFile(device, "box.jpg", &texture))) {
+	hresult = D3DXCreateTextureFromFile(device, "box.jpg", &texture);
+	if (FAILED(hresult)) {
 		device->Release();
 		direct3D->Release();
+		OutputErrorMessage(hresult);
 		return -1;
 	}
 
 	LPD3DXEFFECT shader = {};
-	if (FAILED(D3DXCreateEffectFromFile(device, "shader.fx", nullptr, nullptr, D3DXSHADER_DEBUG, nullptr, &shader, nullptr))) {
+	hresult = D3DXCreateEffectFromFile(device, "shader.fx", nullptr, nullptr, D3DXSHADER_DEBUG, nullptr, &shader, nullptr);
+	if (FAILED(hresult)) {
 		device->Release();
 		direct3D->Release();
+		OutputErrorMessage(hresult);
 		return -1;
 	}
 
