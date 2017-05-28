@@ -1,23 +1,19 @@
 float4x4 mat;
 
-struct VSInput {
-	float4 vertex : POSITION;
-};
-
-struct PSInput {
+struct VSOutput {
 	float4 position : POSITION;
-	float4 color : COLOR0;
+	float4 color : COLOR;
 };
 
-PSInput VS(VSInput input) {
-	PSInput output;
-	output.position = mul(input.vertex, mat);
-	output.color = input.vertex;
+VSOutput VS(float4 vertex : POSITION) {
+	VSOutput output;
+	output.position = mul(vertex, mat);
+	output.color = vertex;
 	return output;
 }
 
-float4 PS(PSInput input) : COLOR0 {
-	return input.color;
+float4 PS(float4 color : COLOR) : COLOR {
+	return color;
 }
 
 technique main {
