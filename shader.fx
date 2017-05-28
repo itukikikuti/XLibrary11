@@ -1,11 +1,19 @@
 float4x4 mat;
 
-float4 VS(float4 vertex : POSITION) : POSITION {
-	return mul(vertex, mat);
+struct VSOutput {
+	float4 position : POSITION;
+	float4 color : COLOR0;
+};
+
+VSOutput VS(float4 vertex : POSITION) {
+	VSOutput output;
+	output.position = mul(vertex, mat);
+	output.color = vertex;
+	return output;
 }
 
-float4 PS() : COLOR0 {
-	return float4(1.0, 1.0, 1.0, 1.0);
+float4 PS(VSOutput input) : COLOR0 {
+	return input.color;
 }
 
 technique main {
