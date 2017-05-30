@@ -204,6 +204,7 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 			D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), windowWidth / (float)windowHeight, 0.01f, 100.0f);
 
 			UINT passCount;
+			shader->SetFloat("time", frame * 0.01f);
 			shader->SetMatrix("worldMatrix", &worldMatrix);
 			shader->SetMatrix("viewMatrix", &viewMatrix);
 			shader->SetMatrix("projectionMatrix", &projectionMatrix);

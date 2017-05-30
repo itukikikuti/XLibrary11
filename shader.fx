@@ -1,3 +1,4 @@
+float time;
 float4x4 worldMatrix;
 float4x4 viewMatrix;
 float4x4 projectionMatrix;
@@ -16,6 +17,7 @@ struct VSOutput {
 
 VSOutput VS(float4 vertex : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD0) {
 	VSOutput output = (VSOutput)0;
+	vertex += float4(normal, 0.0) * sin(time);
 	output.position = mul(vertex, worldMatrix);
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projectionMatrix);
