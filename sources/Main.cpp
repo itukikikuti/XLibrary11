@@ -96,28 +96,14 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	}
 
 	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	device->SetRenderState(D3DRS_LIGHTING, true);
 	device->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	device->SetRenderState(D3DRS_ZWRITEENABLE, true);
-	device->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(64, 64, 64));
 	device->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
 
 	ShowWindow(windowHandle, SW_SHOWNORMAL);
 
-	D3DMATERIAL9 material = {};
-	material.Diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
-	device->SetMaterial(&material);
-
-	D3DLIGHT9 light = {};
-	light.Type = D3DLIGHT_DIRECTIONAL;
-	light.Diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
 	D3DXVECTOR3 lightDirection;
 	D3DXVec3Normalize(&lightDirection, &D3DXVECTOR3(0.25f, -1.0f, 0.5f));
-	printf("%f %f %f", lightDirection.x, lightDirection.y, lightDirection.z);
-	light.Direction = lightDirection;
-	light.Range = 1000.0f;
-	device->LightEnable(0, true);
-	device->SetLight(0, &light);
 	
 	Vertex vertex[] = {
 		{ D3DXVECTOR3(-1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(0.0f, 0.0f) },
@@ -217,14 +203,12 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 			D3DXMatrixLookAtLH(&viewMatrix, &D3DXVECTOR3(0.0f, 2.0f, -10.0f), &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 			D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), windowWidth / (float)windowHeight, 0.01f, 100.0f);
 
-			device->SetTexture(0, texture);
-			device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-
 			UINT passCount;
 			shader->SetMatrix("worldMatrix", &worldMatrix);
 			shader->SetMatrix("viewMatrix", &viewMatrix);
 			shader->SetMatrix("projectionMatrix", &projectionMatrix);
 			shader->SetVector("lightDirection", &(D3DXVECTOR4)lightDirection);
+			shader->SetTexture("meshTexture", texture);
 			shader->SetTechnique("main");
 			shader->Begin(&passCount, 0);
 			shader->BeginPass(0);

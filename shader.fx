@@ -2,23 +2,30 @@ float4x4 worldMatrix;
 float4x4 viewMatrix;
 float4x4 projectionMatrix;
 float3 lightDirection;
+texture meshTexture;
+
+sampler Sampler = sampler_state {
+	texture = <meshTexture>;
+};
 
 struct VSOutput {
 	float4 position : POSITION;
 	float3 normal : TEXCOORD0;
+	float2 uv : TEXCOORD1;
 };
 
-VSOutput VS(float4 vertex : POSITION, float3 normal : NORMAL) {
+VSOutput VS(float4 vertex : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD0) {
 	VSOutput output = (VSOutput)0;
 	output.position = mul(vertex, worldMatrix);
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projectionMatrix);
 	output.normal = normalize(mul(-normal, worldMatrix));
+	output.uv = uv;
 	return output;
 }
 
-float4 PS(float3 normal : TEXCOORD0) : COLOR {
-	return saturate(dot(lightDirection, normal)) + float4(0.25, 0.25, 0.25, 1.0);
+float4 PS(float3 normal : TEXCOORD0, float2 uv : TEXCOORD1) : COLOR {
+	return tex2D(Sampler, uv) * saturate(dot(lightDirection, normal));
 }
 
 technique main {
