@@ -17,7 +17,7 @@ struct VSOutput {
 
 VSOutput VS(float4 vertex : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD0) {
 	VSOutput output = (VSOutput)0;
-	vertex += float4(normal, 0.0) * sin(time);
+	vertex += float4(normal, 0.0) * sin(time * 0.5) * 0.1;
 	output.position = mul(vertex, worldMatrix);
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projectionMatrix);
