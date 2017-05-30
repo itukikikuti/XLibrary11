@@ -55,13 +55,20 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
 	if (!RegisterClassEx(&windowClass)) return 0;
 
-	int windowWidth = 1280, windowHeight = 720;
 	DWORD windowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX;
-	RECT clientRect = { 0, 0, windowWidth, windowHeight };
-	AdjustWindowRect(&clientRect, windowStyle, false);
-
-	windowHandle = CreateWindow(title, title, windowStyle, CW_USEDEFAULT, CW_USEDEFAULT, clientRect.right - clientRect.left, clientRect.bottom - clientRect.top, nullptr, nullptr, windowClass.hInstance, nullptr);
+	windowHandle = CreateWindow(title, title, windowStyle, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, windowClass.hInstance, nullptr);
 	if (!windowHandle) return -1;
+
+	RECT windowRect = {};
+	RECT clientRect = {};
+	GetWindowRect(windowHandle, &windowRect);
+	GetClientRect(windowHandle, &clientRect);
+	int clientWidth = 1280, clientHeight = 720;
+	int windowWidth = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + clientWidth;
+	int windowHeight = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + clientHeight;
+	SetWindowPos(windowHandle, nullptr, 0, 0, windowWidth, windowHeight, SWP_NOMOVE | SWP_NOZORDER);
+
+	ShowWindow(windowHandle, SW_SHOWNORMAL);
 
 	LPDIRECT3D9 direct3D;
 	direct3D = Direct3DCreate9(D3D_SDK_VERSION);
@@ -69,8 +76,8 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 
 	LPDIRECT3DDEVICE9 device;
 	D3DPRESENT_PARAMETERS presentParameter = {};
-	presentParameter.BackBufferWidth = windowWidth;
-	presentParameter.BackBufferHeight = windowHeight;
+	presentParameter.BackBufferWidth = clientWidth;
+	presentParameter.BackBufferHeight = clientHeight;
 	presentParameter.BackBufferFormat = D3DFMT_UNKNOWN;
 	presentParameter.BackBufferCount = 0;
 	presentParameter.MultiSampleType = D3DMULTISAMPLE_NONE;
@@ -95,12 +102,10 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 		}
 	}
 
-	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	device->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	device->SetRenderState(D3DRS_ZWRITEENABLE, true);
 	device->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
-
-	ShowWindow(windowHandle, SW_SHOWNORMAL);
 
 	D3DXVECTOR3 lightDirection;
 	D3DXVec3Normalize(&lightDirection, &D3DXVECTOR3(0.25f, -1.0f, 0.5f));
@@ -157,7 +162,7 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 
 			D3DXMatrixRotationY(&worldMatrix, frame * 0.01f);
 			D3DXMatrixLookAtLH(&viewMatrix, &D3DXVECTOR3(0.0f, 1.0f, -2.0f), &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
-			D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), windowWidth / (float)windowHeight, 0.01f, 100.0f);
+			D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), clientWidth / (float)clientHeight, 0.01f, 100.0f);
 
 			UINT passCount;
 			shader->SetFloat("time", frame * 0.01f);
