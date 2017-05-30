@@ -25,7 +25,7 @@ VSOutput VS(float4 vertex : POSITION, float3 normal : NORMAL, float2 uv : TEXCOO
 }
 
 float4 PS(float3 normal : TEXCOORD0, float2 uv : TEXCOORD1) : COLOR {
-	return 1.0 - tex2D(Sampler, uv) * saturate(dot(lightDirection, normal));
+	return (1.0 - tex2D(Sampler, uv)) * saturate(dot(lightDirection, normal));
 }
 
 technique main {
