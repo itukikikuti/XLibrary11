@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <windows.h>
 #include <d3d9.h>
 #include <d3dx9.h>
@@ -35,7 +36,8 @@ void OutputErrorMessage(HRESULT hresult) {
 	MessageBox(nullptr, DXGetErrorDescription(hresult), "Error", MB_OK | MB_ICONINFORMATION);
 }
 
-int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showCommand) {
+//int main() {
+int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	char title[10] = "GDK";
 	HWND windowHandle;
 	WNDCLASSEX windowClass = {};
@@ -44,13 +46,13 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	windowClass.lpfnWndProc = WindowProcedure;
 	windowClass.cbClsExtra = 0;
 	windowClass.cbWndExtra = 0;
-	windowClass.hInstance = instanceHandle;
-	windowClass.hIcon = LoadIcon(instanceHandle, IDI_APPLICATION);
+	windowClass.hInstance = GetModuleHandle(0);
+	windowClass.hIcon = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
 	windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	windowClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	windowClass.lpszMenuName = nullptr;
 	windowClass.lpszClassName = title;
-	windowClass.hIconSm = LoadIcon(instanceHandle, IDI_APPLICATION);
+	windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
 	if (!RegisterClassEx(&windowClass)) return 0;
 
 	int windowWidth = 1280, windowHeight = 720;
@@ -58,7 +60,7 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	RECT clientRect = { 0, 0, windowWidth, windowHeight };
 	AdjustWindowRect(&clientRect, windowStyle, false);
 
-	windowHandle = CreateWindow(title, title, windowStyle, CW_USEDEFAULT, CW_USEDEFAULT, clientRect.right - clientRect.left, clientRect.bottom - clientRect.top, nullptr, nullptr, instanceHandle, nullptr);
+	windowHandle = CreateWindow(title, title, windowStyle, CW_USEDEFAULT, CW_USEDEFAULT, clientRect.right - clientRect.left, clientRect.bottom - clientRect.top, nullptr, nullptr, windowClass.hInstance, nullptr);
 	if (!windowHandle) return -1;
 
 	LPDIRECT3D9 direct3D;
@@ -100,7 +102,7 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	device->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(64, 64, 64));
 	device->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
 
-	ShowWindow(windowHandle, showCommand);
+	ShowWindow(windowHandle, SW_SHOWNORMAL);
 
 	D3DMATERIAL9 material = {};
 	material.Diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -109,9 +111,10 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	D3DLIGHT9 light = {};
 	light.Type = D3DLIGHT_DIRECTIONAL;
 	light.Diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
-	D3DXVECTOR3 direction;
-	D3DXVec3Normalize(&direction, &D3DXVECTOR3(0.25f, -1.0f, 0.5f));
-	light.Direction = direction;
+	D3DXVECTOR3 lightDirection;
+	D3DXVec3Normalize(&lightDirection, &D3DXVECTOR3(0.25f, -1.0f, 0.5f));
+	printf("%f %f %f", lightDirection.x, lightDirection.y, lightDirection.z);
+	light.Direction = lightDirection;
 	light.Range = 1000.0f;
 	device->LightEnable(0, true);
 	device->SetLight(0, &light);
@@ -183,6 +186,7 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 	LPD3DXEFFECT shader = {};
 	hresult = D3DXCreateEffectFromFile(device, "shader.fx", nullptr, nullptr, D3DXSHADER_DEBUG, nullptr, &shader, nullptr);
 	if (FAILED(hresult)) {
+		texture->Release();
 		device->Release();
 		direct3D->Release();
 		OutputErrorMessage(hresult);
@@ -216,9 +220,11 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 			device->SetTexture(0, texture);
 			device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 
-			D3DXMATRIX mat = worldMatrix * viewMatrix * projectionMatrix;
 			UINT passCount;
-			shader->SetMatrix("mat", &mat);
+			shader->SetMatrix("worldMatrix", &worldMatrix);
+			shader->SetMatrix("viewMatrix", &viewMatrix);
+			shader->SetMatrix("projectionMatrix", &projectionMatrix);
+			shader->SetVector("lightDirection", &(D3DXVECTOR4)lightDirection);
 			shader->SetTechnique("main");
 			shader->Begin(&passCount, 0);
 			shader->BeginPass(0);
@@ -233,6 +239,8 @@ int __stdcall WinMain(HINSTANCE instanceHandle, HINSTANCE, LPTSTR, int showComma
 		}
 	}
 
+	texture->Release();
+	shader->Release();
 	device->Release();
 	direct3D->Release();
 
