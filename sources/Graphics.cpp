@@ -4,7 +4,6 @@
 #include <d3dx9.h>
 #include <dxerr.h>
 #include <crtdbg.h>
-#include <math.h>
 #include "Graphics.h"
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "d3d9.lib")
@@ -13,25 +12,23 @@
 #pragma comment(lib, "legacy_stdio_definitions.lib")
 
 Graphics::Graphics() : frame(0) {
-	char title[10] = "GDK";
-	HWND windowHandle;
+	instanceHandle = GetModuleHandle(0);
 	WNDCLASSEX windowClass = {};
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.style = CS_HREDRAW | CS_VREDRAW;
-	windowClass.lpfnWndProc = this->WindowProcedure;
+	windowClass.lpfnWndProc = WindowProcedure;
 	windowClass.cbClsExtra = 0;
 	windowClass.cbWndExtra = 0;
-	windowClass.hInstance = GetModuleHandle(0);
-	windowClass.hIcon = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
+	windowClass.hInstance = instanceHandle;
+	windowClass.hIcon = LoadIcon(instanceHandle, IDI_APPLICATION);
 	windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	windowClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	windowClass.lpszMenuName = nullptr;
-	windowClass.lpszClassName = title;
-	windowClass.hIconSm = LoadIcon(windowClass.hInstance, IDI_APPLICATION);
+	windowClass.lpszClassName = TITLE;
+	windowClass.hIconSm = LoadIcon(instanceHandle, IDI_APPLICATION);
 	if (!RegisterClassEx(&windowClass)) return;
 
-	DWORD windowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX;
-	windowHandle = CreateWindow(title, title, windowStyle, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, windowClass.hInstance, nullptr);
+	windowHandle = CreateWindow(TITLE, TITLE, WINDOW_STYLE, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instanceHandle, nullptr);
 	if (!windowHandle) return;
 
 	RECT windowRect = {};

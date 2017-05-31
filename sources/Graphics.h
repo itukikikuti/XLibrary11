@@ -6,6 +6,8 @@
 class Graphics
 {
 public:
+	const DWORD WINDOW_STYLE = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX;
+	const char TITLE[10] = "GDK";
 	const int CLIENT_WIDTH = 1280, CLIENT_HEIGHT = 720;
 
 	Graphics();
@@ -13,6 +15,8 @@ public:
 	void Render();
 private:
 	int frame;
+	HINSTANCE instanceHandle;
+	HWND windowHandle;
 	LPDIRECT3D9 direct3D;
 	LPDIRECT3DDEVICE9 device;
 	LPD3DXEFFECT shader;
