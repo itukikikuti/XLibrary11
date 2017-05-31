@@ -26,7 +26,6 @@ bool CreateDevice(LPDIRECT3D9 direct3D, LPDIRECT3DDEVICE9 *device, HWND windowHa
 LRESULT __stdcall WindowProcedure(HWND windowHandle, UINT windowMessage, WPARAM wParam, LPARAM lParam) {
 	if (windowMessage == WM_DESTROY) {
 		PostQuitMessage(0);
-		return 0;
 	}
 	return DefWindowProc(windowHandle, windowMessage, wParam, lParam);
 }
@@ -150,7 +149,6 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	int frame = 0;
 	MSG windowMessage = {};
 	while (windowMessage.message != WM_QUIT) {
-		Sleep(1);
 		if (PeekMessage(&windowMessage, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&windowMessage);
 			DispatchMessage(&windowMessage);
@@ -182,6 +180,7 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 
 			device->EndScene();
 			device->Present(nullptr, nullptr, nullptr, nullptr);
+			Sleep(1);
 		}
 	}
 
@@ -190,5 +189,5 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	device->Release();
 	direct3D->Release();
 
-	return 0;
+	return windowMessage.wParam;
 }
