@@ -9,5 +9,13 @@
     <ClCompile Include="Sources\Main.cpp">
       <Filter>sources</Filter>
     </ClCompile>
+    <ClCompile Include="sources\Graphics.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sources\Graphics.h">
+      <Filter>sources</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
