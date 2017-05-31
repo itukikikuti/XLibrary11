@@ -3,6 +3,7 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <dxerr.h>
+#include <crtdbg.h>
 #include <math.h>
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "d3d9.lib")
@@ -37,6 +38,8 @@ void OutputErrorMessage(HRESULT hresult) {
 
 //int main() {
 int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
 	char title[10] = "GDK";
 	HWND windowHandle;
 	WNDCLASSEX windowClass = {};
