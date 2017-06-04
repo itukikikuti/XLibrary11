@@ -77,9 +77,62 @@ Graphics::Graphics() : frame(0) {
 
 	D3DXVec3Normalize(&lightDirection, &D3DXVECTOR3(0.25f, -1.0f, 0.5f));
 
-	ID3DXBuffer *materials;
-	DWORD materialCount;
-	if (FAILED(D3DXLoadMeshFromX("monkey.x", D3DXMESH_MANAGED, device, nullptr, &materials, nullptr, &materialCount, &mesh))) return;
+	Vertex vertex[] = {
+		{ D3DXVECTOR3(-1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(-1.0f, -1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(1.0f, -1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(1.0f, 1.0f) },
+
+		{ D3DXVECTOR3(1.0f, 1.0f, -1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(1.0f, 1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(1.0f, -1.0f, -1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(1.0f, -1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
+
+		{ D3DXVECTOR3(1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(1.0f, -1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(-1.0f, -1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(1.0f, 1.0f) },
+
+		{ D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(-1.0f, 1.0f, -1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(-1.0f, -1.0f, 1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(-1.0f, -1.0f, -1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
+
+		{ D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(-1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
+
+		{ D3DXVECTOR3(-1.0f, -1.0f, -1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DXVECTOR3(1.0f, -1.0f, -1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DXVECTOR3(-1.0f, -1.0f, 1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DXVECTOR3(1.0f, -1.0f, 1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
+	};
+	vertexCount = sizeof(vertex) / sizeof(vertex[0]);
+	vertexBuffer = new Vertex[vertexCount];
+	memcpy(vertexBuffer, vertex, sizeof(vertex));
+	WORD index[] = {
+		0, 1, 2,
+		3, 2, 1,
+
+		4, 5, 6,
+		7, 6, 5,
+
+		8, 9, 10,
+		11, 10, 9,
+
+		12, 13, 14,
+		15, 14, 13,
+
+		16, 17, 18,
+		19, 18, 17,
+
+		20, 21, 22,
+		23, 22, 21,
+	};
+	indexCount = sizeof(index) / sizeof(index[0]);
+	indexBuffer = new WORD[indexCount];
+	memcpy(indexBuffer, index, sizeof(index));
 
 	HRESULT hresult = {};
 
@@ -91,6 +144,8 @@ Graphics::Graphics() : frame(0) {
 }
 
 Graphics::~Graphics() {
+	delete[] vertexBuffer;
+	delete[] indexBuffer;
 	texture->Release();
 	shader->Release();
 	device->Release();
@@ -103,7 +158,7 @@ void Graphics::Render() {
 	device->BeginScene();
 
 	D3DXMatrixRotationY(&worldMatrix, frame * 0.01f);
-	D3DXMatrixLookAtLH(&viewMatrix, &D3DXVECTOR3(0.0f, 1.0f, -2.0f), &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
+	D3DXMatrixLookAtLH(&viewMatrix, &D3DXVECTOR3(0.0f, 2.0f, -10.0f), &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 	D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), CLIENT_WIDTH / (float)CLIENT_HEIGHT, 0.01f, 100.0f);
 
 	UINT passCount;
@@ -117,7 +172,7 @@ void Graphics::Render() {
 	shader->Begin(&passCount, 0);
 	shader->BeginPass(0);
 
-	mesh->DrawSubset(0);
+	device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vertexCount, indexCount / 3, indexBuffer, D3DFMT_INDEX16, vertexBuffer, sizeof(Vertex));
 
 	shader->EndPass();
 	shader->End();

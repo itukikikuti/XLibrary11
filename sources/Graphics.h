@@ -3,8 +3,13 @@
 
 #include <d3dx9.h>
 
-class Graphics
-{
+struct Vertex {
+	D3DXVECTOR3 position;
+	D3DXVECTOR3 normal;
+	D3DXVECTOR2 uv;
+};
+
+class Graphics {
 public:
 	const DWORD WINDOW_STYLE = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX;
 	const char TITLE[10] = "GDK";
@@ -20,7 +25,10 @@ private:
 	LPDIRECT3D9 direct3D;
 	LPDIRECT3DDEVICE9 device;
 	LPD3DXEFFECT shader;
-	LPD3DXMESH mesh;
+	Vertex *vertexBuffer;
+	WORD *indexBuffer;
+	int vertexCount;
+	int indexCount;
 	LPDIRECT3DTEXTURE9 texture;
 	D3DXMATRIX worldMatrix;
 	D3DXMATRIX viewMatrix;
