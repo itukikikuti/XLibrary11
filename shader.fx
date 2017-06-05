@@ -1,37 +1,36 @@
-float time;
-float4x4 worldMatrix;
-float4x4 viewMatrix;
-float4x4 projectionMatrix;
-float3 lightDirection;
-texture meshTexture;
-
-sampler Sampler = sampler_state {
-	texture = <meshTexture>;
+cbuffer ConstantBuffer : register(b0) {
+	matrix WORLD;
+	matrix VIEW;
+	matrix PROJECTION;
+	float3 LIGHT_DIRECTION;
 };
 
 struct VSOutput {
-	float4 position : POSITION;
-	float3 normal : TEXCOORD0;
-	float2 uv : TEXCOORD1;
+	float4 position : SV_POSITION;
+	float4 normal : NORMAL;
 };
 
-VSOutput VS(float4 vertex : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD0) {
+VSOutput VS(float4 vertex : POSITION, float4 normal : NORMAL) {
 	VSOutput output = (VSOutput)0;
-	output.position = mul(vertex, worldMatrix);
-	output.position = mul(output.position, viewMatrix);
-	output.position = mul(output.position, projectionMatrix);
-	output.normal = normalize(mul(-normal, worldMatrix));
-	output.uv = uv;
+	output.position = vertex;
+	output.normal = normal;
 	return output;
 }
 
-float4 PS(float3 normal : TEXCOORD0, float2 uv : TEXCOORD1) : COLOR {
-	return tex2D(Sampler, uv) * saturate(dot(lightDirection, normal));
+[maxvertexcount(3)]
+void GS(triangle VSOutput input[3], inout TriangleStream<VSOutput> stream) {
+	for (int i = 0; i < 3; i++) {
+		VSOutput output = (VSOutput)0;
+		output.position = input[i].position;
+		output.position = mul(WORLD, output.position);
+		output.position = mul(VIEW, output.position);
+		output.position = mul(PROJECTION, output.position);
+		output.normal = normalize(mul(WORLD, -input[i].normal));
+		stream.Append(output);
+	}
+	stream.RestartStrip();
 }
 
-technique main {
-	pass P0 {
-		VertexShader = compile vs_2_0 VS();
-		PixelShader = compile ps_2_0 PS();
-	}
+float4 PS(VSOutput output) : SV_TARGET {
+	return saturate(dot(LIGHT_DIRECTION, output.normal)) + float4(0.25, 0.25, 0.25, 1.0);
 }

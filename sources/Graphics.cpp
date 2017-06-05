@@ -1,117 +1,192 @@
 #include <cstdio>
 #include <windows.h>
-#include <d3d9.h>
-#include <d3dx9.h>
-#include <dxerr.h>
-#include <crtdbg.h>
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#include <DirectXMath.h>
 #include "Graphics.h"
-#pragma comment(lib, "dxguid.lib")
-#pragma comment(lib, "d3d9.lib")
-#pragma comment(lib, "d3dx9.lib")
-#pragma comment(lib, "dxerr.lib")
-#pragma comment(lib, "legacy_stdio_definitions.lib")
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "d3dcompiler.lib")
+using namespace DirectX;
 
-Graphics::Graphics() : frame(0) {
-	instanceHandle = GetModuleHandle(0);
+Graphics::Graphics() :
+	frame(0),
+	driverType(D3D_DRIVER_TYPE_NULL),
+	featureLevel(D3D_FEATURE_LEVEL_11_0) {
+
+	HINSTANCE instance = GetModuleHandle(nullptr);
 	WNDCLASSEX windowClass = {};
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.style = CS_HREDRAW | CS_VREDRAW;
 	windowClass.lpfnWndProc = WindowProcedure;
 	windowClass.cbClsExtra = 0;
 	windowClass.cbWndExtra = 0;
-	windowClass.hInstance = instanceHandle;
-	windowClass.hIcon = LoadIcon(instanceHandle, IDI_APPLICATION);
+	windowClass.hInstance = instance;
+	windowClass.hIcon = LoadIcon(instance, IDI_APPLICATION);
 	windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	windowClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	windowClass.lpszMenuName = nullptr;
 	windowClass.lpszClassName = TITLE;
-	windowClass.hIconSm = LoadIcon(instanceHandle, IDI_APPLICATION);
+	windowClass.hIconSm = LoadIcon(instance, IDI_APPLICATION);
 	if (!RegisterClassEx(&windowClass)) return;
 
-	windowHandle = CreateWindow(TITLE, TITLE, WINDOW_STYLE, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instanceHandle, nullptr);
-	if (!windowHandle) return;
+	window = CreateWindow(TITLE, TITLE, WINDOW_STYLE, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
+	if (window == nullptr) return;
 
 	RECT windowRect = {};
 	RECT clientRect = {};
-	GetWindowRect(windowHandle, &windowRect);
-	GetClientRect(windowHandle, &clientRect);
+	GetWindowRect(window, &windowRect);
+	GetClientRect(window, &clientRect);
 	int windowWidth = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + CLIENT_WIDTH;
 	int windowHeight = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + CLIENT_HEIGHT;
-	SetWindowPos(windowHandle, nullptr, 0, 0, windowWidth, windowHeight, SWP_NOMOVE | SWP_NOZORDER);
+	SetWindowPos(window, nullptr, 0, 0, windowWidth, windowHeight, SWP_NOMOVE | SWP_NOZORDER);
 
-	ShowWindow(windowHandle, SW_SHOWNORMAL);
+	ShowWindow(window, SW_SHOWNORMAL);
 
-	direct3D = Direct3DCreate9(D3D_SDK_VERSION);
-	if (!direct3D) return;
+	clearColor[0] = 0.5f;
+	clearColor[1] = 0.75f;
+	clearColor[2] = 1.0f;
+	clearColor[3] = 1.0f;
 
-	D3DPRESENT_PARAMETERS presentParameter = {};
-	presentParameter.BackBufferWidth = CLIENT_WIDTH;
-	presentParameter.BackBufferHeight = CLIENT_HEIGHT;
-	presentParameter.BackBufferFormat = D3DFMT_UNKNOWN;
-	presentParameter.BackBufferCount = 0;
-	presentParameter.MultiSampleType = D3DMULTISAMPLE_NONE;
-	presentParameter.MultiSampleQuality = 0;
-	presentParameter.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	presentParameter.hDeviceWindow = nullptr;
-	presentParameter.Windowed = true;
-	presentParameter.EnableAutoDepthStencil = true;
-	presentParameter.AutoDepthStencilFormat = D3DFMT_D24S8;
-	presentParameter.Flags = 0;
-	presentParameter.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-	presentParameter.PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
+	int createDeviceFlag = 0;
+#if defined(_DEBUG)
+	createDeviceFlag |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
 
-	if (!CreateDevice(direct3D, &device, windowHandle, &presentParameter, D3DDEVTYPE_HAL, D3DCREATE_HARDWARE_VERTEXPROCESSING)) {
-		if (!CreateDevice(direct3D, &device, windowHandle, &presentParameter, D3DDEVTYPE_HAL, D3DCREATE_SOFTWARE_VERTEXPROCESSING)) {
-			if (!CreateDevice(direct3D, &device, windowHandle, &presentParameter, D3DDEVTYPE_REF, D3DCREATE_HARDWARE_VERTEXPROCESSING)) {
-				if (!CreateDevice(direct3D, &device, windowHandle, &presentParameter, D3DDEVTYPE_REF, D3DCREATE_SOFTWARE_VERTEXPROCESSING)) {
-					return;
-				}
-			}
-		}
-	}
-
-	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	device->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	device->SetRenderState(D3DRS_ZWRITEENABLE, true);
-	device->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
-
-	D3DXVec3Normalize(&lightDirection, &D3DXVECTOR3(0.25f, -1.0f, 0.5f));
-
-	Vertex vertex[] = {
-		{ D3DXVECTOR3(-1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(0.0f, 0.0f) },
-		{ D3DXVECTOR3(1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(1.0f, 0.0f) },
-		{ D3DXVECTOR3(-1.0f, -1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(0.0f, 1.0f) },
-		{ D3DXVECTOR3(1.0f, -1.0f, -1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), D3DXVECTOR2(1.0f, 1.0f) },
-
-		{ D3DXVECTOR3(1.0f, 1.0f, -1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
-		{ D3DXVECTOR3(1.0f, 1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
-		{ D3DXVECTOR3(1.0f, -1.0f, -1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
-		{ D3DXVECTOR3(1.0f, -1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
-
-		{ D3DXVECTOR3(1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(0.0f, 0.0f) },
-		{ D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(1.0f, 0.0f) },
-		{ D3DXVECTOR3(1.0f, -1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(0.0f, 1.0f) },
-		{ D3DXVECTOR3(-1.0f, -1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR2(1.0f, 1.0f) },
-
-		{ D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
-		{ D3DXVECTOR3(-1.0f, 1.0f, -1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
-		{ D3DXVECTOR3(-1.0f, -1.0f, 1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
-		{ D3DXVECTOR3(-1.0f, -1.0f, -1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
-
-		{ D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
-		{ D3DXVECTOR3(1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
-		{ D3DXVECTOR3(-1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
-		{ D3DXVECTOR3(1.0f, 1.0f, -1.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
-
-		{ D3DXVECTOR3(-1.0f, -1.0f, -1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
-		{ D3DXVECTOR3(1.0f, -1.0f, -1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
-		{ D3DXVECTOR3(-1.0f, -1.0f, 1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
-		{ D3DXVECTOR3(1.0f, -1.0f, 1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
+	D3D_DRIVER_TYPE driverTypes[] = {
+		D3D_DRIVER_TYPE_HARDWARE,
+		D3D_DRIVER_TYPE_WARP,
+		D3D_DRIVER_TYPE_REFERENCE,
 	};
-	vertexCount = sizeof(vertex) / sizeof(vertex[0]);
-	vertexBuffer = new Vertex[vertexCount];
-	memcpy(vertexBuffer, vertex, sizeof(vertex));
-	WORD index[] = {
+	int driverTypeCount = sizeof(driverTypes) / sizeof(driverTypes[0]);
+
+	D3D_FEATURE_LEVEL featureLevels[] = {
+		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_10_1,
+		D3D_FEATURE_LEVEL_10_0,
+	};
+	int featureLevelCount = sizeof(featureLevels) / sizeof(featureLevels[0]);
+
+	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+	swapChainDesc.BufferCount = SWAP_CHAIN_COUNT;
+	swapChainDesc.BufferDesc.Width = CLIENT_WIDTH;
+	swapChainDesc.BufferDesc.Height = CLIENT_HEIGHT;
+	swapChainDesc.BufferDesc.Format = SWAP_CHAIN_FORMAT;
+	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
+	swapChainDesc.OutputWindow = window;
+	swapChainDesc.SampleDesc.Count = MULTI_SAMPLE_COUNT;
+	swapChainDesc.SampleDesc.Quality = MULTI_SAMPLE_QUALITY;
+	swapChainDesc.Windowed = true;
+
+	HRESULT result = {};
+
+	for (int i = 0; i < driverTypeCount; i++) {
+		driverType = driverTypes[i];
+		result = D3D11CreateDeviceAndSwapChain(nullptr, driverType, nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device, &featureLevel, &deviceContext);
+		if (SUCCEEDED(result)) break;
+	}
+	if (FAILED(result)) return;
+
+	if (!CreateRenderTarget()) return;
+	if (!CreateDepthStencil()) return;
+	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+
+	D3D11_VIEWPORT viewPort;
+	viewPort.Width = (float)CLIENT_WIDTH;
+	viewPort.Height = (float)CLIENT_HEIGHT;
+	viewPort.MinDepth = 0.0f;
+	viewPort.MaxDepth = 1.0f;
+	viewPort.TopLeftX = 0;
+	viewPort.TopLeftY = 0;
+	deviceContext->RSSetViewports(1, &viewPort);
+
+	ID3DBlob *vertexShaderBlob = nullptr;
+	result = CompileShader(L"shader.fx", "VS", "vs_4_0", &vertexShaderBlob);
+	if (FAILED(result)) return;
+	result = device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
+	if (FAILED(result)) {
+		vertexShaderBlob->Release();
+		return;
+	}
+	deviceContext->VSSetShader(vertexShader, nullptr, 0);
+
+	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+	int inputElementDescCount = sizeof(inputElementDesc) / sizeof(inputElementDesc[0]);
+
+	result = device->CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
+	vertexShaderBlob->Release();
+	if (FAILED(result)) return;
+	deviceContext->IASetInputLayout(inputLayout);
+
+	ID3DBlob* geometryShaderBlob = nullptr;
+	result = CompileShader(L"shader.fx", "GS", "gs_4_0", &geometryShaderBlob);
+	if (FAILED(result)) return;
+	result = device->CreateGeometryShader(geometryShaderBlob->GetBufferPointer(), geometryShaderBlob->GetBufferSize(), nullptr, &geometryShader);
+	geometryShaderBlob->Release();
+	if (FAILED(result)) return;
+	deviceContext->GSSetShader(geometryShader, nullptr, 0);
+
+	ID3DBlob* pixelShaderBlob = nullptr;
+	result = CompileShader(L"shader.fx", "PS", "ps_4_0", &pixelShaderBlob);
+	if (FAILED(result)) return;
+	result = device->CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
+	pixelShaderBlob->Release();
+	if (FAILED(result)) return;
+	deviceContext->PSSetShader(pixelShader, nullptr, 0);
+
+	Vertex vertices[] = {
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },
+
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+	};
+	vertexCount = sizeof(vertices) / sizeof(vertices[0]);
+
+	D3D11_BUFFER_DESC vertexBufferDesc = {};
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertexCount;
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+	D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
+	vertexSubresourceData.pSysMem = vertices;
+	result = device->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+	if (FAILED(result)) return;
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	deviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	int index[] = {
 		0, 1, 2,
 		3, 2, 1,
 
@@ -131,55 +206,90 @@ Graphics::Graphics() : frame(0) {
 		23, 22, 21,
 	};
 	indexCount = sizeof(index) / sizeof(index[0]);
-	indexBuffer = new WORD[indexCount];
-	memcpy(indexBuffer, index, sizeof(index));
 
-	HRESULT hresult = {};
+	D3D11_BUFFER_DESC indexBufferDesc = {};
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBufferDesc.ByteWidth = sizeof(int) * indexCount;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+	D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
+	indexSubresourceData.pSysMem = index;
+	result = device->CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+	if (FAILED(result)) return;
+	deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-	hresult = D3DXCreateTextureFromFile(device, "box.jpg", &texture);
-	if (FAILED(hresult)) return;
+	D3D11_BUFFER_DESC constantBufferDesc = {};
+	constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
+	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constantBufferDesc.CPUAccessFlags = 0;
+	result = device->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result)) return;
+	deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+	deviceContext->GSSetConstantBuffers(0, 1, &constantBuffer);
+	deviceContext->PSSetConstantBuffers(0, 1, &constantBuffer);
 
-	hresult = D3DXCreateEffectFromFile(device, "shader.fx", nullptr, nullptr, D3DXSHADER_DEBUG, nullptr, &shader, nullptr);
-	if (FAILED(hresult)) return;
+	cbuffer.view = XMMatrixLookAtLH(XMVectorSet(0.0f, 2.0f, -10.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	cbuffer.projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(60.0f), (float)CLIENT_WIDTH / (float)CLIENT_HEIGHT, 0.01f, 100.0f);
+	XMStoreFloat3(&cbuffer.lightDirection, XMVector3Normalize(XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
 }
 
 Graphics::~Graphics() {
-	delete[] vertexBuffer;
-	delete[] indexBuffer;
-	texture->Release();
-	shader->Release();
-	device->Release();
-	direct3D->Release();
+	if (vertexBuffer)
+		vertexBuffer->Release();
+
+	if (indexBuffer)
+		indexBuffer->Release();
+
+	if (constantBuffer)
+		constantBuffer->Release();
+
+	if (vertexShader)
+		vertexShader->Release();
+
+	if (geometryShader)
+		geometryShader->Release();
+
+	if (pixelShader)
+		pixelShader->Release();
+
+	if (inputLayout)
+		inputLayout->Release();
+
+	if (deviceContext)
+	{
+		deviceContext->ClearState();
+		deviceContext->Flush();
+	}
+
+	ReleaseRenderTarget();
+	ReleaseDepthStencil();
+
+	if (swapChain)
+		swapChain->Release();
+
+	if (deviceContext)
+		deviceContext->Release();
+
+	if (device)
+		device->Release();
+
+	UnregisterClass(TITLE, GetModuleHandle(nullptr));
 }
 
 void Graphics::Render() {
 	frame++;
-	device->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_STENCIL | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(128, 192, 255), 1.0f, 0);
-	device->BeginScene();
+	deviceContext->ClearRenderTargetView(renderTargetView, clearColor);
+	deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	D3DXMatrixRotationY(&worldMatrix, frame * 0.01f);
-	D3DXMatrixLookAtLH(&viewMatrix, &D3DXVECTOR3(0.0f, 2.0f, -10.0f), &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
-	D3DXMatrixPerspectiveFovLH(&projectionMatrix, D3DXToRadian(60), CLIENT_WIDTH / (float)CLIENT_HEIGHT, 0.01f, 100.0f);
+	cbuffer.world = XMMatrixRotationY(frame * 0.01f);
 
-	UINT passCount;
-	shader->SetFloat("time", frame * 0.01f);
-	shader->SetMatrix("worldMatrix", &worldMatrix);
-	shader->SetMatrix("viewMatrix", &viewMatrix);
-	shader->SetMatrix("projectionMatrix", &projectionMatrix);
-	shader->SetVector("lightDirection", &(D3DXVECTOR4)lightDirection);
-	shader->SetTexture("meshTexture", texture);
-	shader->SetTechnique("main");
-	shader->Begin(&passCount, 0);
-	shader->BeginPass(0);
+	deviceContext->UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
 
-	device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vertexCount, indexCount / 3, indexBuffer, D3DFMT_INDEX16, vertexBuffer, sizeof(Vertex));
+	deviceContext->DrawIndexed(indexCount, 0, 0);
 
-	shader->EndPass();
-	shader->End();
-
-	device->EndScene();
-	device->Present(nullptr, nullptr, nullptr, nullptr);
-	Sleep(1);
+	swapChain->Present(0, 0);
+	Sleep(10);
 }
 
 LRESULT __stdcall Graphics::WindowProcedure(HWND windowHandle, UINT windowMessage, WPARAM wParam, LPARAM lParam) {
@@ -189,9 +299,143 @@ LRESULT __stdcall Graphics::WindowProcedure(HWND windowHandle, UINT windowMessag
 	return DefWindowProc(windowHandle, windowMessage, wParam, lParam);
 }
 
-bool Graphics::CreateDevice(LPDIRECT3D9 direct3D, LPDIRECT3DDEVICE9 *device, HWND windowHandle, D3DPRESENT_PARAMETERS *presentParameter, D3DDEVTYPE deviceType, DWORD behaviourFlag) {
-	if (SUCCEEDED(direct3D->CreateDevice(D3DADAPTER_DEFAULT, deviceType, windowHandle, behaviourFlag, presentParameter, device))) {
-		return true;
+bool Graphics::CreateRenderTarget()
+{
+	HRESULT result = S_OK;
+
+	result = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&renderTargetTexture);
+	if (FAILED(result)) return false;
+
+	result = device->CreateRenderTargetView(renderTargetTexture, nullptr, &renderTargetView);
+	if (FAILED(result)) return false;
+
+	result = device->CreateShaderResourceView(renderTargetTexture, nullptr, &renderTargetShaderResourceView);
+	if (FAILED(result)) return false;
+
+	return true;
+}
+
+void Graphics::ReleaseRenderTarget()
+{
+	if (renderTargetShaderResourceView)
+		renderTargetShaderResourceView->Release();
+
+	if (renderTargetView)
+		renderTargetView->Release();
+
+	if (renderTargetTexture)
+		renderTargetTexture->Release();
+}
+
+bool Graphics::CreateDepthStencil()
+{
+	HRESULT result = S_OK;
+
+	DXGI_FORMAT textureFormat = DEPTH_STENCIL_FORMAT;
+	DXGI_FORMAT resourceFormat = DEPTH_STENCIL_FORMAT;
+
+	switch (DEPTH_STENCIL_FORMAT)
+	{
+	case DXGI_FORMAT_D16_UNORM:
+		textureFormat = DXGI_FORMAT_R16_TYPELESS;
+		resourceFormat = DXGI_FORMAT_R16_UNORM;
+		break;
+
+	case DXGI_FORMAT_D24_UNORM_S8_UINT:
+		textureFormat = DXGI_FORMAT_R24G8_TYPELESS;
+		resourceFormat = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+		break;
+
+	case DXGI_FORMAT_D32_FLOAT:
+		textureFormat = DXGI_FORMAT_R32_TYPELESS;
+		resourceFormat = DXGI_FORMAT_R32_FLOAT;
+		break;
+
+	case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+		textureFormat = DXGI_FORMAT_R32G8X24_TYPELESS;
+		resourceFormat = DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
+		break;
 	}
-	return false;
+
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = CLIENT_WIDTH;
+	textureDesc.Height = CLIENT_HEIGHT;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = textureFormat;
+	textureDesc.SampleDesc.Count = MULTI_SAMPLE_COUNT;
+	textureDesc.SampleDesc.Quality = MULTI_SAMPLE_QUALITY;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.MiscFlags = 0;
+
+	result = device->CreateTexture2D(&textureDesc, nullptr, &depthStencilTexture);
+	if (FAILED(result)) return false;
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
+	depthStencilViewDesc.Format = DEPTH_STENCIL_FORMAT;
+	if (MULTI_SAMPLE_COUNT == 0)
+	{
+		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		depthStencilViewDesc.Texture2D.MipSlice = 0;
+	}
+	else
+	{
+		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+	}
+	result = device->CreateDepthStencilView(depthStencilTexture, &depthStencilViewDesc, &depthStencilView);
+	if (FAILED(result)) return false;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
+	shaderResourceViewDesc.Format = resourceFormat;
+	if (MULTI_SAMPLE_COUNT == 0)
+	{
+		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+		shaderResourceViewDesc.Texture2D.MipLevels = 1;
+	}
+	else
+	{
+		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
+	}
+	result = device->CreateShaderResourceView(depthStencilTexture, &shaderResourceViewDesc, &depthStencilShaderResourceView);
+	if (FAILED(result)) return false;
+
+	return true;
+}
+
+void Graphics::ReleaseDepthStencil()
+{
+	if (depthStencilShaderResourceView)
+		depthStencilShaderResourceView->Release();
+
+	if (depthStencilView)
+		depthStencilView->Release();
+
+	if (depthStencilTexture)
+		depthStencilTexture->Release();
+}
+
+bool Graphics::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out)
+{
+	HRESULT result = S_OK;
+
+	DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+#if defined(_DEBUG)
+	shaderFlags |= D3DCOMPILE_DEBUG;
+#endif
+
+	ID3DBlob *errorBlob = nullptr;
+
+	result = D3DCompileFromFile(filePath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
+
+	if (FAILED(result))
+		if (errorBlob != nullptr)
+			OutputDebugString((char*)errorBlob->GetBufferPointer());
+
+	if (errorBlob)
+		errorBlob->Release();
+
+	return SUCCEEDED(result);
 }
