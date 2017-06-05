@@ -5,15 +5,20 @@ cbuffer ConstantBuffer : register(b0) {
 	float3 LIGHT_DIRECTION;
 };
 
+Texture2D diffuseTexture : register(t0);
+SamplerState diffuseTextureSampler: register(s0);
+
 struct VSOutput {
 	float4 position : SV_POSITION;
 	float4 normal : NORMAL;
+	float2 uv : TEXCOORD;
 };
 
-VSOutput VS(float4 vertex : POSITION, float4 normal : NORMAL) {
+VSOutput VS(float4 vertex : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD) {
 	VSOutput output = (VSOutput)0;
 	output.position = vertex;
 	output.normal = normal;
+	output.uv = uv;
 	return output;
 }
 
@@ -26,11 +31,12 @@ void GS(triangle VSOutput input[3], inout TriangleStream<VSOutput> stream) {
 		output.position = mul(VIEW, output.position);
 		output.position = mul(PROJECTION, output.position);
 		output.normal = normalize(mul(WORLD, -input[i].normal));
+		output.uv = input[i].uv;
 		stream.Append(output);
 	}
 	stream.RestartStrip();
 }
 
 float4 PS(VSOutput output) : SV_TARGET {
-	return saturate(dot(LIGHT_DIRECTION, output.normal)) + float4(0.25, 0.25, 0.25, 1.0);
+	return diffuseTexture.Sample(diffuseTextureSampler, output.uv) * saturate(dot(LIGHT_DIRECTION * 1.5, output.normal));
 }

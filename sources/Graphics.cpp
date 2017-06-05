@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <windows.h>
+#include <wincodec.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
@@ -232,6 +233,96 @@ Graphics::Graphics() :
 	cbuffer.view = XMMatrixLookAtLH(XMVectorSet(0.0f, 2.0f, -10.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	cbuffer.projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(60.0f), (float)CLIENT_WIDTH / (float)CLIENT_HEIGHT, 0.01f, 100.0f);
 	XMStoreFloat3(&cbuffer.lightDirection, XMVector3Normalize(XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
+
+	IWICImagingFactory *factory = nullptr;
+	result = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+	if (FAILED(result)) return;
+
+	IWICBitmapDecoder *decoder = nullptr;
+	result = factory->CreateDecoderFromFilename(L"box.jpg", 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+	if (FAILED(result)) return;
+
+	IWICBitmapFrameDecode *frame = nullptr;
+	result = decoder->GetFrame(0, &frame);
+	if (FAILED(result)) return;
+
+	UINT textureWidth, textureHeight;
+	result = frame->GetSize(&textureWidth, &textureHeight);
+	if (FAILED(result)) return;
+
+	WICPixelFormatGUID pixelFormat;
+	result = frame->GetPixelFormat(&pixelFormat);
+	if (FAILED(result)) return;
+
+	BYTE *textureBuffer = new BYTE[textureWidth * textureHeight * 4];
+
+	if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
+		IWICFormatConverter *formatConverter = nullptr;
+		result = factory->CreateFormatConverter(&formatConverter);
+		if (FAILED(result)) return;
+
+		result = formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
+		if (FAILED(result)) return;
+
+		result = formatConverter->CopyPixels(0, textureWidth * 4, textureWidth * textureHeight * 4, textureBuffer);
+		if (FAILED(result)) return;
+	}
+	else
+	{
+		result = frame->CopyPixels(0, textureWidth * 4, textureWidth * textureHeight * 4, textureBuffer);
+		if (FAILED(result)) return;
+	}
+
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = textureWidth;
+	textureDesc.Height = textureHeight;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA textureSubresourceData;
+	textureSubresourceData.pSysMem = textureBuffer;
+	textureSubresourceData.SysMemPitch = textureWidth * 4;
+	textureSubresourceData.SysMemSlicePitch = textureWidth * textureHeight * 4;
+
+	result = device->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+	if (FAILED(result)) return;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
+	shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shaderResourceViewDesc.Texture2D.MipLevels = 1;
+
+	result = device->CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+	if (FAILED(result)) return;
+
+	D3D11_SAMPLER_DESC samplerDesc;
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.MipLODBias = 0.0f;
+	samplerDesc.MaxAnisotropy = 1;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	samplerDesc.BorderColor[0] = 0;
+	samplerDesc.BorderColor[1] = 0;
+	samplerDesc.BorderColor[2] = 0;
+	samplerDesc.BorderColor[3] = 0;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	result = device->CreateSamplerState(&samplerDesc, &samplerState);
+	if (FAILED(result)) return;
+
+	deviceContext->PSSetShaderResources(0, 1, &shaderResourceView);
+
+	delete[] textureBuffer;
 }
 
 Graphics::~Graphics() {
