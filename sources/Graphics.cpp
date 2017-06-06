@@ -124,7 +124,7 @@ Graphics::Graphics() :
 	if (FAILED(result)) return;
 	deviceContext->IASetInputLayout(inputLayout);
 
-	ID3DBlob* geometryShaderBlob = nullptr;
+	ID3DBlob *geometryShaderBlob = nullptr;
 	result = CompileShader(L"shader.fx", "GS", "gs_4_0", &geometryShaderBlob);
 	if (FAILED(result)) return;
 	result = device->CreateGeometryShader(geometryShaderBlob->GetBufferPointer(), geometryShaderBlob->GetBufferSize(), nullptr, &geometryShader);
@@ -132,7 +132,7 @@ Graphics::Graphics() :
 	if (FAILED(result)) return;
 	deviceContext->GSSetShader(geometryShader, nullptr, 0);
 
-	ID3DBlob* pixelShaderBlob = nullptr;
+	ID3DBlob *pixelShaderBlob = nullptr;
 	result = CompileShader(L"shader.fx", "PS", "ps_4_0", &pixelShaderBlob);
 	if (FAILED(result)) return;
 	result = device->CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
@@ -321,11 +321,21 @@ Graphics::Graphics() :
 	if (FAILED(result)) return;
 
 	deviceContext->PSSetShaderResources(0, 1, &shaderResourceView);
+	deviceContext->PSSetSamplers(0, 1, &samplerState);
 
 	delete[] textureBuffer;
 }
 
 Graphics::~Graphics() {
+	if (texture)
+		texture->Release();
+
+	if (shaderResourceView)
+		shaderResourceView->Release();
+
+	if (samplerState)
+		samplerState->Release();
+
 	if (vertexBuffer)
 		vertexBuffer->Release();
 
