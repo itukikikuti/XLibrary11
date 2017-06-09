@@ -4,10 +4,23 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+#include <fbxsdk.h>
 #include "Graphics.h"
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
+#if defined(_DLL)
+#pragma comment(lib, "libfbxsdk-md.lib")
+#else
+#pragma comment(lib, "libfbxsdk-mt.lib")
+#endif
 using namespace DirectX;
+using namespace fbxsdk;
+
+FbxMesh *GetMesh(FbxNode *node) {
+	FbxMesh *mesh = node->GetMesh();
+	if (mesh != nullptr) return mesh;
+
+}
 
 Graphics::Graphics() :
 	frame(0),
@@ -139,6 +152,39 @@ Graphics::Graphics() :
 	pixelShaderBlob->Release();
 	if (FAILED(result)) return;
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
+
+	FbxManager *manager = FbxManager::Create();
+	if (manager == nullptr) return;
+
+	FbxImporter *importer = FbxImporter::Create(manager, "");
+	if (importer == nullptr) {
+		manager->Destroy();
+		return;
+	}
+
+	if (!importer->Initialize("cube.fbx")) {
+		manager->Destroy();
+		return;
+	}
+
+	FbxScene *scene = FbxScene::Create(manager, "");
+	if (scene == nullptr) {
+		manager->Destroy();
+		return;
+	}
+
+	if (!importer->Import(scene)) {
+		manager->Destroy();
+		return;
+	}
+	importer->Destroy();
+
+	FbxMesh *mesh = GetMesh(scene->GetRootNode());
+	if (mesh == nullptr) {
+		OutputDebugString("null");
+	}
+
+	manager->Destroy();
 
 	Vertex vertices[] = {
 		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
