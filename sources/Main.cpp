@@ -19,5 +19,5 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 		}
 	}
 
-	return windowMessage.wParam;
+	return 0;
 }

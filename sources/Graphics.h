@@ -3,6 +3,8 @@
 
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <fbxsdk.h>
+#include <vector>
 
 struct Vertex {
 	DirectX::XMFLOAT3 position;
@@ -66,6 +68,8 @@ private:
 	bool CreateDepthStencil();
 	void ReleaseDepthStencil();
 	bool CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);
+	void GetMeshes(std::vector<fbxsdk::FbxMesh *> *outMeshes, FbxNode *node);
+	Vertex *GetVertices(fbxsdk::FbxMesh *mesh);
 };
 
 #endif

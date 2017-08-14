@@ -13,14 +13,9 @@
 #else
 #pragma comment(lib, "libfbxsdk-mt.lib")
 #endif
+using namespace std;
 using namespace DirectX;
 using namespace fbxsdk;
-
-FbxMesh *GetMesh(FbxNode *node) {
-	FbxMesh *mesh = node->GetMesh();
-	if (mesh != nullptr) return mesh;
-
-}
 
 Graphics::Graphics() :
 	frame(0),
@@ -179,9 +174,11 @@ Graphics::Graphics() :
 	}
 	importer->Destroy();
 
-	FbxMesh *mesh = GetMesh(scene->GetRootNode());
-	if (mesh == nullptr) {
-		OutputDebugString("null");
+	vector<FbxMesh *> meshes;
+	GetMeshes(&meshes, scene->GetRootNode());
+
+	for (int i = 0; i < meshes.size(); i++) {
+		//meshes[i].GetPosition
 	}
 
 	manager->Destroy();
@@ -586,3 +583,24 @@ bool Graphics::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderMode
 
 	return SUCCEEDED(result);
 }
+
+void Graphics::GetMeshes(std::vector<FbxMesh *> *outMeshes, FbxNode *node) {
+	FbxMesh *mesh = node->GetMesh();
+	if (mesh != nullptr) {
+		outMeshes->push_back(mesh);
+	}
+	int childCount = node->GetChildCount();
+	for (int i = 0; i < childCount; i++) {
+		GetMeshes(outMeshes, node->GetChild(i));
+	}
+}
+
+//Vertex *Graphics::GetVertices(fbxsdk::FbxMesh *mesh) {
+//	int polygonCount = mesh->GetPolygonCount();
+//	for (int i = 0; i < polygonCount; i++) {
+//		int polygonSize = mesh->GetPolygonSize(i);
+//		for (int j = 0; j < polygonSize; j++) {
+//			mesh->GetPolygonVertex(i, j);
+//		}
+//	}
+//}
