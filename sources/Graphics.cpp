@@ -142,35 +142,10 @@ Graphics::Graphics() :
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
 
 	Vertex vertices[] = {
-		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
-		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },
-
-		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
-
-		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
-		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
-
-		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
-		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
-		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
-		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
-
-		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
-		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
-
-		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
-		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },
 	};
 	vertexCount = sizeof(vertices) / sizeof(vertices[0]);
 
@@ -191,21 +166,6 @@ Graphics::Graphics() :
 	int index[] = {
 		0, 1, 2,
 		3, 2, 1,
-
-		4, 5, 6,
-		7, 6, 5,
-
-		8, 9, 10,
-		11, 10, 9,
-
-		12, 13, 14,
-		15, 14, 13,
-
-		16, 17, 18,
-		19, 18, 17,
-
-		20, 21, 22,
-		23, 22, 21,
 	};
 	indexCount = sizeof(index) / sizeof(index[0]);
 
@@ -231,8 +191,9 @@ Graphics::Graphics() :
 	deviceContext->GSSetConstantBuffers(0, 1, &constantBuffer);
 	deviceContext->PSSetConstantBuffers(0, 1, &constantBuffer);
 
-	cbuffer.view = XMMatrixLookAtLH(XMVectorSet(0.0f, 2.0f, -10.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-	cbuffer.projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(60.0f), (float)CLIENT_WIDTH / (float)CLIENT_HEIGHT, 0.01f, 100.0f);
+	cbuffer.view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	//cbuffer.projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(60.0f), (float)CLIENT_WIDTH / (float)CLIENT_HEIGHT, 0.01f, 100.0f);
+	cbuffer.projection = XMMatrixOrthographicLH(CLIENT_WIDTH / 100.0f, CLIENT_HEIGHT / 100.0f, -1.1f, 1.0f);
 	XMStoreFloat3(&cbuffer.lightDirection, XMVector3Normalize(XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
 
 	IWICImagingFactory *factory = nullptr;
@@ -240,7 +201,7 @@ Graphics::Graphics() :
 	if (FAILED(result)) return;
 
 	IWICBitmapDecoder *decoder = nullptr;
-	result = factory->CreateDecoderFromFilename(L"box.jpg", 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+	result = factory->CreateDecoderFromFilename(L"PATAPON.png", 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
 	if (FAILED(result)) return;
 
 	IWICBitmapFrameDecode *frame = nullptr;
@@ -384,10 +345,8 @@ void Graphics::Render() {
 	deviceContext->ClearRenderTargetView(renderTargetView, clearColor);
 	deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	cbuffer.world = XMMatrixRotationY(frame * 0.01f);
-
+	cbuffer.world = XMMatrixRotationZ(frame * 0.01f);
 	deviceContext->UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
-
 	deviceContext->DrawIndexed(indexCount, 0, 0);
 
 	swapChain->Present(0, 0);
