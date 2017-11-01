@@ -2,14 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="sources">
-      <UniqueIdentifier>{cbb8cd7c-1450-40f5-89b5-eec31c7eaa4d}</UniqueIdentifier>
+      <UniqueIdentifier>{39a643cd-071c-4c9a-be24-4d3d926378d4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Sources\Main.cpp">
+    <ClCompile Include="sources\Graphics.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="sources\Graphics.cpp">
+    <ClCompile Include="sources\Main.cpp">
       <Filter>sources</Filter>
     </ClCompile>
   </ItemGroup>

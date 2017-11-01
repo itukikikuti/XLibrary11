@@ -4,18 +4,11 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
-#include <fbxsdk.h>
 #include "Graphics.h"
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
-#if defined(_DLL)
-#pragma comment(lib, "libfbxsdk-md.lib")
-#else
-#pragma comment(lib, "libfbxsdk-mt.lib")
-#endif
 using namespace std;
 using namespace DirectX;
-using namespace fbxsdk;
 
 Graphics::Graphics() :
 	frame(0),
@@ -147,41 +140,6 @@ Graphics::Graphics() :
 	pixelShaderBlob->Release();
 	if (FAILED(result)) return;
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
-
-	FbxManager *manager = FbxManager::Create();
-	if (manager == nullptr) return;
-
-	FbxImporter *importer = FbxImporter::Create(manager, "");
-	if (importer == nullptr) {
-		manager->Destroy();
-		return;
-	}
-
-	if (!importer->Initialize("cube.fbx")) {
-		manager->Destroy();
-		return;
-	}
-
-	FbxScene *scene = FbxScene::Create(manager, "");
-	if (scene == nullptr) {
-		manager->Destroy();
-		return;
-	}
-
-	if (!importer->Import(scene)) {
-		manager->Destroy();
-		return;
-	}
-	importer->Destroy();
-
-	vector<FbxMesh *> meshes;
-	GetMeshes(&meshes, scene->GetRootNode());
-
-	for (int i = 0; i < meshes.size(); i++) {
-		//meshes[i].GetPosition
-	}
-
-	manager->Destroy();
 
 	Vertex vertices[] = {
 		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
@@ -583,24 +541,3 @@ bool Graphics::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderMode
 
 	return SUCCEEDED(result);
 }
-
-void Graphics::GetMeshes(std::vector<FbxMesh *> *outMeshes, FbxNode *node) {
-	FbxMesh *mesh = node->GetMesh();
-	if (mesh != nullptr) {
-		outMeshes->push_back(mesh);
-	}
-	int childCount = node->GetChildCount();
-	for (int i = 0; i < childCount; i++) {
-		GetMeshes(outMeshes, node->GetChild(i));
-	}
-}
-
-//Vertex *Graphics::GetVertices(fbxsdk::FbxMesh *mesh) {
-//	int polygonCount = mesh->GetPolygonCount();
-//	for (int i = 0; i < polygonCount; i++) {
-//		int polygonSize = mesh->GetPolygonSize(i);
-//		for (int j = 0; j < polygonSize; j++) {
-//			mesh->GetPolygonVertex(i, j);
-//		}
-//	}
-//}
