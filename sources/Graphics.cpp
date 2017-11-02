@@ -44,8 +44,8 @@ Graphics::Graphics() :
 
 	ShowWindow(window, SW_SHOWNORMAL);
 
-	clearColor[0] = 0.5f;
-	clearColor[1] = 0.75f;
+	clearColor[0] = 1.0f;
+	clearColor[1] = 1.0f;
 	clearColor[2] = 1.0f;
 	clearColor[3] = 1.0f;
 
@@ -115,8 +115,6 @@ Graphics::Graphics() :
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 	int inputElementDescCount = sizeof(inputElementDesc) / sizeof(inputElementDesc[0]);
 
@@ -141,24 +139,24 @@ Graphics::Graphics() :
 	if (FAILED(result)) return;
 	deviceContext->PSSetShader(pixelShader, nullptr, 0);
 
-	Vertex vertices[] = {
-		{ XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
-		{ XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },
+	XMFLOAT3 vertices[] = {
+		XMFLOAT3(0.0f, 0.0f, 0.0f),
+		XMFLOAT3(1.0f, 0.0f, 0.0f),
+		XMFLOAT3(0.0f, -1.0f, 0.0f),
+		XMFLOAT3(1.0f, -1.0f, 0.0f),
 	};
 	vertexCount = sizeof(vertices) / sizeof(vertices[0]);
 
 	D3D11_BUFFER_DESC vertexBufferDesc = {};
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertexCount;
+	vertexBufferDesc.ByteWidth = sizeof(XMFLOAT3) * vertexCount;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 	vertexSubresourceData.pSysMem = vertices;
 	result = device->CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
 	if (FAILED(result)) return;
-	UINT stride = sizeof(Vertex);
+	UINT stride = sizeof(XMFLOAT3);
 	UINT offset = 0;
 	deviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -191,9 +189,9 @@ Graphics::Graphics() :
 	deviceContext->GSSetConstantBuffers(0, 1, &constantBuffer);
 	deviceContext->PSSetConstantBuffers(0, 1, &constantBuffer);
 
-	cbuffer.view = XMMatrixLookAtLH(XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	cbuffer.view = XMMatrixLookAtLH(XMVectorSet(CLIENT_WIDTH / 2.0f, -CLIENT_HEIGHT / 2.0f, 0.0f, 0.0f), XMVectorSet(CLIENT_WIDTH / 2.0f, -CLIENT_HEIGHT / 2.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	//cbuffer.projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(60.0f), (float)CLIENT_WIDTH / (float)CLIENT_HEIGHT, 0.01f, 100.0f);
-	cbuffer.projection = XMMatrixOrthographicLH(CLIENT_WIDTH / 100.0f, CLIENT_HEIGHT / 100.0f, -1.1f, 1.0f);
+	cbuffer.projection = XMMatrixOrthographicLH(CLIENT_WIDTH, CLIENT_HEIGHT, -1.1f, 1.0f);
 	XMStoreFloat3(&cbuffer.lightDirection, XMVector3Normalize(XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
 
 	IWICImagingFactory *factory = nullptr;
@@ -201,7 +199,7 @@ Graphics::Graphics() :
 	if (FAILED(result)) return;
 
 	IWICBitmapDecoder *decoder = nullptr;
-	result = factory->CreateDecoderFromFilename(L"PATAPON.png", 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+	result = factory->CreateDecoderFromFilename(L"box.jpg", 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
 	if (FAILED(result)) return;
 
 	IWICBitmapFrameDecode *frame = nullptr;
@@ -345,7 +343,7 @@ void Graphics::Render() {
 	deviceContext->ClearRenderTargetView(renderTargetView, clearColor);
 	deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	cbuffer.world = XMMatrixRotationZ(frame * 0.01f);
+	cbuffer.world = XMMatrixScaling(256.0f, 256.0f, 256.0f);
 	deviceContext->UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
 	deviceContext->DrawIndexed(indexCount, 0, 0);
 

@@ -10,15 +10,13 @@ SamplerState diffuseTextureSampler: register(s0);
 
 struct VSOutput {
 	float4 position : SV_POSITION;
-	float4 normal : NORMAL;
 	float2 uv : TEXCOORD;
 };
 
-VSOutput VS(float4 vertex : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD) {
+VSOutput VS(float4 vertex : POSITION) {
 	VSOutput output = (VSOutput)0;
 	output.position = vertex;
-	output.normal = normal;
-	output.uv = uv;
+	output.uv = float2(vertex.x, abs(vertex.y));
 	return output;
 }
 
@@ -30,7 +28,6 @@ void GS(triangle VSOutput input[3], inout TriangleStream<VSOutput> stream) {
 		output.position = mul(WORLD, output.position);
 		output.position = mul(VIEW, output.position);
 		output.position = mul(PROJECTION, output.position);
-		output.normal = normalize(mul(WORLD, -input[i].normal));
 		output.uv = input[i].uv;
 		stream.Append(output);
 	}

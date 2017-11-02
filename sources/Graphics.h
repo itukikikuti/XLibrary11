@@ -5,12 +5,6 @@
 #include <DirectXMath.h>
 #include <vector>
 
-struct Vertex {
-	DirectX::XMFLOAT3 position;
-	DirectX::XMFLOAT3 normal;
-	DirectX::XMFLOAT2 uv;
-};
-
 struct ConstantBuffer {
 	DirectX::XMMATRIX world;
 	DirectX::XMMATRIX view;
