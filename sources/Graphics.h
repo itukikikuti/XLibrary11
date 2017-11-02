@@ -25,10 +25,11 @@ public:
 
 	Graphics();
 	~Graphics();
-	void Render();
+	bool Render();
 private:
 	int frame;
 	HWND window;
+	MSG windowMessage;
 	float clearColor[4];
 	D3D_DRIVER_TYPE driverType;
 	ID3D11Device *device;

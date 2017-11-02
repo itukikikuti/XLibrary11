@@ -12,6 +12,7 @@ using namespace DirectX;
 
 Graphics::Graphics() :
 	frame(0),
+	windowMessage({}),
 	driverType(D3D_DRIVER_TYPE_NULL),
 	featureLevel(D3D_FEATURE_LEVEL_11_0) {
 
@@ -338,7 +339,7 @@ Graphics::~Graphics() {
 	UnregisterClass(TITLE, GetModuleHandle(nullptr));
 }
 
-void Graphics::Render() {
+bool Graphics::Render() {
 	frame++;
 	deviceContext->ClearRenderTargetView(renderTargetView, clearColor);
 	deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -348,7 +349,18 @@ void Graphics::Render() {
 	deviceContext->DrawIndexed(indexCount, 0, 0);
 
 	swapChain->Present(0, 0);
-	Sleep(10);
+
+	while (windowMessage.message != WM_QUIT) {
+		if (PeekMessage(&windowMessage, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&windowMessage);
+			DispatchMessage(&windowMessage);
+		}
+		else {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 LRESULT __stdcall Graphics::WindowProcedure(HWND windowHandle, UINT windowMessage, WPARAM wParam, LPARAM lParam) {
