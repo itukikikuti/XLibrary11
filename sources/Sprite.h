@@ -5,7 +5,7 @@
 class Sprite
 {
 public:
-	Sprite();
+	Sprite(wchar_t* path);
 	~Sprite();
 	void Draw(float x, float y, float angle, float scale);
 
@@ -27,6 +27,9 @@ private:
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;
 	ID3D11Buffer* constantBuffer;
+	ID3D11Texture2D* texture;
+	ID3D11ShaderResourceView* shaderResourceView;
+	ID3D11SamplerState* samplerState;
 };
 
 #endif

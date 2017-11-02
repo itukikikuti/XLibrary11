@@ -39,9 +39,6 @@ private:
 	ID3D11GeometryShader *geometryShader;
 	ID3D11PixelShader *pixelShader;
 	ID3D11InputLayout *inputLayout;
-	ID3D11Texture2D *texture;
-	ID3D11ShaderResourceView *shaderResourceView;
-	ID3D11SamplerState *samplerState;
 
 	Graphics();
 	~Graphics();

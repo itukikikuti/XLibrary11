@@ -7,7 +7,7 @@
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	Sprite sprite;
+	Sprite sprite(L"box.jpg");
 
 	int frame = 0;
 	while (Graphics::GetInstance().Render()) {

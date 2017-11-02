@@ -34,6 +34,5 @@ void GS(triangle VSOutput input[3], inout TriangleStream<VSOutput> stream) {
 }
 
 float4 PS(VSOutput output) : SV_TARGET {
-	return float4(output.uv, 0.0, 1.0);
 	return diffuseTexture.Sample(diffuseTextureSampler, output.uv);
 }
