@@ -47,7 +47,7 @@ private:
 	~Graphics();
 	Graphics(const Graphics&);
 	Graphics& operator=(const Graphics&);
-	static LRESULT __stdcall WindowProcedure(HWND windowHandle, UINT windowMessage, WPARAM wParam, LPARAM lParam);
+	static LRESULT WINAPI WindowProcedure(HWND windowHandle, UINT windowMessage, WPARAM wParam, LPARAM lParam);
 	bool CreateRenderTarget();
 	void ReleaseRenderTarget();
 	bool CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);

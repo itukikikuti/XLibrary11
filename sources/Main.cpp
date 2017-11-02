@@ -4,7 +4,7 @@
 #include "Sprite.h"
 
 //int main() {
-int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	Sprite sprite;
@@ -12,7 +12,8 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	int frame = 0;
 	while (Graphics::GetInstance().Render()) {
 		frame++;
-		sprite.Draw(frame, 0.0f, 0.0f, 1.0f);
+		sprite.Draw(200.0f, 200.0f, frame, 1.0f);
+		sprite.Draw(frame, frame / 2.0f, 0.0f, 0.5f);
 		Sleep(10);
 	}
 

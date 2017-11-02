@@ -10,11 +10,11 @@ using namespace DirectX;
 Sprite::Sprite() {
 	HRESULT result = {};
 
-	XMFLOAT3 quad[] = {
-		XMFLOAT3(0.0f, 0.0f, 0.0f),
-		XMFLOAT3(1.0f, 0.0f, 0.0f),
-		XMFLOAT3(0.0f, -1.0f, 0.0f),
-		XMFLOAT3(1.0f, -1.0f, 0.0f),
+	Vertex quad[] = {
+		{ XMFLOAT3(-0.5f, 0.5f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(0.5f, 0.5f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(-0.5f, -0.5f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(0.5f, -0.5f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
 	};
 	vertexCount = sizeof(quad) / sizeof(quad[0]);
 
@@ -29,7 +29,7 @@ Sprite::Sprite() {
 
 	D3D11_BUFFER_DESC vertexBufferDesc = {};
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(XMFLOAT3) * vertexCount;
+	vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertexCount;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
@@ -40,7 +40,7 @@ Sprite::Sprite() {
 		throw bad_alloc();
 	}
 	else {
-		UINT stride = sizeof(XMFLOAT3);
+		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
 		Graphics::GetInstance().GetDeviceContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 		Graphics::GetInstance().GetDeviceContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -93,8 +93,8 @@ Sprite::~Sprite() {
 void Sprite::Draw(float x, float y, float angle, float scale) {
 	constant.world = XMMatrixIdentity();
 	constant.world *= XMMatrixScaling(256.0f * scale, 256.0f * scale, 1.0f);
-	constant.world *= XMMatrixRotationZ(angle);
-	constant.world *= XMMatrixTranslation(x, y, 0.0f);
+	constant.world *= XMMatrixRotationZ(XMConvertToRadians(-angle));
+	constant.world *= XMMatrixTranslation(x, -y, 0.0f);
 
 	Graphics::GetInstance().GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
 	Graphics::GetInstance().GetDeviceContext().DrawIndexed(indexCount, 0, 0);

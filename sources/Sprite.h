@@ -10,6 +10,11 @@ public:
 	void Draw(float x, float y, float angle, float scale);
 
 private:
+	struct Vertex {
+		DirectX::XMFLOAT3 position;
+		DirectX::XMFLOAT2 uv;
+	};
+
 	struct Constant {
 		DirectX::XMMATRIX world;
 		DirectX::XMMATRIX view;

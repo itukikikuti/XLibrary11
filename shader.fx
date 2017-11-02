@@ -12,10 +12,10 @@ struct VSOutput {
 	float2 uv : TEXCOORD;
 };
 
-VSOutput VS(float4 vertex : POSITION) {
+VSOutput VS(float4 vertex : POSITION, float2 uv : TEXCOORD) {
 	VSOutput output = (VSOutput)0;
 	output.position = vertex;
-	output.uv = float2(vertex.x, abs(vertex.y));
+	output.uv = uv;
 	return output;
 }
 
