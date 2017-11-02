@@ -12,7 +12,7 @@
     <ClCompile Include="sources\Main.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="sources\Texture.cpp">
+    <ClCompile Include="sources\Sprite.cpp">
       <Filter>sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -20,7 +20,7 @@
     <ClInclude Include="sources\Graphics.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Texture.h">
+    <ClInclude Include="sources\Sprite.h">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>

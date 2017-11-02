@@ -113,11 +113,11 @@
   <ItemGroup>
     <ClCompile Include="sources\Graphics.cpp" />
     <ClCompile Include="sources\Main.cpp" />
-    <ClCompile Include="sources\Texture.cpp" />
+    <ClCompile Include="sources\Sprite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sources\Graphics.h" />
-    <ClInclude Include="sources\Texture.h" />
+    <ClInclude Include="sources\Sprite.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

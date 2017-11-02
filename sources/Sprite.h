@@ -1,13 +1,13 @@
 // (c) 2017 Naoki Nakagawa
-#if !defined(TEXTURE_H)
-#define TEXTURE_H
+#if !defined(SPRITE_H)
+#define SPRITE_H
 #include <string>
 
-class Texture
+class Sprite
 {
 public:
-	Texture(std::wstring path);
-	~Texture();
+	Sprite(std::wstring path);
+	~Sprite();
 	void Draw(float x, float y, float angle, float scale);
 };
 
