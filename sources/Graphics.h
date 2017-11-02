@@ -37,11 +37,8 @@ private:
 	IDXGISwapChain *swapChain;
 	D3D_FEATURE_LEVEL featureLevel;
 	ID3D11RenderTargetView *renderTargetView;
-	ID3D11DepthStencilView *depthStencilView;
 	ID3D11Texture2D *renderTargetTexture;
-	ID3D11Texture2D *depthStencilTexture;
 	ID3D11ShaderResourceView *renderTargetShaderResourceView;
-	ID3D11ShaderResourceView *depthStencilShaderResourceView;
 	ID3D11VertexShader *vertexShader;
 	ID3D11GeometryShader *geometryShader;
 	ID3D11PixelShader *pixelShader;
@@ -59,8 +56,6 @@ private:
 	static LRESULT __stdcall WindowProcedure(HWND windowHandle, UINT windowMessage, WPARAM wParam, LPARAM lParam);
 	bool CreateRenderTarget();
 	void ReleaseRenderTarget();
-	bool CreateDepthStencil();
-	void ReleaseDepthStencil();
 	bool CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);
 };
 

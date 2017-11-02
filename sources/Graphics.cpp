@@ -92,8 +92,7 @@ Graphics::Graphics() :
 	if (FAILED(result)) return;
 
 	if (!CreateRenderTarget()) return;
-	if (!CreateDepthStencil()) return;
-	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+	deviceContext->OMSetRenderTargets(1, &renderTargetView, nullptr);
 
 	D3D11_VIEWPORT viewPort;
 	viewPort.Width = (float)CLIENT_WIDTH;
@@ -191,8 +190,7 @@ Graphics::Graphics() :
 	deviceContext->PSSetConstantBuffers(0, 1, &constantBuffer);
 
 	cbuffer.view = XMMatrixLookAtLH(XMVectorSet(CLIENT_WIDTH / 2.0f, -CLIENT_HEIGHT / 2.0f, 0.0f, 0.0f), XMVectorSet(CLIENT_WIDTH / 2.0f, -CLIENT_HEIGHT / 2.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-	//cbuffer.projection = XMMatrixPerspectiveFovLH(XMConvertToRadians(60.0f), (float)CLIENT_WIDTH / (float)CLIENT_HEIGHT, 0.01f, 100.0f);
-	cbuffer.projection = XMMatrixOrthographicLH(CLIENT_WIDTH, CLIENT_HEIGHT, -1.1f, 1.0f);
+	cbuffer.projection = XMMatrixOrthographicLH(CLIENT_WIDTH, CLIENT_HEIGHT, -1.0f, 1.0f);
 	XMStoreFloat3(&cbuffer.lightDirection, XMVector3Normalize(XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
 
 	IWICImagingFactory *factory = nullptr;
@@ -325,7 +323,6 @@ Graphics::~Graphics() {
 	}
 
 	ReleaseRenderTarget();
-	ReleaseDepthStencil();
 
 	if (swapChain)
 		swapChain->Release();
@@ -342,9 +339,12 @@ Graphics::~Graphics() {
 bool Graphics::Render() {
 	frame++;
 	deviceContext->ClearRenderTargetView(renderTargetView, clearColor);
-	deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	cbuffer.world = XMMatrixScaling(256.0f, 256.0f, 256.0f);
+	deviceContext->UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
+	deviceContext->DrawIndexed(indexCount, 0, 0);
+
+	cbuffer.world = XMMatrixScaling(128.0f, 128.0f, 128.0f);
 	deviceContext->UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
 	deviceContext->DrawIndexed(indexCount, 0, 0);
 
@@ -396,96 +396,6 @@ void Graphics::ReleaseRenderTarget()
 
 	if (renderTargetTexture)
 		renderTargetTexture->Release();
-}
-
-bool Graphics::CreateDepthStencil()
-{
-	HRESULT result = S_OK;
-
-	DXGI_FORMAT textureFormat = DEPTH_STENCIL_FORMAT;
-	DXGI_FORMAT resourceFormat = DEPTH_STENCIL_FORMAT;
-
-	switch (DEPTH_STENCIL_FORMAT)
-	{
-	case DXGI_FORMAT_D16_UNORM:
-		textureFormat = DXGI_FORMAT_R16_TYPELESS;
-		resourceFormat = DXGI_FORMAT_R16_UNORM;
-		break;
-
-	case DXGI_FORMAT_D24_UNORM_S8_UINT:
-		textureFormat = DXGI_FORMAT_R24G8_TYPELESS;
-		resourceFormat = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-		break;
-
-	case DXGI_FORMAT_D32_FLOAT:
-		textureFormat = DXGI_FORMAT_R32_TYPELESS;
-		resourceFormat = DXGI_FORMAT_R32_FLOAT;
-		break;
-
-	case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
-		textureFormat = DXGI_FORMAT_R32G8X24_TYPELESS;
-		resourceFormat = DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
-		break;
-	}
-
-	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = CLIENT_WIDTH;
-	textureDesc.Height = CLIENT_HEIGHT;
-	textureDesc.MipLevels = 1;
-	textureDesc.ArraySize = 1;
-	textureDesc.Format = textureFormat;
-	textureDesc.SampleDesc.Count = MULTI_SAMPLE_COUNT;
-	textureDesc.SampleDesc.Quality = MULTI_SAMPLE_QUALITY;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.CPUAccessFlags = 0;
-	textureDesc.MiscFlags = 0;
-
-	result = device->CreateTexture2D(&textureDesc, nullptr, &depthStencilTexture);
-	if (FAILED(result)) return false;
-
-	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
-	depthStencilViewDesc.Format = DEPTH_STENCIL_FORMAT;
-	if (MULTI_SAMPLE_COUNT == 0)
-	{
-		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-		depthStencilViewDesc.Texture2D.MipSlice = 0;
-	}
-	else
-	{
-		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
-	}
-	result = device->CreateDepthStencilView(depthStencilTexture, &depthStencilViewDesc, &depthStencilView);
-	if (FAILED(result)) return false;
-
-	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
-	shaderResourceViewDesc.Format = resourceFormat;
-	if (MULTI_SAMPLE_COUNT == 0)
-	{
-		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-		shaderResourceViewDesc.Texture2D.MipLevels = 1;
-	}
-	else
-	{
-		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
-	}
-	result = device->CreateShaderResourceView(depthStencilTexture, &shaderResourceViewDesc, &depthStencilShaderResourceView);
-	if (FAILED(result)) return false;
-
-	return true;
-}
-
-void Graphics::ReleaseDepthStencil()
-{
-	if (depthStencilShaderResourceView)
-		depthStencilShaderResourceView->Release();
-
-	if (depthStencilView)
-		depthStencilView->Release();
-
-	if (depthStencilTexture)
-		depthStencilTexture->Release();
 }
 
 bool Graphics::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out)
