@@ -116,14 +116,6 @@ Graphics::Graphics() :
 	}
 	deviceContext->VSSetShader(vertexShader, nullptr, 0);
 
-	ID3DBlob *geometryShaderBlob = nullptr;
-	result = CompileShader(L"shader.fx", "GS", "gs_4_0", &geometryShaderBlob);
-	if (FAILED(result)) return;
-	result = device->CreateGeometryShader(geometryShaderBlob->GetBufferPointer(), geometryShaderBlob->GetBufferSize(), nullptr, &geometryShader);
-	geometryShaderBlob->Release();
-	if (FAILED(result)) return;
-	deviceContext->GSSetShader(geometryShader, nullptr, 0);
-
 	ID3DBlob *pixelShaderBlob = nullptr;
 	result = CompileShader(L"shader.fx", "PS", "ps_4_0", &pixelShaderBlob);
 	if (FAILED(result)) return;
@@ -147,9 +139,6 @@ Graphics::Graphics() :
 Graphics::~Graphics() {
 	if (vertexShader)
 		vertexShader->Release();
-
-	if (geometryShader)
-		geometryShader->Release();
 
 	if (pixelShader)
 		pixelShader->Release();

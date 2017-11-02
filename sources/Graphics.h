@@ -36,7 +36,6 @@ private:
 	ID3D11Texture2D *renderTargetTexture;
 	ID3D11ShaderResourceView *renderTargetShaderResourceView;
 	ID3D11VertexShader *vertexShader;
-	ID3D11GeometryShader *geometryShader;
 	ID3D11PixelShader *pixelShader;
 	ID3D11InputLayout *inputLayout;
 

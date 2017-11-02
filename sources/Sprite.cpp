@@ -75,8 +75,6 @@ Sprite::Sprite(wchar_t* path) {
 	}
 	else {
 		Graphics::GetInstance().GetDeviceContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-		Graphics::GetInstance().GetDeviceContext().GSSetConstantBuffers(0, 1, &constantBuffer);
-		Graphics::GetInstance().GetDeviceContext().PSSetConstantBuffers(0, 1, &constantBuffer);
 	}
 
 	IWICImagingFactory* factory = nullptr;
