@@ -2,7 +2,6 @@ cbuffer ConstantBuffer : register(b0) {
 	matrix WORLD;
 	matrix VIEW;
 	matrix PROJECTION;
-	float3 LIGHT_DIRECTION;
 };
 
 Texture2D diffuseTexture : register(t0);
@@ -35,5 +34,6 @@ void GS(triangle VSOutput input[3], inout TriangleStream<VSOutput> stream) {
 }
 
 float4 PS(VSOutput output) : SV_TARGET {
+	return float4(output.uv, 0.0, 1.0);
 	return diffuseTexture.Sample(diffuseTextureSampler, output.uv);
 }
