@@ -23,7 +23,7 @@ Graphics::Graphics() :
 	WNDCLASSEX windowClass = {};
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.style = CS_HREDRAW | CS_VREDRAW;
-	windowClass.lpfnWndProc = WindowProcedure;
+	windowClass.lpfnWndProc = ProcessWindow;
 	windowClass.cbClsExtra = 0;
 	windowClass.cbWndExtra = 0;
 	windowClass.hInstance = instance;
@@ -167,21 +167,14 @@ Graphics::~Graphics() {
 }
 
 bool Graphics::Render() {
-
 	swapChain->Present(0, 0);
 
-	while (windowMessage.message != WM_QUIT) {
-		if (PeekMessage(&windowMessage, nullptr, 0, 0, PM_REMOVE)) {
-			TranslateMessage(&windowMessage);
-			DispatchMessage(&windowMessage);
-		}
-		else {
-			deviceContext->ClearRenderTargetView(renderTargetView, clearColor);
-			return true;
-		}
+	if (!ProcessWindowMessage()) {
+		return false;
 	}
 
-	return false;
+	deviceContext->ClearRenderTargetView(renderTargetView, clearColor);
+	return true;
 }
 
 ID3D11Device& Graphics::GetDevice() {
@@ -192,7 +185,21 @@ ID3D11DeviceContext& Graphics::GetDeviceContext() {
 	return *deviceContext;
 }
 
-LRESULT WINAPI Graphics::WindowProcedure(HWND windowHandle, UINT windowMessage, WPARAM wParam, LPARAM lParam) {
+bool Graphics::ProcessWindowMessage() {
+	while (windowMessage.message != WM_QUIT) {
+		if (PeekMessage(&windowMessage, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&windowMessage);
+			DispatchMessage(&windowMessage);
+		}
+		else {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+LRESULT WINAPI Graphics::ProcessWindow(HWND windowHandle, UINT windowMessage, WPARAM wParam, LPARAM lParam) {
 	if (windowMessage == WM_DESTROY) {
 		PostQuitMessage(0);
 	}
