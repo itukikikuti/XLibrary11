@@ -14,6 +14,8 @@ struct ConstantBuffer {
 
 class Graphics {
 public:
+	static Graphics& GetInstance();
+
 	const DWORD WINDOW_STYLE = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX;
 	const char TITLE[10] = "GDK";
 	const int CLIENT_WIDTH = 1280, CLIENT_HEIGHT = 720;
@@ -23,9 +25,8 @@ public:
 	const int MULTI_SAMPLE_QUALITY = 0;
 	const DXGI_FORMAT DEPTH_STENCIL_FORMAT = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	Graphics();
-	~Graphics();
 	bool Render();
+
 private:
 	int frame;
 	HWND window;
@@ -53,6 +54,10 @@ private:
 	int vertexCount;
 	int indexCount;
 
+	Graphics();
+	~Graphics();
+	Graphics(const Graphics&);
+	Graphics& operator=(const Graphics&);
 	static LRESULT __stdcall WindowProcedure(HWND windowHandle, UINT windowMessage, WPARAM wParam, LPARAM lParam);
 	bool CreateRenderTarget();
 	void ReleaseRenderTarget();

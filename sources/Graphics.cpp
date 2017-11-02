@@ -10,6 +10,11 @@
 using namespace std;
 using namespace DirectX;
 
+Graphics& Graphics::GetInstance() {
+	static Graphics instance;
+	return instance;
+}
+
 Graphics::Graphics() :
 	frame(0),
 	windowMessage({}),
