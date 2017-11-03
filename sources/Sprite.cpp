@@ -73,9 +73,6 @@ Sprite::Sprite(wchar_t* path) {
 	if (FAILED(result)) {
 		throw bad_alloc();
 	}
-	else {
-		Graphics::GetInstance().GetDeviceContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-	}
 
 	IWICImagingFactory* factory = nullptr;
 	result = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
@@ -195,9 +192,6 @@ Sprite::Sprite(wchar_t* path) {
 		throw bad_alloc();
 	}
 
-	Graphics::GetInstance().GetDeviceContext().PSSetShaderResources(0, 1, &shaderResourceView);
-	Graphics::GetInstance().GetDeviceContext().PSSetSamplers(0, 1, &samplerState);
-
 	delete[] textureBuffer;
 }
 
@@ -228,5 +222,10 @@ void Sprite::Draw(float x, float y, float angle, float scale) {
 	constant.world *= XMMatrixTranslation(x, -y, 0.0f);
 
 	Graphics::GetInstance().GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
+
+	Graphics::GetInstance().GetDeviceContext().VSSetConstantBuffers(0, 1, &constantBuffer);
+	Graphics::GetInstance().GetDeviceContext().PSSetShaderResources(0, 1, &shaderResourceView);
+	Graphics::GetInstance().GetDeviceContext().PSSetSamplers(0, 1, &samplerState);
+
 	Graphics::GetInstance().GetDeviceContext().DrawIndexed(indexCount, 0, 0);
 }
