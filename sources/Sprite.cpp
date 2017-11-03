@@ -7,6 +7,7 @@
 
 using namespace std;
 using namespace DirectX;
+using namespace GameLibrary;
 
 Sprite::Sprite(wchar_t* path) {
 	HRESULT result = {};
@@ -25,8 +26,8 @@ Sprite::Sprite(wchar_t* path) {
 	};
 	indexCount = sizeof(index) / sizeof(index[0]);
 
-	constant.view = XMMatrixLookAtLH(XMVectorSet(Graphics::GetWidth() / 2.0f, -Graphics::GetHeight() / 2.0f, 0.0f, 0.0f), XMVectorSet(Graphics::GetWidth() / 2.0f, -Graphics::GetHeight() / 2.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-	constant.projection = XMMatrixOrthographicLH(Graphics::GetWidth() * 1.0f, Graphics::GetHeight() * 1.0f, -1.0f, 1.0f);
+	constant.view = XMMatrixLookAtLH(XMVectorSet(Game::GetWidth() / 2.0f, -Game::GetHeight() / 2.0f, 0.0f, 0.0f), XMVectorSet(Game::GetWidth() / 2.0f, -Game::GetHeight() / 2.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	constant.projection = XMMatrixOrthographicLH(Game::GetWidth() * 1.0f, Game::GetHeight() * 1.0f, -1.0f, 1.0f);
 
 	D3D11_BUFFER_DESC vertexBufferDesc = {};
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -35,7 +36,7 @@ Sprite::Sprite(wchar_t* path) {
 	vertexBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 	vertexSubresourceData.pSysMem = quad;
-	result = Graphics::GetDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+	result = Game::GetDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
 
 	if (FAILED(result)) {
 		throw bad_alloc();
@@ -43,8 +44,8 @@ Sprite::Sprite(wchar_t* path) {
 	else {
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-		Graphics::GetDeviceContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		Graphics::GetDeviceContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		Game::GetDeviceContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		Game::GetDeviceContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
 	D3D11_BUFFER_DESC indexBufferDesc = {};
@@ -54,13 +55,13 @@ Sprite::Sprite(wchar_t* path) {
 	indexBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 	indexSubresourceData.pSysMem = index;
-	result = Graphics::GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+	result = Game::GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
 	if (FAILED(result)) {
 		throw bad_alloc();
 	}
 	else {
-		Graphics::GetDeviceContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		Game::GetDeviceContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	}
 
 	D3D11_BUFFER_DESC constantBufferDesc = {};
@@ -68,7 +69,7 @@ Sprite::Sprite(wchar_t* path) {
 	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	constantBufferDesc.CPUAccessFlags = 0;
-	result = Graphics::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	result = Game::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
 	if (FAILED(result)) {
 		throw bad_alloc();
@@ -156,7 +157,7 @@ Sprite::Sprite(wchar_t* path) {
 	textureSubresourceData.pSysMem = textureBuffer;
 	textureSubresourceData.SysMemPitch = textureWidth * 4;
 	textureSubresourceData.SysMemSlicePitch = textureWidth * textureHeight * 4;
-	result = Graphics::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+	result = Game::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
 	
 	if (FAILED(result)) {
 		throw bad_alloc();
@@ -166,7 +167,7 @@ Sprite::Sprite(wchar_t* path) {
 	shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	shaderResourceViewDesc.Texture2D.MipLevels = 1;
-	result = Graphics::GetDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+	result = Game::GetDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
 	
 	if (FAILED(result)) {
 		throw bad_alloc();
@@ -186,7 +187,7 @@ Sprite::Sprite(wchar_t* path) {
 	samplerDesc.BorderColor[3] = 0;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	result = Graphics::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
+	result = Game::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
 	
 	if (FAILED(result)) {
 		throw bad_alloc();
@@ -221,11 +222,11 @@ void Sprite::Draw(float x, float y, float angle, float scale) {
 	constant.world *= XMMatrixRotationZ(XMConvertToRadians(-angle));
 	constant.world *= XMMatrixTranslation(x, -y, 0.0f);
 
-	Graphics::GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
+	Game::GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
 
-	Graphics::GetDeviceContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-	Graphics::GetDeviceContext().PSSetShaderResources(0, 1, &shaderResourceView);
-	Graphics::GetDeviceContext().PSSetSamplers(0, 1, &samplerState);
+	Game::GetDeviceContext().VSSetConstantBuffers(0, 1, &constantBuffer);
+	Game::GetDeviceContext().PSSetShaderResources(0, 1, &shaderResourceView);
+	Game::GetDeviceContext().PSSetSamplers(0, 1, &samplerState);
 
-	Graphics::GetDeviceContext().DrawIndexed(indexCount, 0, 0);
+	Game::GetDeviceContext().DrawIndexed(indexCount, 0, 0);
 }

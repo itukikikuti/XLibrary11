@@ -8,23 +8,24 @@
 
 using namespace std;
 using namespace DirectX;
+using namespace GameLibrary;
 
-HWND Graphics::window = nullptr;
-unique_ptr<ID3D11Device, Graphics::ComReleaser> Graphics::device = nullptr;
-unique_ptr<ID3D11DeviceContext, Graphics::ComReleaser> Graphics::deviceContext = nullptr;
-unique_ptr<IDXGISwapChain, Graphics::ComReleaser> Graphics::swapChain = nullptr;
-unique_ptr<ID3D11RenderTargetView, Graphics::ComReleaser> Graphics::renderTargetView = nullptr;
-unique_ptr<ID3D11Texture2D, Graphics::ComReleaser> Graphics::renderTargetTexture = nullptr;
-unique_ptr<ID3D11ShaderResourceView, Graphics::ComReleaser> Graphics::renderTargetShaderResourceView = nullptr;
-unique_ptr<ID3D11VertexShader, Graphics::ComReleaser> Graphics::vertexShader = nullptr;
-unique_ptr<ID3D11PixelShader, Graphics::ComReleaser> Graphics::pixelShader = nullptr;
-unique_ptr<ID3D11InputLayout, Graphics::ComReleaser> Graphics::inputLayout = nullptr;
-float Graphics::color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-float Graphics::previosTime = 0.0f;
-float Graphics::deltaTime = 0.0f;
-MSG Graphics::response = {};
+HWND Game::window = nullptr;
+unique_ptr<ID3D11Device, Game::ComReleaser> Game::device = nullptr;
+unique_ptr<ID3D11DeviceContext, Game::ComReleaser> Game::deviceContext = nullptr;
+unique_ptr<IDXGISwapChain, Game::ComReleaser> Game::swapChain = nullptr;
+unique_ptr<ID3D11RenderTargetView, Game::ComReleaser> Game::renderTargetView = nullptr;
+unique_ptr<ID3D11Texture2D, Game::ComReleaser> Game::renderTargetTexture = nullptr;
+unique_ptr<ID3D11ShaderResourceView, Game::ComReleaser> Game::renderTargetShaderResourceView = nullptr;
+unique_ptr<ID3D11VertexShader, Game::ComReleaser> Game::vertexShader = nullptr;
+unique_ptr<ID3D11PixelShader, Game::ComReleaser> Game::pixelShader = nullptr;
+unique_ptr<ID3D11InputLayout, Game::ComReleaser> Game::inputLayout = nullptr;
+float Game::color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+float Game::previosTime = 0.0f;
+float Game::deltaTime = 0.0f;
+MSG Game::response = {};
 
-HWND Graphics::GetWindow() {
+HWND Game::GetWindow() {
 	if (window == nullptr) {
 		HINSTANCE instance = GetModuleHandle(nullptr);
 
@@ -53,21 +54,21 @@ HWND Graphics::GetWindow() {
 	return window;
 }
 
-int Graphics::GetWidth() {
+int Game::GetWidth() {
 	RECT clientRect = {};
 	GetClientRect(GetWindow(), &clientRect);
 
 	return (clientRect.right - clientRect.left);
 }
 
-int Graphics::GetHeight() {
+int Game::GetHeight() {
 	RECT clientRect = {};
 	GetClientRect(GetWindow(), &clientRect);
 
 	return (clientRect.bottom - clientRect.top);
 }
 
-void Graphics::SetSize(int width, int height) {
+void Game::SetSize(int width, int height) {
 	RECT windowRect = {};
 	RECT clientRect = {};
 	GetWindowRect(GetWindow(), &windowRect);
@@ -79,7 +80,7 @@ void Graphics::SetSize(int width, int height) {
 	SetWindowPos(GetWindow(), nullptr, 0, 0, w, h, SWP_NOMOVE | SWP_NOZORDER);
 }
 
-ID3D11Device& Graphics::GetDevice() {
+ID3D11Device& Game::GetDevice() {
 	if (device.get() == nullptr) {
 		CreateDeviceAndSwapChain();
 	}
@@ -87,7 +88,7 @@ ID3D11Device& Graphics::GetDevice() {
 	return *device.get();
 }
 
-IDXGISwapChain& Graphics::GetSwapChain() {
+IDXGISwapChain& Game::GetSwapChain() {
 	if (swapChain.get() == nullptr) {
 		CreateDeviceAndSwapChain();
 	}
@@ -95,7 +96,7 @@ IDXGISwapChain& Graphics::GetSwapChain() {
 	return *swapChain.get();
 }
 
-ID3D11DeviceContext& Graphics::GetDeviceContext() {
+ID3D11DeviceContext& Game::GetDeviceContext() {
 	if (deviceContext.get() == nullptr) {
 		ID3D11DeviceContext* dc = nullptr;
 		GetDevice().GetImmediateContext(&dc);
@@ -147,12 +148,12 @@ ID3D11DeviceContext& Graphics::GetDeviceContext() {
 	return *deviceContext.get();
 }
 
-float Graphics::GetDeltaTime()
+float Game::GetDeltaTime()
 {
 	return deltaTime;
 }
 
-bool Graphics::Update() {
+bool Game::Update() {
 	GetSwapChain().Present(0, 0);
 
 	if (!ProcessResponse()) {
@@ -167,7 +168,7 @@ bool Graphics::Update() {
 	return true;
 }
 
-void Graphics::CreateDeviceAndSwapChain() {
+void Game::CreateDeviceAndSwapChain() {
 	int createDeviceFlag = 0;
 #if defined(_DEBUG)
 	createDeviceFlag |= D3D11_CREATE_DEVICE_DEBUG;
@@ -226,7 +227,7 @@ void Graphics::CreateDeviceAndSwapChain() {
 	renderTargetShaderResourceView.reset(rtsrv);
 }
 
-void Graphics::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out)
+void Game::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out)
 {
 	DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
@@ -243,7 +244,7 @@ void Graphics::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderMode
 	}
 }
 
-bool Graphics::ProcessResponse() {
+bool Game::ProcessResponse() {
 	printf("%d\n", response.message);
 	while (response.message != WM_QUIT) {
 		if (PeekMessage(&response, nullptr, 0, 0, PM_REMOVE)) {
@@ -259,7 +260,7 @@ bool Graphics::ProcessResponse() {
 	return false;
 }
 
-LRESULT WINAPI Graphics::ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
+LRESULT WINAPI Game::ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
 	if (message == WM_DESTROY) {
 		PostQuitMessage(wParam);
 	}
