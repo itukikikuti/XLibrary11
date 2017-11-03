@@ -20,12 +20,15 @@ public:
 	static Graphics& GetInstance();
 
 	bool Render();
+	float GetDeltaTime();
 	ID3D11Device& GetDevice();
 	ID3D11DeviceContext& GetDeviceContext();
 
 private:
 	HWND window;
 	MSG windowMessage;
+	float previosTime;
+	float deltaTime;
 	float clearColor[4];
 	D3D_DRIVER_TYPE driverType;
 	ID3D11Device *device;

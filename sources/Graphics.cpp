@@ -16,6 +16,8 @@ Graphics& Graphics::GetInstance() {
 
 Graphics::Graphics() :
 	windowMessage({}),
+	previosTime(0.0f),
+	deltaTime(0.0f),
 	driverType(D3D_DRIVER_TYPE_NULL),
 	featureLevel(D3D_FEATURE_LEVEL_11_0) {
 
@@ -134,6 +136,8 @@ Graphics::Graphics() :
 	vertexShaderBlob->Release();
 	if (FAILED(result)) return;
 	deviceContext->IASetInputLayout(inputLayout);
+
+	previosTime = GetTickCount() / 1000.0f;
 }
 
 Graphics::~Graphics() {
@@ -174,7 +178,16 @@ bool Graphics::Render() {
 	}
 
 	deviceContext->ClearRenderTargetView(renderTargetView, clearColor);
+
+	deltaTime = (GetTickCount() / 1000.0f) - previosTime;
+	previosTime = GetTickCount() / 1000.0f;
+
 	return true;
+}
+
+float Graphics::GetDeltaTime()
+{
+	return deltaTime;
 }
 
 ID3D11Device& Graphics::GetDevice() {

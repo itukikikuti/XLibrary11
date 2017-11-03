@@ -7,14 +7,15 @@
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	Sprite sprite(L"box.jpg");
+	Sprite sprite1(L"box.jpg");
+	Sprite sprite2(L"PATAPON.png");
 
-	int frame = 0;
+	float t = 0.0f;
 	while (Graphics::GetInstance().Render()) {
-		frame++;
-		sprite.Draw(200.0f, 200.0f, frame, 1.0f);
-		sprite.Draw(frame, frame / 2.0f, 0.0f, 0.5f);
-		Sleep(10);
+		t += Graphics::GetInstance().GetDeltaTime() * 360.0f;
+
+		sprite2.Draw(200.0f, 200.0f, t, 1.0f);
+		sprite1.Draw(t, t / 2.0f, 0.0f, 0.5f);
 	}
 
 	return 0;
