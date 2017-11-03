@@ -1,56 +1,53 @@
 #if !defined(GRAPHICS_H)
 #define GRAPHICS_H
 
+#include <memory>
 #include <d3d11.h>
 #include <DirectXMath.h>
-#include <vector>
 
 class Graphics {
 public:
-
-	const DWORD WINDOW_STYLE = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX;
-	const char TITLE[10] = "GDK";
-	static const int CLIENT_WIDTH = 1280, CLIENT_HEIGHT = 720;
-	const int SWAP_CHAIN_COUNT = 2;
-	const DXGI_FORMAT SWAP_CHAIN_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
-	const int MULTI_SAMPLE_COUNT = 1;
-	const int MULTI_SAMPLE_QUALITY = 0;
-	const DXGI_FORMAT DEPTH_STENCIL_FORMAT = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	static Graphics& GetInstance();
-
-	bool Render();
-	float GetDeltaTime();
-	ID3D11Device& GetDevice();
-	ID3D11DeviceContext& GetDeviceContext();
+	Graphics() = delete;
+	static HWND GetWindow();
+	static int GetWidth();
+	static int GetHeight();
+	static void SetSize(int width, int height);
+	static ID3D11Device& GetDevice();
+	static ID3D11DeviceContext& GetDeviceContext();
+	static float GetDeltaTime();
+	static bool Update();
 
 private:
-	HWND window;
-	MSG windowMessage;
-	float previosTime;
-	float deltaTime;
-	float clearColor[4];
-	D3D_DRIVER_TYPE driverType;
-	ID3D11Device *device;
-	ID3D11DeviceContext *deviceContext;
-	IDXGISwapChain *swapChain;
-	D3D_FEATURE_LEVEL featureLevel;
-	ID3D11RenderTargetView *renderTargetView;
-	ID3D11Texture2D *renderTargetTexture;
-	ID3D11ShaderResourceView *renderTargetShaderResourceView;
-	ID3D11VertexShader *vertexShader;
-	ID3D11PixelShader *pixelShader;
-	ID3D11InputLayout *inputLayout;
+	class ComReleaser {
+	public:
+		void operator()(IUnknown* com) {
+			com->Release();
+		}
+	};
 
-	Graphics();
-	~Graphics();
-	Graphics(const Graphics&);
-	Graphics& operator=(const Graphics&);
-	bool ProcessWindowMessage();
-	static LRESULT WINAPI ProcessWindow(HWND windowHandle, UINT windowMessage, WPARAM wParam, LPARAM lParam);
-	bool CreateRenderTarget();
-	void ReleaseRenderTarget();
-	bool CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);
+	static const int SWAP_CHAIN_COUNT = 2;
+	static const DXGI_FORMAT SWAP_CHAIN_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
+	static const int MULTI_SAMPLE_COUNT = 1;
+	static const int MULTI_SAMPLE_QUALITY = 0;
+
+	static HWND window;
+	static std::unique_ptr<ID3D11Device, ComReleaser> device;
+	static std::unique_ptr<ID3D11DeviceContext, ComReleaser> deviceContext;
+	static std::unique_ptr<IDXGISwapChain, ComReleaser> swapChain;
+	static std::unique_ptr<ID3D11RenderTargetView, ComReleaser> renderTargetView;
+	static std::unique_ptr<ID3D11Texture2D, ComReleaser> renderTargetTexture;
+	static std::unique_ptr<ID3D11ShaderResourceView, ComReleaser> renderTargetShaderResourceView;
+	static std::unique_ptr<ID3D11VertexShader, ComReleaser> vertexShader;
+	static std::unique_ptr<ID3D11PixelShader, ComReleaser> pixelShader;
+	static std::unique_ptr<ID3D11InputLayout, ComReleaser> inputLayout;
+	static float color[4];
+	static float previosTime;
+	static float deltaTime;
+	static MSG response;
+
+	static bool ProcessResponse();
+	static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
+	static bool CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);
 };
 
 #endif

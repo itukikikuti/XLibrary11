@@ -25,8 +25,8 @@ Sprite::Sprite(wchar_t* path) {
 	};
 	indexCount = sizeof(index) / sizeof(index[0]);
 
-	constant.view = XMMatrixLookAtLH(XMVectorSet(Graphics::CLIENT_WIDTH / 2.0f, -Graphics::CLIENT_HEIGHT / 2.0f, 0.0f, 0.0f), XMVectorSet(Graphics::CLIENT_WIDTH / 2.0f, -Graphics::CLIENT_HEIGHT / 2.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-	constant.projection = XMMatrixOrthographicLH(Graphics::CLIENT_WIDTH * 1.0f, Graphics::CLIENT_HEIGHT * 1.0f, -1.0f, 1.0f);
+	constant.view = XMMatrixLookAtLH(XMVectorSet(Graphics::GetWidth() / 2.0f, -Graphics::GetHeight() / 2.0f, 0.0f, 0.0f), XMVectorSet(Graphics::GetWidth() / 2.0f, -Graphics::GetHeight() / 2.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	constant.projection = XMMatrixOrthographicLH(Graphics::GetWidth() * 1.0f, Graphics::GetHeight() * 1.0f, -1.0f, 1.0f);
 
 	D3D11_BUFFER_DESC vertexBufferDesc = {};
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -35,7 +35,7 @@ Sprite::Sprite(wchar_t* path) {
 	vertexBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 	vertexSubresourceData.pSysMem = quad;
-	result = Graphics::GetInstance().GetDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+	result = Graphics::GetDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
 
 	if (FAILED(result)) {
 		throw bad_alloc();
@@ -43,8 +43,8 @@ Sprite::Sprite(wchar_t* path) {
 	else {
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-		Graphics::GetInstance().GetDeviceContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		Graphics::GetInstance().GetDeviceContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		Graphics::GetDeviceContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		Graphics::GetDeviceContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
 	D3D11_BUFFER_DESC indexBufferDesc = {};
@@ -54,13 +54,13 @@ Sprite::Sprite(wchar_t* path) {
 	indexBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 	indexSubresourceData.pSysMem = index;
-	result = Graphics::GetInstance().GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+	result = Graphics::GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
 	if (FAILED(result)) {
 		throw bad_alloc();
 	}
 	else {
-		Graphics::GetInstance().GetDeviceContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		Graphics::GetDeviceContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	}
 
 	D3D11_BUFFER_DESC constantBufferDesc = {};
@@ -68,7 +68,7 @@ Sprite::Sprite(wchar_t* path) {
 	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	constantBufferDesc.CPUAccessFlags = 0;
-	result = Graphics::GetInstance().GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	result = Graphics::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
 	if (FAILED(result)) {
 		throw bad_alloc();
@@ -156,7 +156,7 @@ Sprite::Sprite(wchar_t* path) {
 	textureSubresourceData.pSysMem = textureBuffer;
 	textureSubresourceData.SysMemPitch = textureWidth * 4;
 	textureSubresourceData.SysMemSlicePitch = textureWidth * textureHeight * 4;
-	result = Graphics::GetInstance().GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+	result = Graphics::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
 	
 	if (FAILED(result)) {
 		throw bad_alloc();
@@ -166,7 +166,7 @@ Sprite::Sprite(wchar_t* path) {
 	shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	shaderResourceViewDesc.Texture2D.MipLevels = 1;
-	result = Graphics::GetInstance().GetDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+	result = Graphics::GetDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
 	
 	if (FAILED(result)) {
 		throw bad_alloc();
@@ -186,7 +186,7 @@ Sprite::Sprite(wchar_t* path) {
 	samplerDesc.BorderColor[3] = 0;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	result = Graphics::GetInstance().GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
+	result = Graphics::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
 	
 	if (FAILED(result)) {
 		throw bad_alloc();
@@ -221,11 +221,11 @@ void Sprite::Draw(float x, float y, float angle, float scale) {
 	constant.world *= XMMatrixRotationZ(XMConvertToRadians(-angle));
 	constant.world *= XMMatrixTranslation(x, -y, 0.0f);
 
-	Graphics::GetInstance().GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
+	Graphics::GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
 
-	Graphics::GetInstance().GetDeviceContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-	Graphics::GetInstance().GetDeviceContext().PSSetShaderResources(0, 1, &shaderResourceView);
-	Graphics::GetInstance().GetDeviceContext().PSSetSamplers(0, 1, &samplerState);
+	Graphics::GetDeviceContext().VSSetConstantBuffers(0, 1, &constantBuffer);
+	Graphics::GetDeviceContext().PSSetShaderResources(0, 1, &shaderResourceView);
+	Graphics::GetDeviceContext().PSSetSamplers(0, 1, &samplerState);
 
-	Graphics::GetInstance().GetDeviceContext().DrawIndexed(indexCount, 0, 0);
+	Graphics::GetDeviceContext().DrawIndexed(indexCount, 0, 0);
 }

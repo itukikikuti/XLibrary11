@@ -9,10 +9,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 
 	Sprite sprite1(L"box.jpg");
 	Sprite sprite2(L"PATAPON.png");
+	Graphics::GetDeviceContext();
 
 	float t = 0.0f;
-	while (Graphics::GetInstance().Render()) {
-		t += Graphics::GetInstance().GetDeltaTime() * 360.0f;
+	while (Graphics::Update()) {
+		t += Graphics::GetDeltaTime() * 360.0f;
 
 		sprite2.Draw(200.0f, 200.0f, t, 1.0f);
 		sprite1.Draw(t, t / 2.0f, 0.0f, 0.5f);
