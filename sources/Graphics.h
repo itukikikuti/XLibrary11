@@ -13,6 +13,7 @@ public:
 	static int GetHeight();
 	static void SetSize(int width, int height);
 	static ID3D11Device& GetDevice();
+	static IDXGISwapChain& GetSwapChain();
 	static ID3D11DeviceContext& GetDeviceContext();
 	static float GetDeltaTime();
 	static bool Update();
@@ -45,9 +46,10 @@ private:
 	static float deltaTime;
 	static MSG response;
 
+	static void CreateDeviceAndSwapChain();
+	static void CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);
 	static bool ProcessResponse();
 	static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
-	static bool CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);
 };
 
 #endif

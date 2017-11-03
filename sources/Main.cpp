@@ -9,7 +9,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 
 	Sprite sprite1(L"box.jpg");
 	Sprite sprite2(L"PATAPON.png");
-	Graphics::GetDeviceContext();
 
 	float t = 0.0f;
 	while (Graphics::Update()) {
