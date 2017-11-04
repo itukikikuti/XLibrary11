@@ -1,3 +1,4 @@
+#include <atlbase.h>
 #include "Game.h"
 
 using namespace std;
@@ -66,9 +67,9 @@ void Game::SetSize(int width, int height) {
 }
 
 ID3D11Device& Game::GetDevice() {
-	static unique_ptr<ID3D11Device, Game::ComReleaser> device = nullptr;
+	static CComPtr<ID3D11Device> device = nullptr;
 
-	if (device.get() == nullptr) {
+	if (device == nullptr) {
 		int createDeviceFlag = 0;
 #if defined(_DEBUG)
 		createDeviceFlag |= D3D11_CREATE_DEVICE_DEBUG;
@@ -89,27 +90,24 @@ ID3D11Device& Game::GetDevice() {
 		int featureLevelCount = sizeof(featureLevels) / sizeof(featureLevels[0]);
 
 		for (int i = 0; i < driverTypeCount; i++) {
-			ID3D11Device* d = nullptr;
-			HRESULT result = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &d, nullptr, nullptr);
+			HRESULT result = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &device, nullptr, nullptr);
 
 			if (SUCCEEDED(result)) {
-				device.reset(d);
 				break;
 			}
 		}
 	}
 
-	return *device.get();
+	return *device;
 }
 
 IDXGISwapChain& Game::GetSwapChain() {
-	static unique_ptr<IDXGISwapChain, Game::ComReleaser> swapChain = nullptr;
+	static CComPtr<IDXGISwapChain> swapChain = nullptr;
 
-	if (swapChain.get() == nullptr) {
+	if (swapChain == nullptr) {
 		IDXGIDevice1* dxgiDevice = nullptr;
 		IDXGIAdapter* adapter = nullptr;
 		IDXGIFactory* factory = nullptr;
-		IDXGISwapChain* sc = nullptr;
 
 		GetDevice().QueryInterface(__uuidof(IDXGIDevice1), (void**)&dxgiDevice);
 		dxgiDevice->GetAdapter(&adapter);
@@ -128,27 +126,24 @@ IDXGISwapChain& Game::GetSwapChain() {
 		swapChainDesc.SampleDesc.Quality = MULTI_SAMPLE_QUALITY;
 		swapChainDesc.Windowed = true;
 
-		factory->CreateSwapChain(&GetDevice(), &swapChainDesc, &sc);
-		swapChain.reset(sc);
+		factory->CreateSwapChain(&GetDevice(), &swapChainDesc, &swapChain);
 
 		factory->Release();
 		adapter->Release();
 		dxgiDevice->Release();
 	}
 
-	return *swapChain.get();
+	return *swapChain;
 }
 
 ID3D11DeviceContext& Game::GetDeviceContext() {
-	static unique_ptr<ID3D11DeviceContext, Game::ComReleaser> deviceContext = nullptr;
-	static unique_ptr<ID3D11VertexShader, Game::ComReleaser> vertexShader = nullptr;
-	static unique_ptr<ID3D11PixelShader, Game::ComReleaser> pixelShader = nullptr;
-	static unique_ptr<ID3D11InputLayout, Game::ComReleaser> inputLayout = nullptr;
+	static CComPtr<ID3D11DeviceContext> deviceContext = nullptr;
+	static CComPtr<ID3D11VertexShader> vertexShader = nullptr;
+	static CComPtr<ID3D11PixelShader> pixelShader = nullptr;
+	static CComPtr<ID3D11InputLayout> inputLayout = nullptr;
 
-	if (deviceContext.get() == nullptr) {
-		ID3D11DeviceContext* dc = nullptr;
-		GetDevice().GetImmediateContext(&dc);
-		deviceContext.reset(dc);
+	if (deviceContext == nullptr) {
+		GetDevice().GetImmediateContext(&deviceContext);
 		
 		D3D11_VIEWPORT viewPort;
 		viewPort.Width = (float)GetWidth();
@@ -159,22 +154,16 @@ ID3D11DeviceContext& Game::GetDeviceContext() {
 		viewPort.TopLeftY = 0;
 		deviceContext->RSSetViewports(1, &viewPort);
 
-		ID3D11VertexShader* vs;
-		ID3D11PixelShader* ps;
-		ID3D11InputLayout* il;
-
 		ID3DBlob *vertexShaderBlob = nullptr;
 		CompileShader(L"shader.fx", "VS", "vs_4_0", &vertexShaderBlob);
-		GetDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vs);
-		vertexShader.reset(vs);
-		deviceContext->VSSetShader(vertexShader.get(), nullptr, 0);
+		GetDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
+		deviceContext->VSSetShader(vertexShader, nullptr, 0);
 
 		ID3DBlob *pixelShaderBlob = nullptr;
 		CompileShader(L"shader.fx", "PS", "ps_4_0", &pixelShaderBlob);
-		GetDevice().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &ps);
+		GetDevice().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
 		pixelShaderBlob->Release();
-		pixelShader.reset(ps);
-		deviceContext->PSSetShader(pixelShader.get(), nullptr, 0);
+		deviceContext->PSSetShader(pixelShader, nullptr, 0);
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -182,42 +171,34 @@ ID3D11DeviceContext& Game::GetDeviceContext() {
 		};
 		int inputElementDescCount = sizeof(inputElementDesc) / sizeof(inputElementDesc[0]);
 
-		GetDevice().CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &il);
+		GetDevice().CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
 		vertexShaderBlob->Release();
-		inputLayout.reset(il);
-		deviceContext->IASetInputLayout(inputLayout.get());
+		deviceContext->IASetInputLayout(inputLayout);
 
 		previosTime = GetTickCount() / 1000.0f;
 	}
 
-	return *deviceContext.get();
+	return *deviceContext;
 }
 
 ID3D11RenderTargetView& Game::GetRenderTargetView() {
-	static unique_ptr<ID3D11RenderTargetView, Game::ComReleaser> renderTargetView = nullptr;
-	static unique_ptr<ID3D11Texture2D, Game::ComReleaser> renderTargetTexture = nullptr;
-	static unique_ptr<ID3D11ShaderResourceView, Game::ComReleaser> renderTargetShaderResourceView = nullptr;
+	static CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+	static CComPtr<ID3D11Texture2D> renderTargetTexture = nullptr;
+	static CComPtr<ID3D11ShaderResourceView> renderTargetShaderResourceView = nullptr;
 
-	if (renderTargetView.get() == nullptr) {
-		ID3D11RenderTargetView* rtv = nullptr;
-		ID3D11Texture2D* rtt = nullptr;
-		ID3D11ShaderResourceView* rtsrv = nullptr;
+	if (renderTargetView == nullptr) {
+		GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&renderTargetTexture);
 
-		GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&rtt);
-		renderTargetTexture.reset(rtt);
+		GetDevice().CreateRenderTargetView(renderTargetTexture, nullptr, &renderTargetView);
 
-		GetDevice().CreateRenderTargetView(renderTargetTexture.get(), nullptr, &rtv);
-		renderTargetView.reset(rtv);
+		GetDevice().CreateShaderResourceView(renderTargetTexture, nullptr, &renderTargetShaderResourceView);
 
-		GetDevice().CreateShaderResourceView(renderTargetTexture.get(), nullptr, &rtsrv);
-		renderTargetShaderResourceView.reset(rtsrv);
-
+		ID3D11RenderTargetView* rtv = renderTargetView;
 		GetDeviceContext().OMSetRenderTargets(1, &rtv, nullptr);
 	}
 
-	return *renderTargetView.get();
+	return *renderTargetView;
 }
-
 
 float Game::GetDeltaTime() {
 	return deltaTime;
