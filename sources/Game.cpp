@@ -1,8 +1,9 @@
 #include <memory>
-#include <atlbase.h>
+#include <wrl.h>
 #include "Game.h"
 
 using namespace std;
+using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace GameLibrary;
 
@@ -77,7 +78,7 @@ void Game::SetTitle(char* title) {
 }
 
 ID3D11Device& Game::GetDevice() {
-	static CComPtr<ID3D11Device> device = nullptr;
+	static ComPtr<ID3D11Device> device = nullptr;
 
 	if (device == nullptr) {
 		int createDeviceFlag = 0;
@@ -100,7 +101,7 @@ ID3D11Device& Game::GetDevice() {
 		int featureLevelCount = sizeof(featureLevels) / sizeof(featureLevels[0]);
 
 		for (int i = 0; i < driverTypeCount; i++) {
-			HRESULT result = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &device, nullptr, nullptr);
+			HRESULT result = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, device.GetAddressOf(), nullptr, nullptr);
 
 			if (SUCCEEDED(result)) {
 				break;
@@ -108,11 +109,11 @@ ID3D11Device& Game::GetDevice() {
 		}
 	}
 
-	return *device;
+	return *device.Get();
 }
 
 IDXGISwapChain& Game::GetSwapChain() {
-	static CComPtr<IDXGISwapChain> swapChain = nullptr;
+	static ComPtr<IDXGISwapChain> swapChain = nullptr;
 
 	if (swapChain == nullptr) {
 		const int SWAP_CHAIN_COUNT = 2;
@@ -141,21 +142,21 @@ IDXGISwapChain& Game::GetSwapChain() {
 		swapChainDesc.SampleDesc.Quality = MULTI_SAMPLE_QUALITY;
 		swapChainDesc.Windowed = true;
 
-		factory->CreateSwapChain(&GetDevice(), &swapChainDesc, &swapChain);
+		factory->CreateSwapChain(&GetDevice(), &swapChainDesc, swapChain.GetAddressOf());
 
 		factory->Release();
 		adapter->Release();
 		dxgiDevice->Release();
 	}
 
-	return *swapChain;
+	return *swapChain.Get();
 }
 
 ID3D11DeviceContext& Game::GetDeviceContext() {
-	static CComPtr<ID3D11DeviceContext> deviceContext = nullptr;
-	static CComPtr<ID3D11VertexShader> vertexShader = nullptr;
-	static CComPtr<ID3D11PixelShader> pixelShader = nullptr;
-	static CComPtr<ID3D11InputLayout> inputLayout = nullptr;
+	static ComPtr<ID3D11DeviceContext> deviceContext = nullptr;
+	static ComPtr<ID3D11VertexShader> vertexShader = nullptr;
+	static ComPtr<ID3D11PixelShader> pixelShader = nullptr;
+	static ComPtr<ID3D11InputLayout> inputLayout = nullptr;
 
 	if (deviceContext == nullptr) {
 		GetDevice().GetImmediateContext(&deviceContext);
@@ -171,14 +172,14 @@ ID3D11DeviceContext& Game::GetDeviceContext() {
 
 		ID3DBlob *vertexShaderBlob = nullptr;
 		CompileShader(L"shader.fx", "VS", "vs_4_0", &vertexShaderBlob);
-		GetDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
-		deviceContext->VSSetShader(vertexShader, nullptr, 0);
+		GetDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
+		deviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
 
 		ID3DBlob *pixelShaderBlob = nullptr;
 		CompileShader(L"shader.fx", "PS", "ps_4_0", &pixelShaderBlob);
-		GetDevice().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
+		GetDevice().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, pixelShader.GetAddressOf());
 		pixelShaderBlob->Release();
-		deviceContext->PSSetShader(pixelShader, nullptr, 0);
+		deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -186,31 +187,30 @@ ID3D11DeviceContext& Game::GetDeviceContext() {
 		};
 		int inputElementDescCount = sizeof(inputElementDesc) / sizeof(inputElementDesc[0]);
 
-		GetDevice().CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
+		GetDevice().CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
 		vertexShaderBlob->Release();
-		deviceContext->IASetInputLayout(inputLayout);
+		deviceContext->IASetInputLayout(inputLayout.Get());
 	}
 
-	return *deviceContext;
+	return *deviceContext.Get();
 }
 
 ID3D11RenderTargetView& Game::GetRenderTargetView() {
-	static CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-	static CComPtr<ID3D11Texture2D> renderTargetTexture = nullptr;
-	static CComPtr<ID3D11ShaderResourceView> renderTargetShaderResourceView = nullptr;
+	static ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+	static ComPtr<ID3D11Texture2D> renderTargetTexture = nullptr;
+	static ComPtr<ID3D11ShaderResourceView> renderTargetShaderResourceView = nullptr;
 
 	if (renderTargetView == nullptr) {
-		GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&renderTargetTexture);
+		GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)renderTargetTexture.GetAddressOf());
 
-		GetDevice().CreateRenderTargetView(renderTargetTexture, nullptr, &renderTargetView);
+		GetDevice().CreateRenderTargetView(renderTargetTexture.Get(), nullptr, renderTargetView.GetAddressOf());
 
-		GetDevice().CreateShaderResourceView(renderTargetTexture, nullptr, &renderTargetShaderResourceView);
+		GetDevice().CreateShaderResourceView(renderTargetTexture.Get(), nullptr, renderTargetShaderResourceView.GetAddressOf());
 
-		ID3D11RenderTargetView* rtv = renderTargetView;
-		GetDeviceContext().OMSetRenderTargets(1, &rtv, nullptr);
+		GetDeviceContext().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
 	}
 
-	return *renderTargetView;
+	return *renderTargetView.Get();
 }
 
 float Game::GetDeltaTime() {
