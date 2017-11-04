@@ -1,10 +1,4 @@
-#include <windows.h>
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
 #include "Game.h"
-#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "d3dcompiler.lib")
 
 using namespace std;
 using namespace DirectX;
@@ -82,7 +76,34 @@ void Game::SetSize(int width, int height) {
 
 ID3D11Device& Game::GetDevice() {
 	if (device.get() == nullptr) {
-		CreateDeviceAndSwapChain();
+		int createDeviceFlag = 0;
+#if defined(_DEBUG)
+		createDeviceFlag |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+		D3D_DRIVER_TYPE driverTypes[] = {
+			D3D_DRIVER_TYPE_HARDWARE,
+			D3D_DRIVER_TYPE_WARP,
+			D3D_DRIVER_TYPE_REFERENCE,
+		};
+		int driverTypeCount = sizeof(driverTypes) / sizeof(driverTypes[0]);
+
+		D3D_FEATURE_LEVEL featureLevels[] = {
+			D3D_FEATURE_LEVEL_11_0,
+			D3D_FEATURE_LEVEL_10_1,
+			D3D_FEATURE_LEVEL_10_0,
+		};
+		int featureLevelCount = sizeof(featureLevels) / sizeof(featureLevels[0]);
+
+		for (int i = 0; i < driverTypeCount; i++) {
+			ID3D11Device* d = nullptr;
+			HRESULT result = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &d, nullptr, nullptr);
+
+			if (SUCCEEDED(result)) {
+				device.reset(d);
+				break;
+			}
+		}
 	}
 
 	return *device.get();
@@ -90,7 +111,34 @@ ID3D11Device& Game::GetDevice() {
 
 IDXGISwapChain& Game::GetSwapChain() {
 	if (swapChain.get() == nullptr) {
-		CreateDeviceAndSwapChain();
+		IDXGIDevice1* dxgiDevice = nullptr;
+		IDXGIAdapter* adapter = nullptr;
+		IDXGIFactory* factory = nullptr;
+		IDXGISwapChain* sc = nullptr;
+
+		GetDevice().QueryInterface(__uuidof(IDXGIDevice1), (void**)&dxgiDevice);
+		dxgiDevice->GetAdapter(&adapter);
+		adapter->GetParent(__uuidof(IDXGIFactory), (void**)&factory);
+
+		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+		swapChainDesc.BufferCount = SWAP_CHAIN_COUNT;
+		swapChainDesc.BufferDesc.Width = GetWidth();
+		swapChainDesc.BufferDesc.Height = GetHeight();
+		swapChainDesc.BufferDesc.Format = SWAP_CHAIN_FORMAT;
+		swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
+		swapChainDesc.OutputWindow = GetWindow();
+		swapChainDesc.SampleDesc.Count = MULTI_SAMPLE_COUNT;
+		swapChainDesc.SampleDesc.Quality = MULTI_SAMPLE_QUALITY;
+		swapChainDesc.Windowed = true;
+
+		factory->CreateSwapChain(&GetDevice(), &swapChainDesc, &sc);
+		swapChain.reset(sc);
+
+		factory->Release();
+		adapter->Release();
+		dxgiDevice->Release();
 	}
 
 	return *swapChain.get();
@@ -102,7 +150,19 @@ ID3D11DeviceContext& Game::GetDeviceContext() {
 		GetDevice().GetImmediateContext(&dc);
 		deviceContext.reset(dc);
 
-		ID3D11RenderTargetView* rtv = renderTargetView.get();
+		ID3D11RenderTargetView* rtv = nullptr;
+		ID3D11Texture2D* rtt = nullptr;
+		ID3D11ShaderResourceView* rtsrv = nullptr;
+
+		GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&rtt);
+		renderTargetTexture.reset(rtt);
+
+		GetDevice().CreateRenderTargetView(renderTargetTexture.get(), nullptr, &rtv);
+		renderTargetView.reset(rtv);
+
+		GetDevice().CreateShaderResourceView(renderTargetTexture.get(), nullptr, &rtsrv);
+		renderTargetShaderResourceView.reset(rtsrv);
+
 		deviceContext->OMSetRenderTargets(1, &rtv, nullptr);
 		
 		D3D11_VIEWPORT viewPort;
@@ -166,65 +226,6 @@ bool Game::Update() {
 	previosTime = GetTickCount() / 1000.0f;
 
 	return true;
-}
-
-void Game::CreateDeviceAndSwapChain() {
-	int createDeviceFlag = 0;
-#if defined(_DEBUG)
-	createDeviceFlag |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
-
-	D3D_DRIVER_TYPE driverTypes[] = {
-		D3D_DRIVER_TYPE_HARDWARE,
-		D3D_DRIVER_TYPE_WARP,
-		D3D_DRIVER_TYPE_REFERENCE,
-	};
-	int driverTypeCount = sizeof(driverTypes) / sizeof(driverTypes[0]);
-
-	D3D_FEATURE_LEVEL featureLevels[] = {
-		D3D_FEATURE_LEVEL_11_0,
-		D3D_FEATURE_LEVEL_10_1,
-		D3D_FEATURE_LEVEL_10_0,
-	};
-	int featureLevelCount = sizeof(featureLevels) / sizeof(featureLevels[0]);
-
-	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-	swapChainDesc.BufferCount = SWAP_CHAIN_COUNT;
-	swapChainDesc.BufferDesc.Width = GetWidth();
-	swapChainDesc.BufferDesc.Height = GetHeight();
-	swapChainDesc.BufferDesc.Format = SWAP_CHAIN_FORMAT;
-	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
-	swapChainDesc.OutputWindow = GetWindow();
-	swapChainDesc.SampleDesc.Count = MULTI_SAMPLE_COUNT;
-	swapChainDesc.SampleDesc.Quality = MULTI_SAMPLE_QUALITY;
-	swapChainDesc.Windowed = true;
-
-	for (int i = 0; i < driverTypeCount; i++) {
-		ID3D11Device* d = nullptr;
-		IDXGISwapChain* sc = nullptr;
-		HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, &sc, &d, nullptr, nullptr);
-
-		if (SUCCEEDED(result)) {
-			device.reset(d);
-			swapChain.reset(sc);
-			break;
-		}
-	}
-
-	ID3D11RenderTargetView* rtv = nullptr;
-	ID3D11Texture2D* rtt = nullptr;
-	ID3D11ShaderResourceView* rtsrv = nullptr;
-
-	swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&rtt);
-	renderTargetTexture.reset(rtt);
-
-	device->CreateRenderTargetView(renderTargetTexture.get(), nullptr, &rtv);
-	renderTargetView.reset(rtv);
-
-	device->CreateShaderResourceView(renderTargetTexture.get(), nullptr, &rtsrv);
-	renderTargetShaderResourceView.reset(rtsrv);
 }
 
 void Game::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out)

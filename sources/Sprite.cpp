@@ -1,7 +1,5 @@
 // (c) 2017 Naoki Nakagawa
-#include <d3d11.h>
 #include <wincodec.h>
-#include <DirectXMath.h>
 #include "Game.h"
 #include "Sprite.h"
 

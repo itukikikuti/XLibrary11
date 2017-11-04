@@ -2,8 +2,12 @@
 #define GRAPHICS_H
 
 #include <memory>
+#include <windows.h>
 #include <d3d11.h>
+#include <d3dcompiler.h>
 #include <DirectXMath.h>
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "d3dcompiler.lib")
 
 namespace GameLibrary {
 	class Game {
@@ -47,7 +51,6 @@ namespace GameLibrary {
 		static float deltaTime;
 		static MSG response;
 
-		static void CreateDeviceAndSwapChain();
 		static void CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);
 		static bool ProcessResponse();
 		static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam);

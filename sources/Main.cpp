@@ -1,4 +1,3 @@
-#include <windows.h>
 #include <crtdbg.h>
 #include "Game.h"
 #include "Sprite.h"
@@ -14,10 +13,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 
 	float t = 0.0f;
 	while (Game::Update()) {
-		t += Game::GetDeltaTime() * 360.0f;
+		t += Game::GetDeltaTime();
 
-		sprite2.Draw(200.0f, 200.0f, t, 1.0f);
-		sprite1.Draw(t, t / 2.0f, 0.0f, 0.5f);
+		sprite1.Draw(200.0f, 200.0f, t * 360.0f, 1.0f);
+		sprite2.Draw(t * 50.0f, t * 25.0f, 0.0f, 0.5f);
 	}
 
 	return 0;
