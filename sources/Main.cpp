@@ -8,6 +8,8 @@ using namespace GameLibrary;
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
+	Game::SetTitle("‚­‚Ÿw‚¹drftgy‚Ó‚¶‚±lp");
+
 	Sprite sprite1(L"box.jpg");
 	Sprite sprite2(L"PATAPON.png");
 

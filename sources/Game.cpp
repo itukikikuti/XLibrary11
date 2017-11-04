@@ -66,6 +66,16 @@ void Game::SetSize(int width, int height) {
 	SetWindowPos(GetWindow(), nullptr, 0, 0, w, h, SWP_NOMOVE | SWP_NOZORDER);
 }
 
+char* Game::GetTitle() {
+	char* title = nullptr;
+	GetWindowText(GetWindow(), title, GetWindowTextLength(GetWindow()));
+	return title;
+}
+
+void Game::SetTitle(char* title) {
+	SetWindowText(GetWindow(), title);
+}
+
 ID3D11Device& Game::GetDevice() {
 	static CComPtr<ID3D11Device> device = nullptr;
 

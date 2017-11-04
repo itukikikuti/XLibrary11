@@ -16,6 +16,8 @@ namespace GameLibrary {
 		static int GetWidth();
 		static int GetHeight();
 		static void SetSize(int width, int height);
+		static char* GetTitle();
+		static void SetTitle(char* title);
 		static ID3D11Device& GetDevice();
 		static IDXGISwapChain& GetSwapChain();
 		static ID3D11DeviceContext& GetDeviceContext();
