@@ -1,5 +1,4 @@
 // (c) 2017 Naoki Nakagawa
-#include <memory>
 #include <wincodec.h>
 #include "Game.h"
 #include "Sprite.h"
@@ -9,15 +8,13 @@ using namespace DirectX;
 using namespace GameLibrary;
 
 Sprite::Sprite(wchar_t* path) {
-	HRESULT result = {};
-
 	Vertex quad[] = {
 		{ XMFLOAT3(-0.5f, 0.5f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
 		{ XMFLOAT3(0.5f, 0.5f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
 		{ XMFLOAT3(-0.5f, -0.5f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
 		{ XMFLOAT3(0.5f, -0.5f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
 	};
-	vertexCount = sizeof(quad) / sizeof(quad[0]);
+	int vertexCount = sizeof(quad) / sizeof(quad[0]);
 
 	int index[] = {
 		0, 1, 2,
@@ -35,17 +32,12 @@ Sprite::Sprite(wchar_t* path) {
 	vertexBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 	vertexSubresourceData.pSysMem = quad;
-	result = Game::GetDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+	Game::GetDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
 
-	if (FAILED(result)) {
-		throw bad_alloc();
-	}
-	else {
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-		Game::GetDeviceContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		Game::GetDeviceContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	}
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	Game::GetDeviceContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+	Game::GetDeviceContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	D3D11_BUFFER_DESC indexBufferDesc = {};
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -54,89 +46,39 @@ Sprite::Sprite(wchar_t* path) {
 	indexBufferDesc.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 	indexSubresourceData.pSysMem = index;
-	result = Game::GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+	Game::GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
-	if (FAILED(result)) {
-		throw bad_alloc();
-	}
-	else {
-		Game::GetDeviceContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	}
+	Game::GetDeviceContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 	D3D11_BUFFER_DESC constantBufferDesc = {};
 	constantBufferDesc.ByteWidth = sizeof(Constant);
 	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	constantBufferDesc.CPUAccessFlags = 0;
-	result = Game::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-
-	if (FAILED(result)) {
-		throw bad_alloc();
-	}
+	Game::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
 	IWICImagingFactory* factory = nullptr;
-	result = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
-
-	if (FAILED(result)) {
-		throw bad_alloc();
-	}
-
+	CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 	IWICBitmapDecoder* decoder = nullptr;
-	result = factory->CreateDecoderFromFilename(path, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
-
-	if (FAILED(result)) {
-		throw bad_alloc();
-	}
-
+	factory->CreateDecoderFromFilename(path, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
 	IWICBitmapFrameDecode* frame = nullptr;
-	result = decoder->GetFrame(0, &frame);
-
-	if (FAILED(result)) {
-		throw bad_alloc();
-	}
-
+	decoder->GetFrame(0, &frame);
 	UINT textureWidth, textureHeight;
-	result = frame->GetSize(&textureWidth, &textureHeight);
-
-	if (FAILED(result)) {
-		throw bad_alloc();
-	}
-
+	frame->GetSize(&textureWidth, &textureHeight);
 	WICPixelFormatGUID pixelFormat;
-	result = frame->GetPixelFormat(&pixelFormat);
-
-	if (FAILED(result)) {
-		throw bad_alloc();
-	}
-
+	frame->GetPixelFormat(&pixelFormat);
 	BYTE* textureBuffer = new BYTE[textureWidth * textureHeight * 4];
 
 	if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
 		IWICFormatConverter* formatConverter = nullptr;
-		result = factory->CreateFormatConverter(&formatConverter);
-		
-		if (FAILED(result)) {
-			throw bad_alloc();
-		}
+		factory->CreateFormatConverter(&formatConverter);
 
-		result = formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
-		
-		if (FAILED(result)) {
-			throw bad_alloc();
-		}
+		formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
 
-		result = formatConverter->CopyPixels(0, textureWidth * 4, textureWidth * textureHeight * 4, textureBuffer);
-		
-		if (FAILED(result)) {
-			throw bad_alloc();
-		}
+		formatConverter->CopyPixels(0, textureWidth * 4, textureWidth * textureHeight * 4, textureBuffer);
 	}
 	else {
-		result = frame->CopyPixels(0, textureWidth * 4, textureWidth * textureHeight * 4, textureBuffer);
-
-		if (FAILED(result)) {
-			throw bad_alloc();
-		}
+		frame->CopyPixels(0, textureWidth * 4, textureWidth * textureHeight * 4, textureBuffer);
 	}
 
 	D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -156,21 +98,13 @@ Sprite::Sprite(wchar_t* path) {
 	textureSubresourceData.pSysMem = textureBuffer;
 	textureSubresourceData.SysMemPitch = textureWidth * 4;
 	textureSubresourceData.SysMemSlicePitch = textureWidth * textureHeight * 4;
-	result = Game::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
-	
-	if (FAILED(result)) {
-		throw bad_alloc();
-	}
+	Game::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 	shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	shaderResourceViewDesc.Texture2D.MipLevels = 1;
-	result = Game::GetDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
-	
-	if (FAILED(result)) {
-		throw bad_alloc();
-	}
+	Game::GetDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
 
 	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -186,11 +120,7 @@ Sprite::Sprite(wchar_t* path) {
 	samplerDesc.BorderColor[3] = 0;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	result = Game::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
-	
-	if (FAILED(result)) {
-		throw bad_alloc();
-	}
+	Game::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
 
 	delete[] textureBuffer;
 }
