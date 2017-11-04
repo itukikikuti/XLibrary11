@@ -6,21 +6,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sources\Graphics.cpp">
-      <Filter>sources</Filter>
-    </ClCompile>
     <ClCompile Include="sources\Main.cpp">
       <Filter>sources</Filter>
     </ClCompile>
     <ClCompile Include="sources\Sprite.cpp">
       <Filter>sources</Filter>
     </ClCompile>
+    <ClCompile Include="sources\Game.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sources\Graphics.h">
+    <ClInclude Include="sources\Sprite.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Sprite.h">
+    <ClInclude Include="sources\Game.h">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>

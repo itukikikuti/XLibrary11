@@ -1,6 +1,6 @@
 #include <windows.h>
 #include <crtdbg.h>
-#include "Graphics.h"
+#include "Game.h"
 #include "Sprite.h"
 
 using namespace GameLibrary;

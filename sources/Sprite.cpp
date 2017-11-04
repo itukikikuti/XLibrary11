@@ -2,7 +2,7 @@
 #include <d3d11.h>
 #include <wincodec.h>
 #include <DirectXMath.h>
-#include "Graphics.h"
+#include "Game.h"
 #include "Sprite.h"
 
 using namespace std;
