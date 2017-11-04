@@ -20,6 +20,7 @@ namespace GameLibrary {
 		static ID3D11Device& GetDevice();
 		static IDXGISwapChain& GetSwapChain();
 		static ID3D11DeviceContext& GetDeviceContext();
+		static ID3D11RenderTargetView& GetRenderTargetView();
 		static float GetDeltaTime();
 		static bool Update();
 
@@ -36,20 +37,9 @@ namespace GameLibrary {
 		static const int MULTI_SAMPLE_COUNT = 1;
 		static const int MULTI_SAMPLE_QUALITY = 0;
 
-		static HWND window;
-		static std::unique_ptr<ID3D11Device, ComReleaser> device;
-		static std::unique_ptr<ID3D11DeviceContext, ComReleaser> deviceContext;
-		static std::unique_ptr<IDXGISwapChain, ComReleaser> swapChain;
-		static std::unique_ptr<ID3D11RenderTargetView, ComReleaser> renderTargetView;
-		static std::unique_ptr<ID3D11Texture2D, ComReleaser> renderTargetTexture;
-		static std::unique_ptr<ID3D11ShaderResourceView, ComReleaser> renderTargetShaderResourceView;
-		static std::unique_ptr<ID3D11VertexShader, ComReleaser> vertexShader;
-		static std::unique_ptr<ID3D11PixelShader, ComReleaser> pixelShader;
-		static std::unique_ptr<ID3D11InputLayout, ComReleaser> inputLayout;
 		static float color[4];
 		static float previosTime;
 		static float deltaTime;
-		static MSG response;
 
 		static void CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);
 		static bool ProcessResponse();

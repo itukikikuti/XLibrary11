@@ -4,22 +4,13 @@ using namespace std;
 using namespace DirectX;
 using namespace GameLibrary;
 
-HWND Game::window = nullptr;
-unique_ptr<ID3D11Device, Game::ComReleaser> Game::device = nullptr;
-unique_ptr<ID3D11DeviceContext, Game::ComReleaser> Game::deviceContext = nullptr;
-unique_ptr<IDXGISwapChain, Game::ComReleaser> Game::swapChain = nullptr;
-unique_ptr<ID3D11RenderTargetView, Game::ComReleaser> Game::renderTargetView = nullptr;
-unique_ptr<ID3D11Texture2D, Game::ComReleaser> Game::renderTargetTexture = nullptr;
-unique_ptr<ID3D11ShaderResourceView, Game::ComReleaser> Game::renderTargetShaderResourceView = nullptr;
-unique_ptr<ID3D11VertexShader, Game::ComReleaser> Game::vertexShader = nullptr;
-unique_ptr<ID3D11PixelShader, Game::ComReleaser> Game::pixelShader = nullptr;
-unique_ptr<ID3D11InputLayout, Game::ComReleaser> Game::inputLayout = nullptr;
 float Game::color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 float Game::previosTime = 0.0f;
 float Game::deltaTime = 0.0f;
-MSG Game::response = {};
 
 HWND Game::GetWindow() {
+	static HWND window = nullptr;
+
 	if (window == nullptr) {
 		HINSTANCE instance = GetModuleHandle(nullptr);
 
@@ -75,6 +66,8 @@ void Game::SetSize(int width, int height) {
 }
 
 ID3D11Device& Game::GetDevice() {
+	static unique_ptr<ID3D11Device, Game::ComReleaser> device = nullptr;
+
 	if (device.get() == nullptr) {
 		int createDeviceFlag = 0;
 #if defined(_DEBUG)
@@ -110,6 +103,8 @@ ID3D11Device& Game::GetDevice() {
 }
 
 IDXGISwapChain& Game::GetSwapChain() {
+	static unique_ptr<IDXGISwapChain, Game::ComReleaser> swapChain = nullptr;
+
 	if (swapChain.get() == nullptr) {
 		IDXGIDevice1* dxgiDevice = nullptr;
 		IDXGIAdapter* adapter = nullptr;
@@ -145,25 +140,15 @@ IDXGISwapChain& Game::GetSwapChain() {
 }
 
 ID3D11DeviceContext& Game::GetDeviceContext() {
+	static unique_ptr<ID3D11DeviceContext, Game::ComReleaser> deviceContext = nullptr;
+	static unique_ptr<ID3D11VertexShader, Game::ComReleaser> vertexShader = nullptr;
+	static unique_ptr<ID3D11PixelShader, Game::ComReleaser> pixelShader = nullptr;
+	static unique_ptr<ID3D11InputLayout, Game::ComReleaser> inputLayout = nullptr;
+
 	if (deviceContext.get() == nullptr) {
 		ID3D11DeviceContext* dc = nullptr;
 		GetDevice().GetImmediateContext(&dc);
 		deviceContext.reset(dc);
-
-		ID3D11RenderTargetView* rtv = nullptr;
-		ID3D11Texture2D* rtt = nullptr;
-		ID3D11ShaderResourceView* rtsrv = nullptr;
-
-		GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&rtt);
-		renderTargetTexture.reset(rtt);
-
-		GetDevice().CreateRenderTargetView(renderTargetTexture.get(), nullptr, &rtv);
-		renderTargetView.reset(rtv);
-
-		GetDevice().CreateShaderResourceView(renderTargetTexture.get(), nullptr, &rtsrv);
-		renderTargetShaderResourceView.reset(rtsrv);
-
-		deviceContext->OMSetRenderTargets(1, &rtv, nullptr);
 		
 		D3D11_VIEWPORT viewPort;
 		viewPort.Width = (float)GetWidth();
@@ -208,8 +193,33 @@ ID3D11DeviceContext& Game::GetDeviceContext() {
 	return *deviceContext.get();
 }
 
-float Game::GetDeltaTime()
-{
+ID3D11RenderTargetView& Game::GetRenderTargetView() {
+	static unique_ptr<ID3D11RenderTargetView, Game::ComReleaser> renderTargetView = nullptr;
+	static unique_ptr<ID3D11Texture2D, Game::ComReleaser> renderTargetTexture = nullptr;
+	static unique_ptr<ID3D11ShaderResourceView, Game::ComReleaser> renderTargetShaderResourceView = nullptr;
+
+	if (renderTargetView.get() == nullptr) {
+		ID3D11RenderTargetView* rtv = nullptr;
+		ID3D11Texture2D* rtt = nullptr;
+		ID3D11ShaderResourceView* rtsrv = nullptr;
+
+		GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&rtt);
+		renderTargetTexture.reset(rtt);
+
+		GetDevice().CreateRenderTargetView(renderTargetTexture.get(), nullptr, &rtv);
+		renderTargetView.reset(rtv);
+
+		GetDevice().CreateShaderResourceView(renderTargetTexture.get(), nullptr, &rtsrv);
+		renderTargetShaderResourceView.reset(rtsrv);
+
+		GetDeviceContext().OMSetRenderTargets(1, &rtv, nullptr);
+	}
+
+	return *renderTargetView.get();
+}
+
+
+float Game::GetDeltaTime() {
 	return deltaTime;
 }
 
@@ -220,7 +230,7 @@ bool Game::Update() {
 		return false;
 	}
 
-	GetDeviceContext().ClearRenderTargetView(renderTargetView.get(), color);
+	GetDeviceContext().ClearRenderTargetView(&GetRenderTargetView(), color);
 
 	deltaTime = (GetTickCount() / 1000.0f) - previosTime;
 	previosTime = GetTickCount() / 1000.0f;
@@ -228,8 +238,7 @@ bool Game::Update() {
 	return true;
 }
 
-void Game::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out)
-{
+void Game::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out) {
 	DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
 	shaderFlags |= D3DCOMPILE_DEBUG;
@@ -246,7 +255,8 @@ void Game::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, I
 }
 
 bool Game::ProcessResponse() {
-	printf("%d\n", response.message);
+	static MSG response = {};
+
 	while (response.message != WM_QUIT) {
 		if (PeekMessage(&response, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&response);
