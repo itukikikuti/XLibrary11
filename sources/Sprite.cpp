@@ -63,11 +63,10 @@ Sprite::Sprite(wchar_t* path) {
 	factory->CreateDecoderFromFilename(path, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
 	IWICBitmapFrameDecode* frame = nullptr;
 	decoder->GetFrame(0, &frame);
-	UINT textureWidth, textureHeight;
-	frame->GetSize(&textureWidth, &textureHeight);
+	frame->GetSize(&width, &height);
 	WICPixelFormatGUID pixelFormat;
 	frame->GetPixelFormat(&pixelFormat);
-	BYTE* textureBuffer = new BYTE[textureWidth * textureHeight * 4];
+	BYTE* textureBuffer = new BYTE[width * height * 4];
 
 	if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
 		IWICFormatConverter* formatConverter = nullptr;
@@ -75,15 +74,15 @@ Sprite::Sprite(wchar_t* path) {
 
 		formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
 
-		formatConverter->CopyPixels(0, textureWidth * 4, textureWidth * textureHeight * 4, textureBuffer);
+		formatConverter->CopyPixels(0, width * 4, width * height * 4, textureBuffer);
 	}
 	else {
-		frame->CopyPixels(0, textureWidth * 4, textureWidth * textureHeight * 4, textureBuffer);
+		frame->CopyPixels(0, width * 4, width * height * 4, textureBuffer);
 	}
 
 	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = textureWidth;
-	textureDesc.Height = textureHeight;
+	textureDesc.Width = width;
+	textureDesc.Height = height;
 	textureDesc.MipLevels = 1;
 	textureDesc.ArraySize = 1;
 	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -96,8 +95,8 @@ Sprite::Sprite(wchar_t* path) {
 
 	D3D11_SUBRESOURCE_DATA textureSubresourceData;
 	textureSubresourceData.pSysMem = textureBuffer;
-	textureSubresourceData.SysMemPitch = textureWidth * 4;
-	textureSubresourceData.SysMemSlicePitch = textureWidth * textureHeight * 4;
+	textureSubresourceData.SysMemPitch = width * 4;
+	textureSubresourceData.SysMemSlicePitch = width * height * 4;
 	Game::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
@@ -147,7 +146,7 @@ Sprite::~Sprite() {
 
 void Sprite::Draw(float x, float y, float angle, float scale) {
 	constant.world = XMMatrixIdentity();
-	constant.world *= XMMatrixScaling(256.0f * scale, 256.0f * scale, 1.0f);
+	constant.world *= XMMatrixScaling(width * scale, height * scale, 1.0f);
 	constant.world *= XMMatrixRotationZ(XMConvertToRadians(-angle));
 	constant.world *= XMMatrixTranslation(x, -y, 0.0f);
 

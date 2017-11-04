@@ -11,14 +11,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	Game::SetTitle("‚­‚Ÿw‚¹drftgy‚Ó‚¶‚±lp");
 
 	Sprite sprite1(L"box.jpg");
-	Sprite sprite2(L"PATAPON.png");
+	Sprite sprite2(L"4.JPG");
 
 	float t = 0.0f;
 	while (Game::Update()) {
 		t += Game::GetDeltaTime();
 
 		sprite1.Draw(200.0f, 200.0f, t * 360.0f, 1.0f);
-		sprite2.Draw(t * 50.0f, t * 25.0f, 0.0f, 0.5f);
+		sprite2.Draw(1000.0f, 250.0f, 0.0f, 1.0f);
 	}
 
 	return 0;

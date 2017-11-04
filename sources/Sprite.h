@@ -22,6 +22,8 @@ namespace GameLibrary {
 			DirectX::XMMATRIX projection;
 		};
 
+		UINT width;
+		UINT height;
 		int indexCount;
 		Constant constant;
 		ID3D11Buffer* vertexBuffer;
