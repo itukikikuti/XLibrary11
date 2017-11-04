@@ -1,4 +1,5 @@
 // (c) 2017 Naoki Nakagawa
+#include <memory>
 #include <wincodec.h>
 #include "Game.h"
 #include "Sprite.h"

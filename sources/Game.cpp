@@ -1,3 +1,4 @@
+#include <memory>
 #include <atlbase.h>
 #include "Game.h"
 
@@ -6,7 +7,6 @@ using namespace DirectX;
 using namespace GameLibrary;
 
 float Game::color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-float Game::previosTime = 0.0f;
 float Game::deltaTime = 0.0f;
 
 HWND Game::GetWindow() {
@@ -105,6 +105,11 @@ IDXGISwapChain& Game::GetSwapChain() {
 	static CComPtr<IDXGISwapChain> swapChain = nullptr;
 
 	if (swapChain == nullptr) {
+		const int SWAP_CHAIN_COUNT = 2;
+		const DXGI_FORMAT SWAP_CHAIN_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
+		const int MULTI_SAMPLE_COUNT = 1;
+		const int MULTI_SAMPLE_QUALITY = 0;
+
 		IDXGIDevice1* dxgiDevice = nullptr;
 		IDXGIAdapter* adapter = nullptr;
 		IDXGIFactory* factory = nullptr;
@@ -174,8 +179,6 @@ ID3D11DeviceContext& Game::GetDeviceContext() {
 		GetDevice().CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
 		vertexShaderBlob->Release();
 		deviceContext->IASetInputLayout(inputLayout);
-
-		previosTime = GetTickCount() / 1000.0f;
 	}
 
 	return *deviceContext;
@@ -211,10 +214,9 @@ bool Game::Update() {
 		return false;
 	}
 
-	GetDeviceContext().ClearRenderTargetView(&GetRenderTargetView(), color);
+	PrecessDeltaTime();
 
-	deltaTime = (GetTickCount() / 1000.0f) - previosTime;
-	previosTime = GetTickCount() / 1000.0f;
+	GetDeviceContext().ClearRenderTargetView(&GetRenderTargetView(), color);
 
 	return true;
 }
@@ -233,6 +235,13 @@ void Game::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, I
 		OutputDebugString((char*)errorBlob->GetBufferPointer());
 		errorBlob->Release();
 	}
+}
+
+void Game::PrecessDeltaTime() {
+	static unique_ptr<float> previosTime(new float(GetTickCount() / 1000.0f));
+
+	deltaTime = (GetTickCount() / 1000.0f) - *previosTime;
+	*previosTime = GetTickCount() / 1000.0f;
 }
 
 bool Game::ProcessResponse() {

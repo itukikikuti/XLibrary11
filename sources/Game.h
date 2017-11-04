@@ -1,7 +1,6 @@
 #if !defined(GRAPHICS_H)
 #define GRAPHICS_H
 
-#include <memory>
 #include <windows.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
@@ -32,16 +31,11 @@ namespace GameLibrary {
 			}
 		};
 
-		static const int SWAP_CHAIN_COUNT = 2;
-		static const DXGI_FORMAT SWAP_CHAIN_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
-		static const int MULTI_SAMPLE_COUNT = 1;
-		static const int MULTI_SAMPLE_QUALITY = 0;
-
 		static float color[4];
-		static float previosTime;
 		static float deltaTime;
 
 		static void CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);
+		static void PrecessDeltaTime();
 		static bool ProcessResponse();
 		static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
 	};
