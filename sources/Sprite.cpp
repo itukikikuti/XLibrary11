@@ -1,13 +1,83 @@
 // (c) 2017 Naoki Nakagawa
 #include <wincodec.h>
 #include "Game.h"
-#include "Sprite.h"
 
 using namespace std;
 using namespace DirectX;
 using namespace GameLibrary;
 
+Sprite::Sprite() {
+}
+
 Sprite::Sprite(wchar_t* path) {
+	IWICImagingFactory* factory = nullptr;
+	CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+	IWICBitmapDecoder* decoder = nullptr;
+	factory->CreateDecoderFromFilename(path, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+	IWICBitmapFrameDecode* frame = nullptr;
+	decoder->GetFrame(0, &frame);
+	frame->GetSize(&width, &height);
+	WICPixelFormatGUID pixelFormat;
+	frame->GetPixelFormat(&pixelFormat);
+	BYTE* textureBuffer = new BYTE[width * height * 4];
+
+	if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
+		IWICFormatConverter* formatConverter = nullptr;
+		factory->CreateFormatConverter(&formatConverter);
+
+		formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
+
+		formatConverter->CopyPixels(0, width * 4, width * height * 4, textureBuffer);
+	}
+	else {
+		frame->CopyPixels(0, width * 4, width * height * 4, textureBuffer);
+	}
+
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA textureSubresourceData;
+	textureSubresourceData.pSysMem = textureBuffer;
+	textureSubresourceData.SysMemPitch = width * 4;
+	textureSubresourceData.SysMemSlicePitch = width * height * 4;
+	Game::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+
+	delete[] textureBuffer;
+
+	Initialize();
+}
+
+Sprite::~Sprite() {
+	if (texture)
+		texture->Release();
+
+	if (shaderResourceView)
+		shaderResourceView->Release();
+
+	if (samplerState)
+		samplerState->Release();
+
+	if (vertexBuffer)
+		vertexBuffer->Release();
+
+	if (indexBuffer)
+		indexBuffer->Release();
+
+	if (constantBuffer)
+		constantBuffer->Release();
+}
+
+void Sprite::Initialize() {
 	Vertex quad[] = {
 		{ XMFLOAT3(-0.5f, 0.5f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
 		{ XMFLOAT3(0.5f, 0.5f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
@@ -57,48 +127,6 @@ Sprite::Sprite(wchar_t* path) {
 	constantBufferDesc.CPUAccessFlags = 0;
 	Game::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
-	IWICImagingFactory* factory = nullptr;
-	CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
-	IWICBitmapDecoder* decoder = nullptr;
-	factory->CreateDecoderFromFilename(path, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
-	IWICBitmapFrameDecode* frame = nullptr;
-	decoder->GetFrame(0, &frame);
-	frame->GetSize(&width, &height);
-	WICPixelFormatGUID pixelFormat;
-	frame->GetPixelFormat(&pixelFormat);
-	BYTE* textureBuffer = new BYTE[width * height * 4];
-
-	if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
-		IWICFormatConverter* formatConverter = nullptr;
-		factory->CreateFormatConverter(&formatConverter);
-
-		formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
-
-		formatConverter->CopyPixels(0, width * 4, width * height * 4, textureBuffer);
-	}
-	else {
-		frame->CopyPixels(0, width * 4, width * height * 4, textureBuffer);
-	}
-
-	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = width;
-	textureDesc.Height = height;
-	textureDesc.MipLevels = 1;
-	textureDesc.ArraySize = 1;
-	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.SampleDesc.Quality = 0;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.CPUAccessFlags = 0;
-	textureDesc.MiscFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA textureSubresourceData;
-	textureSubresourceData.pSysMem = textureBuffer;
-	textureSubresourceData.SysMemPitch = width * 4;
-	textureSubresourceData.SysMemSlicePitch = width * height * 4;
-	Game::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
-
 	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 	shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -120,28 +148,6 @@ Sprite::Sprite(wchar_t* path) {
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	Game::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
-
-	delete[] textureBuffer;
-}
-
-Sprite::~Sprite() {
-	if (texture)
-		texture->Release();
-
-	if (shaderResourceView)
-		shaderResourceView->Release();
-
-	if (samplerState)
-		samplerState->Release();
-
-	if (vertexBuffer)
-		vertexBuffer->Release();
-
-	if (indexBuffer)
-		indexBuffer->Release();
-
-	if (constantBuffer)
-		constantBuffer->Release();
 }
 
 void Sprite::Draw(float x, float y, float angle, float scale) {

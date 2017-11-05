@@ -1,11 +1,12 @@
 #if !defined(GRAPHICS_H)
 #define GRAPHICS_H
-
 #include <list>
 #include <windows.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+#include "Sprite.h"
+#include "Text.h"
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
@@ -24,7 +25,7 @@ namespace GameLibrary {
 		static ID3D11DeviceContext& GetDeviceContext();
 		static ID3D11RenderTargetView& GetRenderTargetView();
 		static float GetDeltaTime();
-		static void LoadFont(char* path);
+		static void AddFont(char* path);
 		static bool Update();
 
 	private:

@@ -1,7 +1,5 @@
 #include <crtdbg.h>
 #include "Game.h"
-#include "Sprite.h"
-#include "Text.h"
 
 using namespace GameLibrary;
 
@@ -9,7 +7,7 @@ using namespace GameLibrary;
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	Game::LoadFont("衡山毛筆フォント行書.ttf");
+	Game::AddFont("衡山毛筆フォント行書.ttf");
 	Game::SetTitle("くぁwせdrftgyふじこlp");
 
 	Sprite sprite1(L"clock.png");

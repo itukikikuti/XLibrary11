@@ -236,7 +236,7 @@ float Game::GetDeltaTime() {
 	return deltaTime;
 }
 
-void Game::LoadFont(char* path) {
+void Game::AddFont(char* path) {
 	fontPathList.push_back(path);
 	AddFontResource(path);
 }
