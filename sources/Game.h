@@ -1,6 +1,7 @@
 #if !defined(GRAPHICS_H)
 #define GRAPHICS_H
 
+#include <list>
 #include <windows.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
@@ -23,6 +24,7 @@ namespace GameLibrary {
 		static ID3D11DeviceContext& GetDeviceContext();
 		static ID3D11RenderTargetView& GetRenderTargetView();
 		static float GetDeltaTime();
+		static void LoadFont(char* path);
 		static bool Update();
 
 	private:
@@ -35,7 +37,9 @@ namespace GameLibrary {
 
 		static float color[4];
 		static float deltaTime;
+		static std::list<char*> fontPathList;
 
+		static void Finalize();
 		static void CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);
 		static void PrecessDeltaTime();
 		static bool ProcessResponse();

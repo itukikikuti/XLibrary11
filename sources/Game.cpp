@@ -9,6 +9,7 @@ using namespace GameLibrary;
 
 float Game::color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 float Game::deltaTime = 0.0f;
+list<char*> Game::fontPathList;
 
 HWND Game::GetWindow() {
 	static HWND window = nullptr;
@@ -161,7 +162,7 @@ ID3D11DeviceContext& Game::GetDeviceContext() {
 	if (deviceContext == nullptr) {
 		GetDevice().GetImmediateContext(&deviceContext);
 		
-		D3D11_VIEWPORT viewPort;
+		D3D11_VIEWPORT viewPort = {};
 		viewPort.Width = (float)GetWidth();
 		viewPort.Height = (float)GetHeight();
 		viewPort.MinDepth = 0.0f;
@@ -192,7 +193,7 @@ ID3D11DeviceContext& Game::GetDeviceContext() {
 		deviceContext->IASetInputLayout(inputLayout.Get());
 
 		ID3D11BlendState* blendState = nullptr;
-		D3D11_BLEND_DESC blendDesc;
+		D3D11_BLEND_DESC blendDesc = {};
 		blendDesc.AlphaToCoverageEnable = false;
 		blendDesc.IndependentBlendEnable = false;
 		blendDesc.RenderTarget[0].BlendEnable = true;
@@ -235,10 +236,16 @@ float Game::GetDeltaTime() {
 	return deltaTime;
 }
 
+void Game::LoadFont(char* path) {
+	fontPathList.push_back(path);
+	AddFontResource(path);
+}
+
 bool Game::Update() {
 	GetSwapChain().Present(0, 0);
 
 	if (!ProcessResponse()) {
+		Finalize();
 		return false;
 	}
 
@@ -247,6 +254,12 @@ bool Game::Update() {
 	GetDeviceContext().ClearRenderTargetView(&GetRenderTargetView(), color);
 
 	return true;
+}
+
+void Game::Finalize() {
+	for (auto i = fontPathList.begin(); i != fontPathList.end(); i++) {
+		RemoveFontResource(*i);
+	}
 }
 
 void Game::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out) {
@@ -285,7 +298,6 @@ bool Game::ProcessResponse() {
 		}
 	}
 
-	PostQuitMessage(response.wParam);
 	return false;
 }
 

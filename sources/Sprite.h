@@ -3,8 +3,7 @@
 #define SPRITE_H
 
 namespace GameLibrary {
-	class Sprite
-	{
+	class Sprite {
 	public:
 		Sprite(wchar_t* path);
 		~Sprite();

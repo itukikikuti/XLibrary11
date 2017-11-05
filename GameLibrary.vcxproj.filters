@@ -15,12 +15,18 @@
     <ClCompile Include="sources\Game.cpp">
       <Filter>sources</Filter>
     </ClCompile>
+    <ClCompile Include="sources\Text.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sources\Sprite.h">
       <Filter>sources</Filter>
     </ClInclude>
     <ClInclude Include="sources\Game.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Text.h">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>
