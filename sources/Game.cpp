@@ -58,7 +58,10 @@ void Game::SetSize(int width, int height) {
 	int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + width;
 	int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + height;
 
-	SetWindowPos(GetWindow(), nullptr, 0, 0, w, h, SWP_NOMOVE | SWP_NOZORDER);
+	int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
+	int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
+
+	SetWindowPos(GetWindow(), nullptr, x, y, w, h, SWP_NOZORDER);
 }
 
 char* Game::GetTitle() {
