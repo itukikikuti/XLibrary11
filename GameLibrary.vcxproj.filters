@@ -29,5 +29,8 @@
     <ClInclude Include="sources\Text.h">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\Header.h">
+      <Filter>sources</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

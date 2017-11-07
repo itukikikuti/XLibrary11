@@ -1,16 +1,46 @@
+#include <fstream>
+#include <string>
+#include <regex>
 #include <crtdbg.h>
 #include "Game.h"
 
+using namespace std;
 using namespace DirectX;
 using namespace GameLibrary;
 
-void LinkLibrary() {
+string GetSourceCode(const char* path) {
+	ifstream sourceFile(path);
+	istreambuf_iterator<char> iterator(sourceFile);
+	istreambuf_iterator<char> last;
+	string sourceCode(iterator, last);
+	sourceFile.close();
+	return sourceCode;
+}
 
+void MargeSourceCode(char* file, string& sourceCode) {
+	string from = "#include \"" + string(file) + "\"";
+	string path = "sources/" + string(file);
+
+	string::size_type pos = sourceCode.find(from);
+	sourceCode.replace(pos, from.size(), GetSourceCode(path.c_str()));
+}
+
+void LinkLibrary() {
+	string game = GetSourceCode("sources/Game.h");
+
+	MargeSourceCode("Sprite.h", game);
+	MargeSourceCode("Text.h", game);
+
+	ofstream libraryFile("GameLibrary.h");
+	libraryFile << game;
+	libraryFile.close();
 }
 
 //int main() {
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
+	//LinkLibrary();
 
 	Game::AddFont("衡山毛筆フォント行書.ttf");
 	Game::SetTitle("くぁwせdrftgyふじこlp");
