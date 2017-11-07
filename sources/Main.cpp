@@ -25,9 +25,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 
 		sprite2.Draw(1000.0f, 250.0f, 0.0f, 1.0f);
 
-		text1.Draw(Game::GetMousePosition().x, Game::GetMousePosition().y, t * -2000.0f, 0.5f);
-		text1.Draw(Game::GetWidth() / 2.0f, Game::GetHeight() / 2.0f - 200.0f, 0.0f, 1.0f);
-		text2.Draw(Game::GetWidth() / 2.0f, Game::GetHeight() / 2.0f + 200.0f, 0.0f, 2.0f + sinf(t) * 1.0f);
+		text1.Draw(Game::GetMousePosition().x, Game::GetMousePosition().y, t * -2000.0f, 0.5f);;
+
+		text1.Draw(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f - 200.0f, 0.0f, 1.0f);
+		text2.Draw(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f + 200.0f, 0.0f, 2.0f + sinf(t) * 1.0f);
 	}
 
 	return 0;

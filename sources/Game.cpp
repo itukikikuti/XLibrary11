@@ -7,7 +7,8 @@ using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace GameLibrary;
 
-float Game::color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+XMINT2 Game::size;
+XMINT2 Game::mousePosition;
 float Game::deltaTime = 0.0f;
 list<char*> Game::fontPathList;
 
@@ -42,21 +43,13 @@ HWND Game::GetWindow() {
 	return window;
 }
 
-int Game::GetWidth() {
-	RECT clientRect = {};
-	GetClientRect(GetWindow(), &clientRect);
-
-	return (clientRect.right - clientRect.left);
-}
-
-int Game::GetHeight() {
-	RECT clientRect = {};
-	GetClientRect(GetWindow(), &clientRect);
-
-	return (clientRect.bottom - clientRect.top);
+XMINT2 Game::GetSize() {
+	return size;
 }
 
 void Game::SetSize(int width, int height) {
+	size = XMINT2(width, height);
+
 	RECT windowRect = {};
 	RECT clientRect = {};
 	GetWindowRect(GetWindow(), &windowRect);
@@ -132,8 +125,8 @@ IDXGISwapChain& Game::GetSwapChain() {
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		swapChainDesc.BufferCount = SWAP_CHAIN_COUNT;
-		swapChainDesc.BufferDesc.Width = GetWidth();
-		swapChainDesc.BufferDesc.Height = GetHeight();
+		swapChainDesc.BufferDesc.Width = GetSize().x;
+		swapChainDesc.BufferDesc.Height = GetSize().y;
 		swapChainDesc.BufferDesc.Format = SWAP_CHAIN_FORMAT;
 		swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
@@ -163,8 +156,8 @@ ID3D11DeviceContext& Game::GetDeviceContext() {
 		GetDevice().GetImmediateContext(&deviceContext);
 		
 		D3D11_VIEWPORT viewPort = {};
-		viewPort.Width = (float)GetWidth();
-		viewPort.Height = (float)GetHeight();
+		viewPort.Width = (float)GetSize().x;
+		viewPort.Height = (float)GetSize().y;
 		viewPort.MinDepth = 0.0f;
 		viewPort.MaxDepth = 1.0f;
 		viewPort.TopLeftX = 0;
@@ -232,13 +225,8 @@ ID3D11RenderTargetView& Game::GetRenderTargetView() {
 	return *renderTargetView.Get();
 }
 
-POINT Game::GetMousePosition() {
-	POINT point = {};
-	GetCursorPos(&point);
-
-	ScreenToClient(GetWindow(), &point);
-
-	return point;
+XMINT2 Game::GetMousePosition() {
+	return mousePosition;
 }
 
 float Game::GetDeltaTime() {
@@ -251,6 +239,8 @@ void Game::AddFont(char* path) {
 }
 
 bool Game::Update() {
+	static float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+
 	GetSwapChain().Present(0, 0);
 
 	if (!ProcessResponse()) {
@@ -258,6 +248,8 @@ bool Game::Update() {
 		return false;
 	}
 
+	ProcessSize();
+	ProcessMousePosition();
 	PrecessDeltaTime();
 
 	GetDeviceContext().ClearRenderTargetView(&GetRenderTargetView(), color);
@@ -285,6 +277,21 @@ void Game::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, I
 		OutputDebugString((char*)errorBlob->GetBufferPointer());
 		errorBlob->Release();
 	}
+}
+
+void Game::ProcessSize() {
+	RECT clientRect = {};
+	GetClientRect(GetWindow(), &clientRect);
+
+	size = XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+}
+
+void Game::ProcessMousePosition() {
+	POINT point = {};
+	GetCursorPos(&point);
+
+	ScreenToClient(GetWindow(), &point);
+	mousePosition = XMINT2(point.x, point.y);
 }
 
 void Game::PrecessDeltaTime() {

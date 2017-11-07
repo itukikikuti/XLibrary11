@@ -15,8 +15,7 @@ namespace GameLibrary {
 	public:
 		Game() = delete;
 		static HWND GetWindow();
-		static int GetWidth();
-		static int GetHeight();
+		static DirectX::XMINT2 GetSize();
 		static void SetSize(int width, int height);
 		static char* GetTitle();
 		static void SetTitle(char* title);
@@ -24,18 +23,21 @@ namespace GameLibrary {
 		static IDXGISwapChain& GetSwapChain();
 		static ID3D11DeviceContext& GetDeviceContext();
 		static ID3D11RenderTargetView& GetRenderTargetView();
-		static POINT GetMousePosition();
+		static DirectX::XMINT2 GetMousePosition();
 		static float GetDeltaTime();
 		static void AddFont(char* path);
 		static bool Update();
 
 	private:
-		static float color[4];
+		static DirectX::XMINT2 size;
+		static DirectX::XMINT2 mousePosition;
 		static float deltaTime;
 		static std::list<char*> fontPathList;
 
 		static void Finalize();
 		static void CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);
+		static void ProcessSize();
+		static void ProcessMousePosition();
 		static void PrecessDeltaTime();
 		static bool ProcessResponse();
 		static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam);

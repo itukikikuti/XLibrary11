@@ -92,8 +92,8 @@ void Sprite::Initialize() {
 	};
 	indexCount = sizeof(index) / sizeof(index[0]);
 
-	constant.view = XMMatrixLookAtLH(XMVectorSet(Game::GetWidth() / 2.0f, -Game::GetHeight() / 2.0f, 0.0f, 0.0f), XMVectorSet(Game::GetWidth() / 2.0f, -Game::GetHeight() / 2.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-	constant.projection = XMMatrixOrthographicLH(Game::GetWidth() * 1.0f, Game::GetHeight() * 1.0f, -1.0f, 1.0f);
+	constant.view = XMMatrixLookAtLH(XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	constant.projection = XMMatrixOrthographicLH(Game::GetSize().x * 1.0f, Game::GetSize().y * 1.0f, -1.0f, 1.0f);
 
 	D3D11_BUFFER_DESC vertexBufferDesc = {};
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
