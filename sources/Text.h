@@ -1,6 +1,6 @@
 // (c) 2017 Naoki Nakagawa
-#if !defined(TEXT_H)
-#define TEXT_H
+#if !defined(TEXT)
+#define TEXT
 
 namespace GameLibrary {
 	class Text : public Sprite {

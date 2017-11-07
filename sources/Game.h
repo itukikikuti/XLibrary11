@@ -1,5 +1,5 @@
-#if !defined(GRAPHICS_H)
-#define GRAPHICS_H
+#if !defined(GAME_LIBRARY)
+#define GAME_LIBRARY
 #include <list>
 #include <windows.h>
 #include <d3d11.h>

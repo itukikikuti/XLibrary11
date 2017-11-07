@@ -1,6 +1,6 @@
 // (c) 2017 Naoki Nakagawa
-#if !defined(SPRITE_H)
-#define SPRITE_H
+#if !defined(SPRITE)
+#define SPRITE
 
 namespace GameLibrary {
 	class Sprite {
