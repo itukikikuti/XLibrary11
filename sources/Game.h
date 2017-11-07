@@ -24,6 +24,9 @@ namespace GameLibrary {
 		static ID3D11DeviceContext& GetDeviceContext();
 		static ID3D11RenderTargetView& GetRenderTargetView();
 		static DirectX::XMINT2 GetMousePosition();
+		static bool GetKey(int VK_CODE);
+		static bool GetKeyUp(int VK_CODE);
+		static bool GetKeyDown(int VK_CODE);
 		static float GetDeltaTime();
 		static void AddFont(char* path);
 		static bool Update();
@@ -31,6 +34,8 @@ namespace GameLibrary {
 	private:
 		static DirectX::XMINT2 size;
 		static DirectX::XMINT2 mousePosition;
+		static BYTE preKeyState[];
+		static BYTE keyState[];
 		static float deltaTime;
 		static std::list<char*> fontPathList;
 
@@ -38,6 +43,7 @@ namespace GameLibrary {
 		static void CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out);
 		static void ProcessSize();
 		static void ProcessMousePosition();
+		static void ProcessKey();
 		static void PrecessDeltaTime();
 		static bool ProcessResponse();
 		static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam);

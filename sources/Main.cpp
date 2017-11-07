@@ -1,6 +1,7 @@
 #include <crtdbg.h>
 #include "Game.h"
 
+using namespace DirectX;
 using namespace GameLibrary;
 
 //int main() {
@@ -16,6 +17,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	Text text2("王", "衡山毛筆フォント行書");
 
 	float t = 0.0f;
+	XMINT2 position(0, 0);
 	while (Game::Update()) {
 		t += Game::GetDeltaTime();
 
@@ -25,7 +27,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 
 		sprite2.Draw(1000.0f, 250.0f, 0.0f, 1.0f);
 
-		text1.Draw(Game::GetMousePosition().x, Game::GetMousePosition().y, t * -2000.0f, 0.5f);;
+		if (Game::GetKeyUp(VK_LBUTTON)) {
+			position = XMINT2(Game::GetMousePosition().x, Game::GetMousePosition().y);
+		}
+		text1.Draw(position.x, position.y, t * -2000.0f, 0.5f);;
 
 		text1.Draw(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f - 200.0f, 0.0f, 1.0f);
 		text2.Draw(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f + 200.0f, 0.0f, 2.0f + sinf(t) * 1.0f);

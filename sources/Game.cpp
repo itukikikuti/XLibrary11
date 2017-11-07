@@ -9,6 +9,8 @@ using namespace GameLibrary;
 
 XMINT2 Game::size;
 XMINT2 Game::mousePosition;
+BYTE Game::preKeyState[256];
+BYTE Game::keyState[256];
 float Game::deltaTime = 0.0f;
 list<char*> Game::fontPathList;
 
@@ -232,6 +234,18 @@ XMINT2 Game::GetMousePosition() {
 	return mousePosition;
 }
 
+bool Game::GetKey(int VK_CODE) {
+	return keyState[VK_CODE] & 0x80;
+}
+
+bool Game::GetKeyUp(int VK_CODE) {
+	return !(keyState[VK_CODE] & 0x80) && (preKeyState[VK_CODE] & 0x80);
+}
+
+bool Game::GetKeyDown(int VK_CODE) {
+	return (keyState[VK_CODE] & 0x80) && !(preKeyState[VK_CODE] & 0x80);
+}
+
 float Game::GetDeltaTime() {
 	return deltaTime;
 }
@@ -253,6 +267,7 @@ bool Game::Update() {
 
 	ProcessSize();
 	ProcessMousePosition();
+	ProcessKey();
 	PrecessDeltaTime();
 
 	GetDeviceContext().ClearRenderTargetView(&GetRenderTargetView(), color);
@@ -297,6 +312,13 @@ void Game::ProcessMousePosition() {
 	mousePosition = XMINT2(point.x, point.y);
 }
 
+void Game::ProcessKey() {
+	for (int i = 0; i < 256; i++) {
+		preKeyState[i] = keyState[i];
+	}
+
+	GetKeyboardState(keyState);
+}
 void Game::PrecessDeltaTime() {
 	static float preTime = GetTickCount() / 1000.0f;
 
@@ -322,7 +344,7 @@ bool Game::ProcessResponse() {
 
 LRESULT WINAPI Game::ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
 	if (message == WM_DESTROY) {
-		PostQuitMessage(wParam);
+		PostQuitMessage(0);
 	}
 	return DefWindowProc(window, message, wParam, lParam);
 }
