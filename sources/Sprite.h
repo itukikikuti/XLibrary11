@@ -1,6 +1,5 @@
 // (c) 2017 Naoki Nakagawa
-#if !defined(SPRITE)
-#define SPRITE
+#pragma once
 
 namespace GameLibrary {
 	class Sprite {
@@ -39,5 +38,3 @@ namespace GameLibrary {
 		ID3D11SamplerState* samplerState;
 	};
 }
-
-#endif

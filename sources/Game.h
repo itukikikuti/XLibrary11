@@ -1,5 +1,4 @@
-#if !defined(GAME_LIBRARY)
-#define GAME_LIBRARY
+#pragma once
 #include <list>
 #include <windows.h>
 #include <d3d11.h>
@@ -49,5 +48,3 @@ namespace GameLibrary {
 		static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
 	};
 }
-
-#endif
