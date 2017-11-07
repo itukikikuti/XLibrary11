@@ -1,6 +1,6 @@
 // (c) 2017 Naoki Nakagawa
 #pragma once
-#include <list>
+#include <vector>
 #include <windows.h>
 #include <wrl.h>
 #include <d3d11.h>
@@ -45,11 +45,11 @@ namespace GameLibrary {
 		}
 
 		static DirectX::XMINT2 GetSize() {
-			return size;
+			return GetSizeProperty();
 		}
 
 		static void SetSize(int width, int height) {
-			size = DirectX::XMINT2(width, height);
+			GetSizeProperty() = DirectX::XMINT2(width, height);
 
 			RECT windowRect = {};
 			RECT clientRect = {};
@@ -230,27 +230,27 @@ namespace GameLibrary {
 		}
 
 		static DirectX::XMINT2 GetMousePosition() {
-			return mousePosition;
+			return GetMousePositionProperty();
 		}
 
 		static bool GetKey(int VK_CODE) {
-			return keyState[VK_CODE] & 0x80;
+			return GetKeyStateProperty()[VK_CODE] & 0x80;
 		}
 
 		static bool GetKeyUp(int VK_CODE) {
-			return !(keyState[VK_CODE] & 0x80) && (preKeyState[VK_CODE] & 0x80);
+			return !(GetKeyStateProperty()[VK_CODE] & 0x80) && (GetPreKeyStateProperty()[VK_CODE] & 0x80);
 		}
 
 		static bool GetKeyDown(int VK_CODE) {
-			return (keyState[VK_CODE] & 0x80) && !(preKeyState[VK_CODE] & 0x80);
+			return (GetKeyStateProperty()[VK_CODE] & 0x80) && !(GetPreKeyStateProperty()[VK_CODE] & 0x80);
 		}
 
 		static float GetDeltaTime() {
-			return deltaTime;
+			return GetDeltaTimeProperty();
 		}
 
 		static void AddFont(char* path) {
-			fontPathList.push_back(path);
+			GetFontPathListProperty().push_back(path);
 			AddFontResource(path);
 		}
 
@@ -275,16 +275,39 @@ namespace GameLibrary {
 		}
 
 	private:
-		static DirectX::XMINT2 size;
-		static DirectX::XMINT2 mousePosition;
-		static BYTE preKeyState[];
-		static BYTE keyState[];
-		static float deltaTime;
-		static std::list<char*> fontPathList;
+		static DirectX::XMINT2& GetSizeProperty() {
+			static DirectX::XMINT2 size;
+			return size;
+		}
+
+		static DirectX::XMINT2& GetMousePositionProperty() {
+			static DirectX::XMINT2 mousePosition;
+			return mousePosition;
+		}
+
+		static BYTE* GetPreKeyStateProperty() {
+			static BYTE preKeyState[256];
+			return preKeyState;
+		}
+
+		static BYTE* GetKeyStateProperty() {
+			static BYTE keyState[256];
+			return keyState;
+		}
+
+		static float& GetDeltaTimeProperty() {
+			static float deltaTime;
+			return deltaTime;
+		}
+
+		static std::vector<char*>& GetFontPathListProperty() {
+			std::vector<char*> fontPathList;
+			return fontPathList;
+		}
 
 		static void Finalize() {
-			for (auto i = fontPathList.begin(); i != fontPathList.end(); i++) {
-				RemoveFontResource(*i);
+			for (int i = 0; i < GetFontPathListProperty().size(); i++) {
+				RemoveFontResource(GetFontPathListProperty()[i]);
 			}
 		}
 
@@ -308,7 +331,7 @@ namespace GameLibrary {
 			RECT clientRect = {};
 			GetClientRect(GetWindow(), &clientRect);
 
-			size = DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+			GetSizeProperty() = DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 		}
 
 		static void ProcessMousePosition() {
@@ -316,21 +339,21 @@ namespace GameLibrary {
 			GetCursorPos(&point);
 
 			ScreenToClient(GetWindow(), &point);
-			mousePosition = DirectX::XMINT2(point.x, point.y);
+			GetMousePositionProperty() = DirectX::XMINT2(point.x, point.y);
 		}
 
 		static void ProcessKey() {
 			for (int i = 0; i < 256; i++) {
-				preKeyState[i] = keyState[i];
+				GetPreKeyStateProperty()[i] = GetKeyStateProperty()[i];
 			}
 
-			GetKeyboardState(keyState);
+			GetKeyboardState(GetKeyStateProperty());
 		}
 
 		static void PrecessDeltaTime() {
 			static float preTime = GetTickCount() / 1000.0f;
 
-			deltaTime = (GetTickCount() / 1000.0f) - preTime;
+			GetDeltaTimeProperty() = (GetTickCount() / 1000.0f) - preTime;
 			preTime = GetTickCount() / 1000.0f;
 		}
 
