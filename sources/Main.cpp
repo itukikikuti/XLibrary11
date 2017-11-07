@@ -13,7 +13,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	Sprite sprite1(L"clock.png");
 	Sprite sprite2(L"4.JPG");
 	Text text1("あ");
-	Text text2("あ", "衡山毛筆フォント行書");
+	Text text2("王", "衡山毛筆フォント行書");
 
 	float t = 0.0f;
 	while (Game::Update()) {
@@ -25,7 +25,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 
 		sprite2.Draw(1000.0f, 250.0f, 0.0f, 1.0f);
 
-		text1.Draw(Game::GetWidth() / 2.0f, Game::GetHeight() / 2.0f - 200.0f, 0.0f, 2.0f + sinf(t) * 1.0f);
+		text1.Draw(Game::GetMousePosition().x, Game::GetMousePosition().y, t * -2000.0f, 0.5f);
+		text1.Draw(Game::GetWidth() / 2.0f, Game::GetHeight() / 2.0f - 200.0f, 0.0f, 1.0f);
 		text2.Draw(Game::GetWidth() / 2.0f, Game::GetHeight() / 2.0f + 200.0f, 0.0f, 2.0f + sinf(t) * 1.0f);
 	}
 

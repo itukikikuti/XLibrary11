@@ -24,18 +24,12 @@ namespace GameLibrary {
 		static IDXGISwapChain& GetSwapChain();
 		static ID3D11DeviceContext& GetDeviceContext();
 		static ID3D11RenderTargetView& GetRenderTargetView();
+		static POINT GetMousePosition();
 		static float GetDeltaTime();
 		static void AddFont(char* path);
 		static bool Update();
 
 	private:
-		class ComReleaser {
-		public:
-			void operator()(IUnknown* com) {
-				com->Release();
-			}
-		};
-
 		static float color[4];
 		static float deltaTime;
 		static std::list<char*> fontPathList;

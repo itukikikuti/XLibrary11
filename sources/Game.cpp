@@ -232,6 +232,15 @@ ID3D11RenderTargetView& Game::GetRenderTargetView() {
 	return *renderTargetView.Get();
 }
 
+POINT Game::GetMousePosition() {
+	POINT point = {};
+	GetCursorPos(&point);
+
+	ScreenToClient(GetWindow(), &point);
+
+	return point;
+}
+
 float Game::GetDeltaTime() {
 	return deltaTime;
 }
@@ -279,10 +288,10 @@ void Game::CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, I
 }
 
 void Game::PrecessDeltaTime() {
-	static unique_ptr<float> previosTime(new float(GetTickCount() / 1000.0f));
+	static float preTime = GetTickCount() / 1000.0f;
 
-	deltaTime = (GetTickCount() / 1000.0f) - *previosTime;
-	*previosTime = GetTickCount() / 1000.0f;
+	deltaTime = (GetTickCount() / 1000.0f) - preTime;
+	preTime = GetTickCount() / 1000.0f;
 }
 
 bool Game::ProcessResponse() {

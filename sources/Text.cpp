@@ -8,7 +8,7 @@ using namespace GameLibrary;
 
 Text::Text(char* text, char* fontFamily) {
 	LOGFONT logFont = {};
-	logFont.lfHeight = 100;
+	logFont.lfHeight = 256;
 	logFont.lfWidth = 0;
 	logFont.lfEscapement = 0;
 	logFont.lfOrientation = 0;
