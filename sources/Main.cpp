@@ -40,7 +40,7 @@ void LinkLibrary() {
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	//LinkLibrary();
+	LinkLibrary();
 
 	Game::AddFont("衡山毛筆フォント行書.ttf");
 	Game::SetTitle("くぁwせdrftgyふじこlp");
