@@ -343,11 +343,30 @@ namespace GameLibrary {
 			GetKeyboardState(GetKeyStateProperty());
 		}
 
-		static void PrecessDeltaTime() {
-			static float preTime = GetTickCount() / 1000.0f;
+		static LARGE_INTEGER GetCounter() {
+			LARGE_INTEGER counter;
+			QueryPerformanceCounter(&counter);
+			return counter;
+		}
+		
+		static LARGE_INTEGER GetCountFrequency() {
+			LARGE_INTEGER frequency;
+			QueryPerformanceFrequency(&frequency);
+			return frequency;
+		}
 
-			GetDeltaTimeProperty() = (GetTickCount() / 1000.0f) - preTime;
-			preTime = GetTickCount() / 1000.0f;
+		static void PrecessDeltaTime() {
+			static LARGE_INTEGER preTime = GetCounter();
+			static LARGE_INTEGER frequency = GetCountFrequency();
+
+			LARGE_INTEGER time = GetCounter();
+			GetDeltaTimeProperty() = (float)(time.QuadPart - preTime.QuadPart) / frequency.QuadPart;
+			preTime = GetCounter();
+
+			//static float preTime = GetTickCount() / 1000.0f;
+
+			//GetDeltaTimeProperty() = (GetTickCount() / 1000.0f) - preTime;
+			//preTime = GetTickCount() / 1000.0f;
 		}
 
 		static bool ProcessResponse() {
