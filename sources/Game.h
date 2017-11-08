@@ -251,6 +251,10 @@ namespace GameLibrary {
 			return (GetKeyStateProperty()[VK_CODE] & 0x80) && !(GetPreKeyStateProperty()[VK_CODE] & 0x80);
 		}
 
+		static float GetTime() {
+			return GetTimeProperty();
+		}
+
 		static float GetDeltaTime() {
 			return GetDeltaTimeProperty();
 		}
@@ -272,6 +276,7 @@ namespace GameLibrary {
 			ProcessMousePosition();
 			ProcessKey();
 			PrecessDeltaTime();
+			PrecessTime();
 
 			GetDeviceContext().ClearRenderTargetView(&GetRenderTargetView(), color);
 
@@ -299,8 +304,13 @@ namespace GameLibrary {
 			return keyState;
 		}
 
+		static float& GetTimeProperty() {
+			static float time = 0.0f;
+			return time;
+		}
+
 		static float& GetDeltaTimeProperty() {
-			static float deltaTime;
+			static float deltaTime = 0.0f;
 			return deltaTime;
 		}
 
@@ -365,6 +375,10 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv);}");
 			LARGE_INTEGER frequency;
 			QueryPerformanceFrequency(&frequency);
 			return frequency;
+		}
+
+		static void PrecessTime() {
+			GetTimeProperty() += GetDeltaTime();
 		}
 
 		static void PrecessDeltaTime() {

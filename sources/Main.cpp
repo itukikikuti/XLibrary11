@@ -63,7 +63,7 @@ int Main() {
 		if (Game::GetKey(VK_LBUTTON)) {
 			position = XMINT2(Game::GetMousePosition().x, Game::GetMousePosition().y);
 		}
-		text1.Draw(position.x, position.y, t * -100.0f, 0.5f);;
+		text1.Draw(position.x, position.y, Game::GetTime() * -100.0f, 0.5f);;
 
 		text1.Draw(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f - 200.0f, 0.0f, 1.0f);
 		text2.Draw(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f + 200.0f, 0.0f, 2.0f + sinf(t) * 1.0f);
