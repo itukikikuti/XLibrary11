@@ -493,6 +493,10 @@ namespace GameLibrary {
 				constantBuffer->Release();
 		}
 
+		DirectX::XMINT2 GetSize() {
+			return DirectX::XMINT2(width, height);
+		}
+
 		void Draw(float x, float y, float angle, float scale) {
 			using namespace DirectX;
 
