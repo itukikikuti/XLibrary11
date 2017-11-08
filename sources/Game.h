@@ -9,6 +9,12 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
+#if defined(_DEBUG)
+#define Main() main()
+#else
+#define Main() WINAPI WinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
+#endif
+
 namespace GameLibrary {
 	class Game {
 	public:
@@ -250,8 +256,7 @@ namespace GameLibrary {
 		}
 
 		static void AddFont(char* path) {
-			GetFontPathListProperty().push_back(path);
-			AddFontResource(path);
+			AddFontResourceEx(path, FR_PRIVATE, nullptr);
 		}
 
 		static bool Update() {
@@ -260,7 +265,6 @@ namespace GameLibrary {
 			GetSwapChain().Present(0, 0);
 
 			if (!ProcessResponse()) {
-				Finalize();
 				return false;
 			}
 
@@ -298,17 +302,6 @@ namespace GameLibrary {
 		static float& GetDeltaTimeProperty() {
 			static float deltaTime;
 			return deltaTime;
-		}
-
-		static std::vector<char*>& GetFontPathListProperty() {
-			std::vector<char*> fontPathList;
-			return fontPathList;
-		}
-
-		static void Finalize() {
-			for (int i = 0; i < GetFontPathListProperty().size(); i++) {
-				RemoveFontResource(GetFontPathListProperty()[i]);
-			}
 		}
 
 		static void CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out) {
