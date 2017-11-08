@@ -1,6 +1,6 @@
 // (c) 2017 Naoki Nakagawa
 #pragma once
-#include <vector>
+#include <string>
 #include <windows.h>
 #include <wrl.h>
 #include <d3d11.h>
@@ -175,12 +175,12 @@ namespace GameLibrary {
 				deviceContext->RSSetViewports(1, &viewPort);
 
 				ID3DBlob *vertexShaderBlob = nullptr;
-				CompileShader(L"shader.fx", "VS", "vs_4_0", &vertexShaderBlob);
+				CompileShader(nullptr, "VS", "vs_4_0", &vertexShaderBlob);
 				GetDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
 				deviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
 
 				ID3DBlob *pixelShaderBlob = nullptr;
-				CompileShader(L"shader.fx", "PS", "ps_4_0", &pixelShaderBlob);
+				CompileShader(nullptr, "PS", "ps_4_0", &pixelShaderBlob);
 				GetDevice().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, pixelShader.GetAddressOf());
 				pixelShaderBlob->Release();
 				deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
@@ -312,7 +312,19 @@ namespace GameLibrary {
 
 			ID3DBlob *errorBlob = nullptr;
 
-			D3DCompileFromFile(filePath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
+			if (filePath == nullptr) {
+				std::string source("\
+cbuffer C:register(b0){matrix W;matrix V;matrix P;};\
+Texture2D Tex:register(t0);SamplerState S:register(s0);\
+struct VO{float4 pos:SV_POSITION;float2 uv:TEXCOORD;};\
+VO VS(float4 v:POSITION,float2 uv:TEXCOORD){VO o=(VO)0;o.pos=mul(W,v);o.pos=mul(V,o.pos);o.pos=mul(P,o.pos);o.uv=uv;return o;}\
+float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv);}");
+
+				D3DCompile(source.c_str(), source.size(), nullptr, nullptr, nullptr, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
+			}
+			else {
+				D3DCompileFromFile(filePath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
+			}
 
 			if (errorBlob != nullptr) {
 				OutputDebugString((char*)errorBlob->GetBufferPointer());
