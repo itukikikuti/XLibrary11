@@ -96,7 +96,10 @@ namespace GameLibrary {
 
 			Initialize();
 
-			constant.color = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+			Position() = XMFLOAT2(0.0f, 0.0f);
+			Angle() = 0.0f;
+			Scale() = XMFLOAT2(1.0f, 1.0f);
+			Color() = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 		}
 	};
 }

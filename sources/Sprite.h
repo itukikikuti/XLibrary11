@@ -52,7 +52,10 @@ namespace GameLibrary {
 
 			Initialize();
 
-			constant.color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+			Position() = DirectX::XMFLOAT2(0.0f, 0.0f);
+			Angle() = 0.0f;
+			Scale() = DirectX::XMFLOAT2(1.0f, 1.0f);
+			Color() = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 		}
 
 		virtual ~Sprite() {
@@ -79,13 +82,34 @@ namespace GameLibrary {
 			return DirectX::XMINT2(width, height);
 		}
 
-		void Draw(float x, float y, float angle, float scale) {
+		void SetScale(float scale) {
+			Scale() = DirectX::XMFLOAT2(scale, scale);
+		}
+
+		DirectX::XMFLOAT2& Position() {
+			return position;
+		}
+
+		float& Angle() {
+			return angle;
+		}
+
+		DirectX::XMFLOAT2& Scale() {
+			return scale;
+		}
+
+		DirectX::XMFLOAT4& Color() {
+			return color;
+		}
+
+		void Draw() {
 			using namespace DirectX;
 
 			constant.world = XMMatrixIdentity();
-			constant.world *= XMMatrixScaling(width * scale, height * scale, 1.0f);
-			constant.world *= XMMatrixRotationZ(XMConvertToRadians(-angle));
-			constant.world *= XMMatrixTranslation(x, -y, 0.0f);
+			constant.world *= XMMatrixScaling(width * Scale().x, height * Scale().y, 1.0f);
+			constant.world *= XMMatrixRotationZ(XMConvertToRadians(-Angle()));
+			constant.world *= XMMatrixTranslation(Position().x, -Position().y, 0.0f);
+			constant.color = Color();
 
 			Game::GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
 
@@ -104,6 +128,10 @@ namespace GameLibrary {
 			DirectX::XMFLOAT4 color;
 		};
 
+		DirectX::XMFLOAT2 position;
+		float angle;
+		DirectX::XMFLOAT2 scale;
+		DirectX::XMFLOAT4 color;
 		UINT width;
 		UINT height;
 		ID3D11Texture2D* texture;

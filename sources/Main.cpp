@@ -45,28 +45,43 @@ int Main() {
 	Game::SetTitle("くぁwせdrftgyふじこlp");
 
 	Sprite sprite1(L"clock.png");
+	sprite1.Position() = XMFLOAT2(200.0f, 200.0f);
 	Sprite sprite2(L"4.JPG");
+	sprite2.Position() = XMFLOAT2(1000.0f, 250.0f);
+
 	Text text1("あ");
-	Text text2("玉", "衡山毛筆フォント行書");
+	text1.SetScale(0.5f);
+	Text text2("あ");
+	Text text3("玉", "衡山毛筆フォント行書");
 
 	float t = 0.0f;
-	XMINT2 position(0, 0);
 	while (Game::Update()) {
 		t += Game::GetDeltaTime();
 
-		sprite1.Draw(200.0f, 200.0f, t * (360.0f), 1.3f);
-		sprite1.Draw(200.0f, 200.0f, t * (360.0f / 60.0f), 1.0f);
-		sprite1.Draw(200.0f, 200.0f, t * (360.0f / 60.0f / 12.0f), 0.7f);
+		sprite1.Angle() = t * (360.0f);
+		sprite1.Scale().y = 1.3f;
+		sprite1.Draw();
+		sprite1.Angle() = t * (360.0f / 60.0f);
+		sprite1.Scale().y = 1.0f;
+		sprite1.Draw();
+		sprite1.Angle() = t * (360.0f / 60.0f / 12.0f);
+		sprite1.Scale().y = 0.7f;
+		sprite1.Draw();
 
-		sprite2.Draw(1000.0f, 250.0f, 0.0f, 1.0f);
+		sprite2.Draw();
 
 		if (Game::GetKey(VK_LBUTTON)) {
-			position = XMINT2(Game::GetMousePosition().x, Game::GetMousePosition().y);
+			text1.Position() = XMFLOAT2(Game::GetMousePosition().x, Game::GetMousePosition().y);
 		}
-		text1.Draw(position.x, position.y, Game::GetTime() * -100.0f, 0.5f);;
+		text1.Angle() = Game::GetTime() * -100.0f;
+		text1.Draw();
 
-		text1.Draw(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f - 200.0f, 0.0f, 1.0f);
-		text2.Draw(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f + 200.0f, 0.0f, 2.0f + sinf(t) * 1.0f);
+		text2.Position() = XMFLOAT2(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f - 200.0f);
+		text2.Draw();
+
+		text3.Position() = XMFLOAT2(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f + 200.0f);
+		text3.SetScale(2.0f + sinf(t) * 1.0f);
+		text3.Draw();
 	}
 
 	return 0;
