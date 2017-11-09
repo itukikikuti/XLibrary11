@@ -86,7 +86,7 @@ namespace GameLibrary {
 			for (int y = origin.y; y < origin.y + bitmapSize.y; y++) {
 				for (int x = origin.x; x < origin.x + bitmapSize.x; x++) {
 					DWORD alpha = (255 * ptr[x - origin.x + bitmapSize.x * (y - origin.y)]) / (LEVEL - 1);
-					DWORD color = 0x00000000 | (alpha << 24);
+					DWORD color = 0x00ffffff | (alpha << 24);
 					memcpy((BYTE*)bits + mapped.RowPitch * y + 4 * x, &color, sizeof(DWORD));
 				}
 			}
@@ -95,6 +95,8 @@ namespace GameLibrary {
 			delete[] ptr;
 
 			Initialize();
+
+			constant.color = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 		}
 	};
 }

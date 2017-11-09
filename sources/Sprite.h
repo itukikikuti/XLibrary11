@@ -5,9 +5,6 @@
 namespace GameLibrary {
 	class Sprite {
 	public:
-		Sprite() {
-		}
-
 		Sprite(wchar_t* path) {
 			IWICImagingFactory* factory = nullptr;
 			CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
@@ -54,6 +51,8 @@ namespace GameLibrary {
 			delete[] textureBuffer;
 
 			Initialize();
+
+			constant.color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 		}
 
 		virtual ~Sprite() {
@@ -98,6 +97,21 @@ namespace GameLibrary {
 		}
 
 	protected:
+		struct Constant {
+			DirectX::XMMATRIX world;
+			DirectX::XMMATRIX view;
+			DirectX::XMMATRIX projection;
+			DirectX::XMFLOAT4 color;
+		};
+
+		UINT width;
+		UINT height;
+		ID3D11Texture2D* texture;
+		Constant constant;
+
+		Sprite() {
+		}
+
 		void Initialize() {
 			using namespace DirectX;
 
@@ -173,25 +187,14 @@ namespace GameLibrary {
 			Game::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
 		}
 
-		UINT width;
-		UINT height;
-		ID3D11Texture2D* texture;
-
 	private:
 		struct Vertex {
 			DirectX::XMFLOAT3 position;
 			DirectX::XMFLOAT2 uv;
 		};
 
-		struct Constant {
-			DirectX::XMMATRIX world;
-			DirectX::XMMATRIX view;
-			DirectX::XMMATRIX projection;
-		};
-
 		wchar_t* path;
 		int indexCount;
-		Constant constant;
 		ID3D11Buffer* vertexBuffer;
 		ID3D11Buffer* indexBuffer;
 		ID3D11Buffer* constantBuffer;

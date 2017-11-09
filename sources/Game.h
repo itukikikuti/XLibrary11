@@ -51,11 +51,11 @@ namespace GameLibrary {
 		}
 
 		static DirectX::XMINT2 GetSize() {
-			return GetSizeProperty();
+			return Size();
 		}
 
 		static void SetSize(int width, int height) {
-			GetSizeProperty() = DirectX::XMINT2(width, height);
+			Size() = DirectX::XMINT2(width, height);
 
 			RECT windowRect = {};
 			RECT clientRect = {};
@@ -236,27 +236,27 @@ namespace GameLibrary {
 		}
 
 		static DirectX::XMINT2 GetMousePosition() {
-			return GetMousePositionProperty();
+			return MousePosition();
 		}
 
 		static bool GetKey(int VK_CODE) {
-			return GetKeyStateProperty()[VK_CODE] & 0x80;
+			return KeyState()[VK_CODE] & 0x80;
 		}
 
 		static bool GetKeyUp(int VK_CODE) {
-			return !(GetKeyStateProperty()[VK_CODE] & 0x80) && (GetPreKeyStateProperty()[VK_CODE] & 0x80);
+			return !(KeyState()[VK_CODE] & 0x80) && (PreKeyState()[VK_CODE] & 0x80);
 		}
 
 		static bool GetKeyDown(int VK_CODE) {
-			return (GetKeyStateProperty()[VK_CODE] & 0x80) && !(GetPreKeyStateProperty()[VK_CODE] & 0x80);
+			return (KeyState()[VK_CODE] & 0x80) && !(PreKeyState()[VK_CODE] & 0x80);
 		}
 
 		static float GetTime() {
-			return GetTimeProperty();
+			return Time();
 		}
 
 		static float GetDeltaTime() {
-			return GetDeltaTimeProperty();
+			return DeltaTime();
 		}
 
 		static void AddFont(char* path) {
@@ -284,32 +284,32 @@ namespace GameLibrary {
 		}
 
 	private:
-		static DirectX::XMINT2& GetSizeProperty() {
+		static DirectX::XMINT2& Size() {
 			static DirectX::XMINT2 size;
 			return size;
 		}
 
-		static DirectX::XMINT2& GetMousePositionProperty() {
+		static DirectX::XMINT2& MousePosition() {
 			static DirectX::XMINT2 mousePosition;
 			return mousePosition;
 		}
 
-		static BYTE* GetPreKeyStateProperty() {
+		static BYTE* PreKeyState() {
 			static BYTE preKeyState[256];
 			return preKeyState;
 		}
 
-		static BYTE* GetKeyStateProperty() {
+		static BYTE* KeyState() {
 			static BYTE keyState[256];
 			return keyState;
 		}
 
-		static float& GetTimeProperty() {
+		static float& Time() {
 			static float time = 0.0f;
 			return time;
 		}
 
-		static float& GetDeltaTimeProperty() {
+		static float& DeltaTime() {
 			static float deltaTime = 0.0f;
 			return deltaTime;
 		}
@@ -324,11 +324,11 @@ namespace GameLibrary {
 
 			if (filePath == nullptr) {
 				std::string source("\
-cbuffer C:register(b0){matrix W;matrix V;matrix P;};\
+cbuffer CB:register(b0){matrix W;matrix V;matrix P;float4 C;};\
 Texture2D Tex:register(t0);SamplerState S:register(s0);\
-struct VO{float4 pos:SV_POSITION;float2 uv:TEXCOORD;};\
-VO VS(float4 v:POSITION,float2 uv:TEXCOORD){VO o=(VO)0;o.pos=mul(W,v);o.pos=mul(V,o.pos);o.pos=mul(P,o.pos);o.uv=uv;return o;}\
-float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv);}");
+struct VO{float4 pos:SV_POSITION;float4 c:COLOR;float2 uv:TEXCOORD;};\
+VO VS(float4 v:POSITION,float2 uv:TEXCOORD){VO o=(VO)0;o.pos=mul(W,v);o.pos=mul(V,o.pos);o.pos=mul(P,o.pos);o.c=C;o.uv=uv;return o;}\
+float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}");
 
 				D3DCompile(source.c_str(), source.size(), nullptr, nullptr, nullptr, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 			}
@@ -346,7 +346,7 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv);}");
 			RECT clientRect = {};
 			GetClientRect(GetWindow(), &clientRect);
 
-			GetSizeProperty() = DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+			Size() = DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 		}
 
 		static void ProcessMousePosition() {
@@ -354,15 +354,15 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv);}");
 			GetCursorPos(&point);
 
 			ScreenToClient(GetWindow(), &point);
-			GetMousePositionProperty() = DirectX::XMINT2(point.x, point.y);
+			MousePosition() = DirectX::XMINT2(point.x, point.y);
 		}
 
 		static void ProcessKey() {
 			for (int i = 0; i < 256; i++) {
-				GetPreKeyStateProperty()[i] = GetKeyStateProperty()[i];
+				PreKeyState()[i] = KeyState()[i];
 			}
 
-			GetKeyboardState(GetKeyStateProperty());
+			GetKeyboardState(KeyState());
 		}
 
 		static LARGE_INTEGER GetCounter() {
@@ -378,7 +378,7 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv);}");
 		}
 
 		static void PrecessTime() {
-			GetTimeProperty() += GetDeltaTime();
+			Time() += GetDeltaTime();
 		}
 
 		static void PrecessDeltaTime() {
@@ -386,7 +386,7 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv);}");
 			static LARGE_INTEGER frequency = GetCountFrequency();
 
 			LARGE_INTEGER time = GetCounter();
-			GetDeltaTimeProperty() = (float)(time.QuadPart - preTime.QuadPart) / frequency.QuadPart;
+			DeltaTime() = (float)(time.QuadPart - preTime.QuadPart) / frequency.QuadPart;
 			preTime = GetCounter();
 		}
 
