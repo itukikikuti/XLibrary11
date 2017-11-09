@@ -6,6 +6,7 @@ namespace GameLibrary {
 	class Sprite {
 	public:
 		Sprite(wchar_t* path) {
+			Game::GetWindow();
 			IWICImagingFactory* factory = nullptr;
 			CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 			IWICBitmapDecoder* decoder = nullptr;
