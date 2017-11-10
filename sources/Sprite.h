@@ -35,7 +35,7 @@ namespace GameLibrary {
 			IWICImagingFactory* factory = nullptr;
 			CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 			IWICBitmapDecoder* decoder = nullptr;
-			factory->CreateDecoderFromFilename(Game::GetWideChar(path), 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+			factory->CreateDecoderFromFilename(Game::GetWideChar(path).c_str(), 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
 			IWICBitmapFrameDecode* frame = nullptr;
 			decoder->GetFrame(0, &frame);
 			frame->GetSize(&width, &height);

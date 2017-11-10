@@ -28,7 +28,7 @@ void MargeSourceCode(const char* file, string& sourceCode) {
 void LinkLibrary() {
 	string game = GetSourceCode("sources/Game.h");
 
-	MargeSourceCode("Material.h", game);
+	//MargeSourceCode("Material.h", game);
 	MargeSourceCode("Sprite.h", game);
 	MargeSourceCode("Text.h", game);
 

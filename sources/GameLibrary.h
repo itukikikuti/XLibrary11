@@ -1,5 +1,6 @@
 // (c) 2017 Naoki Nakagawa
 #pragma once
+#include <string>
 #include <tchar.h>
 #include <windows.h>
 #include <wrl.h>
@@ -264,16 +265,18 @@ namespace GameLibrary {
 
 			return true;
 		}
-		PUBLIC static wchar_t* GetWideChar(const TCHAR* tstring) {
+		PUBLIC static std::wstring GetWideChar(const TCHAR* tstring) {
 #ifdef UNICODE
 			return (wchar_t*)tstring;
 #else
 			size_t length = _tcslen(tstring) + 1;
 			size_t result = 0;
 			wchar_t* wstring = new wchar_t[length];
-
 			mbstowcs_s(&result, wstring, length, tstring, _TRUNCATE);
-			return wstring;
+
+			std::wstring wideString(wstring);
+			delete wstring;
+			return wideString;
 #endif
 		}
 		PRIVATE static DirectX::XMINT2& Size() {
@@ -319,7 +322,7 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
 				D3DCompile(shader, strlen(shader), nullptr, nullptr, nullptr, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 			}
 			else {
-				D3DCompileFromFile(GetWideChar(path), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
+				D3DCompileFromFile(GetWideChar(path).c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 			}
 
 			if (errorBlob != nullptr) {
@@ -429,7 +432,7 @@ namespace GameLibrary {
 			IWICImagingFactory* factory = nullptr;
 			CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 			IWICBitmapDecoder* decoder = nullptr;
-			factory->CreateDecoderFromFilename(Game::GetWideChar(path), 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+			factory->CreateDecoderFromFilename(Game::GetWideChar(path).c_str(), 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
 			IWICBitmapFrameDecode* frame = nullptr;
 			decoder->GetFrame(0, &frame);
 			frame->GetSize(&width, &height);
