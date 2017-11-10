@@ -73,7 +73,7 @@ class Game {
 		GetWindowText(GetWindow(), title, GetWindowTextLength(GetWindow()));
 		return title;
 	}
-	PUBLIC static void SetTitle(char* title) {
+	PUBLIC static void SetTitle(const char* title) {
 		SetWindowText(GetWindow(), title);
 	}
 	PUBLIC static ID3D11Device& GetDevice() {
@@ -244,7 +244,7 @@ class Game {
 	PUBLIC static float GetDeltaTime() {
 		return DeltaTime();
 	}
-	PUBLIC static void AddFont(char* path) {
+	PUBLIC static void AddFont(const char* path) {
 		AddFontResourceEx(path, FR_PRIVATE, nullptr);
 	}
 	PUBLIC static bool Update() {
@@ -290,7 +290,7 @@ class Game {
 		static float deltaTime = 0.0f;
 		return deltaTime;
 	}
-	PRIVATE static void CompileShader(WCHAR* filePath, char* entryPoint, char* shaderModel, ID3DBlob** out) {
+	PRIVATE static void CompileShader(WCHAR* filePath, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
 		shaderFlags |= D3DCOMPILE_DEBUG;

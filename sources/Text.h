@@ -4,7 +4,7 @@
 
 GAME_LIBRARY_BEGIN
 class Text : public Sprite {
-	PUBLIC Text(char* text, char* fontFamily = "‚l‚r –¾’©") {
+	PUBLIC Text(const char* text, const char* fontFamily = "‚l‚r –¾’©") {
 		LOGFONT logFont = {};
 		logFont.lfHeight = 256;
 		logFont.lfWidth = 0;

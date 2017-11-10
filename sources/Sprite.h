@@ -31,7 +31,7 @@ class Sprite {
 	PRIVATE ID3D11ShaderResourceView* shaderResourceView;
 	PRIVATE ID3D11SamplerState* samplerState;
 
-	PUBLIC Sprite(wchar_t* path) {
+	PUBLIC Sprite(const wchar_t* path) {
 		Game::GetWindow();
 		IWICImagingFactory* factory = nullptr;
 		CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));

@@ -17,7 +17,7 @@ string GetSourceCode(const char* path) {
 	return sourceCode;
 }
 
-void MargeSourceCode(char* file, string& sourceCode) {
+void MargeSourceCode(const char* file, string& sourceCode) {
 	string from = "#include \"" + string(file) + "\"";
 	string path = "sources/" + string(file);
 
