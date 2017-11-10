@@ -41,18 +41,18 @@ int Main() {
 
 	LinkLibrary();
 
-	Sprite sprite1(L"clock.png");
+	Sprite sprite1(_T("clock.png"));
 	sprite1.Position() = XMFLOAT2(200.0f, 200.0f);
-	Sprite sprite2(L"4.JPG");
+	Sprite sprite2(_T("4.JPG"));
 	sprite2.Position() = XMFLOAT2(1000.0f, 250.0f);
 
-	Game::AddFont("衡山毛筆フォント行書.ttf");
-	Game::SetTitle("くぁwせdrftgyふじこlp");
+	Game::AddFont(_T("衡山毛筆フォント行書.ttf"));
+	Game::SetTitle(_T("くぁwせdrftgyふじこlp"));
 
-	Text text1("あ");
+	Text text1(_T("あ"));
 	text1.SetScale(0.5f);
-	Text text2("あ");
-	Text text3("玉", "衡山毛筆フォント行書");
+	Text text2(_T("あ"));
+	Text text3(_T("玉"), _T("衡山毛筆フォント行書"));
 
 	float t = 0.0f;
 	while (Game::Update()) {
