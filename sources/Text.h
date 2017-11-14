@@ -4,8 +4,8 @@
 
 namespace GameLibrary {
 	class Text : public Sprite {
-		PUBLIC Text(const TCHAR* text, const TCHAR* fontFamily = _T("‚l‚r –¾’©")) {
-			LOGFONT logFont = {};
+		PUBLIC Text(const char* text, const char* fontFamily = "‚l‚r –¾’©") {
+			LOGFONTA logFont = {};
 			logFont.lfHeight = 256;
 			logFont.lfWidth = 0;
 			logFont.lfEscapement = 0;
@@ -19,31 +19,27 @@ namespace GameLibrary {
 			logFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 			logFont.lfQuality = PROOF_QUALITY;
 			logFont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
-			StringCchCopy(logFont.lfFaceName, 32, fontFamily);
-			HFONT font = CreateFontIndirect(&logFont);
+			StringCchCopyA(logFont.lfFaceName, 32, fontFamily);
+			HFONT font = CreateFontIndirectA(&logFont);
 
 			HDC dc = GetDC(nullptr);
 			HFONT oldFont = (HFONT)SelectObject(dc, font);
 
 			UINT code = 0;
-#if _UNICODE
-			code = (UINT)*text;
-#else
 			if (IsDBCSLeadByte(*text)) {
 				code = (BYTE)text[0] << 8 | (BYTE)text[1];
 			}
 			else {
 				code = text[0];
 			}
-#endif
 
-			TEXTMETRIC textMetrics = {};
-			GetTextMetrics(dc, &textMetrics);
+			TEXTMETRICA textMetrics = {};
+			GetTextMetricsA(dc, &textMetrics);
 			GLYPHMETRICS glyphMetrics;
 			const MAT2 matrix = { { 0, 1 },{ 0, 0 },{ 0, 0 },{ 0, 1 } };
-			DWORD size = GetGlyphOutline(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
+			DWORD size = GetGlyphOutlineA(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
 			BYTE* ptr = new BYTE[size];
-			GetGlyphOutline(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, ptr, &matrix);
+			GetGlyphOutlineA(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, ptr, &matrix);
 
 			SelectObject(dc, oldFont);
 			DeleteObject(font);

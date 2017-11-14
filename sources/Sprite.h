@@ -30,12 +30,16 @@ namespace GameLibrary {
 		PRIVATE ID3D11ShaderResourceView* shaderResourceView;
 		PRIVATE ID3D11SamplerState* samplerState;
 
-		PUBLIC Sprite(const TCHAR* path) {
+		PUBLIC Sprite(const char* path) {
 			Game::GetWindow();
 			IWICImagingFactory* factory = nullptr;
 			CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 			IWICBitmapDecoder* decoder = nullptr;
-			factory->CreateDecoderFromFilename(Game::GetWideChar(path).c_str(), 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+			size_t length = strlen(path) + 1;
+			wchar_t* wstring = new wchar_t[length];
+			mbstowcs_s(nullptr, wstring, length, path, _TRUNCATE);
+			factory->CreateDecoderFromFilename(wstring, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+			delete wstring;
 			IWICBitmapFrameDecode* frame = nullptr;
 			decoder->GetFrame(0, &frame);
 			frame->GetSize(&width, &height);

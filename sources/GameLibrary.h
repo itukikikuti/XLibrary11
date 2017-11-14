@@ -1,7 +1,6 @@
 // (c) 2017 Naoki Nakagawa
 #pragma once
 #include <string>
-#include <tchar.h>
 #include <windows.h>
 #include <wrl.h>
 #include <d3d11.h>
@@ -10,7 +9,7 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
-#define Main() WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
+#define Main() WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #define PUBLIC public:
 #define PRIVATE private:
 #define PROTECTED protected:
@@ -22,24 +21,24 @@ namespace GameLibrary {
 			static HWND window = nullptr;
 
 			if (window == nullptr) {
-				HINSTANCE instance = GetModuleHandle(nullptr);
+				HINSTANCE instance = GetModuleHandleA(nullptr);
 
-				WNDCLASSEX windowClass = {};
-				windowClass.cbSize = sizeof(WNDCLASSEX);
+				WNDCLASSEXA windowClass = {};
+				windowClass.cbSize = sizeof(WNDCLASSEXA);
 				windowClass.style = CS_HREDRAW | CS_VREDRAW;
 				windowClass.lpfnWndProc = ProcessWindow;
 				windowClass.cbClsExtra = 0;
 				windowClass.cbWndExtra = 0;
 				windowClass.hInstance = instance;
-				windowClass.hIcon = LoadIcon(instance, IDI_APPLICATION);
-				windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
+				windowClass.hIcon = nullptr;
+				windowClass.hCursor = nullptr;
 				windowClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 				windowClass.lpszMenuName = nullptr;
-				windowClass.lpszClassName = _T("GameLibrary");
-				windowClass.hIconSm = LoadIcon(instance, IDI_APPLICATION);
-				if (!RegisterClassEx(&windowClass)) return nullptr;
+				windowClass.lpszClassName = "GameLibrary";
+				windowClass.hIconSm = nullptr;
+				if (!RegisterClassExA(&windowClass)) return nullptr;
 
-				window = CreateWindow(_T("GameLibrary"), _T("GameLibrary"), WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
+				window = CreateWindowA("GameLibrary", "GameLibrary", WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
 
 				SetSize(1280, 720);
 
@@ -67,13 +66,13 @@ namespace GameLibrary {
 
 			SetWindowPos(GetWindow(), nullptr, x, y, w, h, SWP_NOZORDER);
 		}
-		PUBLIC static TCHAR* GetTitle() {
-			TCHAR* title = nullptr;
-			GetWindowText(GetWindow(), title, GetWindowTextLength(GetWindow()));
+		PUBLIC static char* GetTitle() {
+			char* title = nullptr;
+			GetWindowTextA(GetWindow(), title, GetWindowTextLengthA(GetWindow()));
 			return title;
 		}
-		PUBLIC static void SetTitle(const TCHAR* title) {
-			SetWindowText(GetWindow(), title);
+		PUBLIC static void SetTitle(const char* title) {
+			SetWindowTextA(GetWindow(), title);
 		}
 		PUBLIC static ID3D11Device& GetDevice() {
 			static Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
@@ -243,10 +242,10 @@ namespace GameLibrary {
 		PUBLIC static float GetDeltaTime() {
 			return DeltaTime();
 		}
-		PUBLIC static void AddFont(const TCHAR* path) {
-			AddFontResourceEx(path, FR_PRIVATE, nullptr);
+		PUBLIC static void AddFont(const char* path) {
+			AddFontResourceExA(path, FR_PRIVATE, nullptr);
 		}
-		PUBLIC static bool Update() {
+		PUBLIC static bool Loop() {
 			static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 			GetSwapChain().Present(0, 0);
@@ -264,20 +263,6 @@ namespace GameLibrary {
 			GetDeviceContext().ClearRenderTargetView(&GetRenderTargetView(), color);
 
 			return true;
-		}
-		PUBLIC static std::wstring GetWideChar(const TCHAR* tstring) {
-#if defined(UNICODE) || defined(_UNICODE)
-			return (wchar_t*)tstring;
-#else
-			size_t length = _tcslen(tstring) + 1;
-			size_t result = 0;
-			wchar_t* wstring = new wchar_t[length];
-			mbstowcs_s(&result, wstring, length, tstring, _TRUNCATE);
-
-			std::wstring wideString(wstring);
-			delete wstring;
-			return wideString;
-#endif
 		}
 		PRIVATE static DirectX::XMINT2& Size() {
 			static DirectX::XMINT2 size;
@@ -303,7 +288,7 @@ namespace GameLibrary {
 			static float deltaTime = 0.0f;
 			return deltaTime;
 		}
-		PRIVATE static void CompileShader(const TCHAR* path, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
+		PRIVATE static void CompileShader(const char* path, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 			DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
 			shaderFlags |= D3DCOMPILE_DEBUG;
@@ -322,12 +307,16 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
 				D3DCompile(shader, strlen(shader), nullptr, nullptr, nullptr, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 			}
 			else {
-				D3DCompileFromFile(GetWideChar(path).c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
+				size_t length = strlen(path) + 1;
+				wchar_t* wstring = new wchar_t[length];
+				mbstowcs_s(nullptr, wstring, length, path, _TRUNCATE);
+				D3DCompileFromFile(wstring, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
+				delete wstring;
 			}
 
 			if (errorBlob != nullptr) {
-				OutputDebugString((TCHAR*)errorBlob->GetBufferPointer());
-				MessageBox(GetWindow(), (TCHAR*)errorBlob->GetBufferPointer(), _T("Shader Error"), MB_OK);
+				OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+				MessageBoxA(GetWindow(), (char*)errorBlob->GetBufferPointer(), "Shader Error", MB_OK);
 				errorBlob->Release();
 			}
 		}
@@ -376,9 +365,9 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
 			static MSG response = {};
 
 			while (response.message != WM_QUIT) {
-				if (PeekMessage(&response, nullptr, 0, 0, PM_REMOVE)) {
+				if (PeekMessageA(&response, nullptr, 0, 0, PM_REMOVE)) {
 					TranslateMessage(&response);
-					DispatchMessage(&response);
+					DispatchMessageA(&response);
 				}
 				else {
 					return true;
@@ -391,7 +380,7 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
 			if (message == WM_DESTROY) {
 				PostQuitMessage(0);
 			}
-			return DefWindowProc(window, message, wParam, lParam);
+			return DefWindowProcA(window, message, wParam, lParam);
 		}
 	};
 }
@@ -428,12 +417,16 @@ namespace GameLibrary {
 		PRIVATE ID3D11ShaderResourceView* shaderResourceView;
 		PRIVATE ID3D11SamplerState* samplerState;
 
-		PUBLIC Sprite(const TCHAR* path) {
+		PUBLIC Sprite(const char* path) {
 			Game::GetWindow();
 			IWICImagingFactory* factory = nullptr;
 			CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 			IWICBitmapDecoder* decoder = nullptr;
-			factory->CreateDecoderFromFilename(Game::GetWideChar(path).c_str(), 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+			size_t length = strlen(path) + 1;
+			wchar_t* wstring = new wchar_t[length];
+			mbstowcs_s(nullptr, wstring, length, path, _TRUNCATE);
+			factory->CreateDecoderFromFilename(wstring, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+			delete wstring;
 			IWICBitmapFrameDecode* frame = nullptr;
 			decoder->GetFrame(0, &frame);
 			frame->GetSize(&width, &height);
@@ -616,8 +609,8 @@ namespace GameLibrary {
 
 namespace GameLibrary {
 	class Text : public Sprite {
-		PUBLIC Text(const TCHAR* text, const TCHAR* fontFamily = _T("‚l‚r –¾’©")) {
-			LOGFONT logFont = {};
+		PUBLIC Text(const char* text, const char* fontFamily = "‚l‚r –¾’©") {
+			LOGFONTA logFont = {};
 			logFont.lfHeight = 256;
 			logFont.lfWidth = 0;
 			logFont.lfEscapement = 0;
@@ -631,31 +624,27 @@ namespace GameLibrary {
 			logFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 			logFont.lfQuality = PROOF_QUALITY;
 			logFont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
-			StringCchCopy(logFont.lfFaceName, 32, fontFamily);
-			HFONT font = CreateFontIndirect(&logFont);
+			StringCchCopyA(logFont.lfFaceName, 32, fontFamily);
+			HFONT font = CreateFontIndirectA(&logFont);
 
 			HDC dc = GetDC(nullptr);
 			HFONT oldFont = (HFONT)SelectObject(dc, font);
 
 			UINT code = 0;
-#if _UNICODE
-			code = (UINT)*text;
-#else
 			if (IsDBCSLeadByte(*text)) {
 				code = (BYTE)text[0] << 8 | (BYTE)text[1];
 			}
 			else {
 				code = text[0];
 			}
-#endif
 
-			TEXTMETRIC textMetrics = {};
-			GetTextMetrics(dc, &textMetrics);
+			TEXTMETRICA textMetrics = {};
+			GetTextMetricsA(dc, &textMetrics);
 			GLYPHMETRICS glyphMetrics;
 			const MAT2 matrix = { { 0, 1 },{ 0, 0 },{ 0, 0 },{ 0, 1 } };
-			DWORD size = GetGlyphOutline(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
+			DWORD size = GetGlyphOutlineA(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
 			BYTE* ptr = new BYTE[size];
-			GetGlyphOutline(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, ptr, &matrix);
+			GetGlyphOutlineA(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, ptr, &matrix);
 
 			SelectObject(dc, oldFont);
 			DeleteObject(font);
