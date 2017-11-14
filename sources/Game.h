@@ -327,6 +327,7 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
 
 			if (errorBlob != nullptr) {
 				OutputDebugString((TCHAR*)errorBlob->GetBufferPointer());
+				MessageBox(GetWindow(), (TCHAR*)errorBlob->GetBufferPointer(), _T("Shader Error"), MB_OK);
 				errorBlob->Release();
 			}
 		}
