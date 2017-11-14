@@ -266,7 +266,7 @@ namespace GameLibrary {
 			return true;
 		}
 		PUBLIC static std::wstring GetWideChar(const TCHAR* tstring) {
-#ifdef UNICODE
+#if defined(UNICODE) || defined(_UNICODE)
 			return (wchar_t*)tstring;
 #else
 			size_t length = _tcslen(tstring) + 1;
