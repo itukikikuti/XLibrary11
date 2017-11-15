@@ -175,15 +175,6 @@ namespace GameLibrary {
 			if (deviceContext == nullptr) {
 				GetDevice().GetImmediateContext(&deviceContext);
 
-				D3D11_VIEWPORT viewPort = {};
-				viewPort.Width = (float)GetSize().x;
-				viewPort.Height = (float)GetSize().y;
-				viewPort.MinDepth = 0.0f;
-				viewPort.MaxDepth = 1.0f;
-				viewPort.TopLeftX = 0;
-				viewPort.TopLeftY = 0;
-				deviceContext->RSSetViewports(1, &viewPort);
-
 				ID3DBlob *vertexShaderBlob = nullptr;
 				CompileShader(nullptr, "VS", "vs_4_0", &vertexShaderBlob);
 				GetDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
@@ -229,16 +220,22 @@ namespace GameLibrary {
 		PUBLIC static ID3D11RenderTargetView& GetRenderTargetView() {
 			static Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
 			static Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTargetTexture = nullptr;
-			static Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> renderTargetShaderResourceView = nullptr;
 
 			if (renderTargetView == nullptr) {
 				GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)renderTargetTexture.GetAddressOf());
 
 				GetDevice().CreateRenderTargetView(renderTargetTexture.Get(), nullptr, renderTargetView.GetAddressOf());
 
-				GetDevice().CreateShaderResourceView(renderTargetTexture.Get(), nullptr, renderTargetShaderResourceView.GetAddressOf());
-
 				GetDeviceContext().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
+
+				D3D11_VIEWPORT viewPort = {};
+				viewPort.Width = (float)GetSize().x;
+				viewPort.Height = (float)GetSize().y;
+				viewPort.MinDepth = 0.0f;
+				viewPort.MaxDepth = 1.0f;
+				viewPort.TopLeftX = 0;
+				viewPort.TopLeftY = 0;
+				GetDeviceContext().RSSetViewports(1, &viewPort);
 			}
 
 			return *renderTargetView.Get();
