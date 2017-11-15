@@ -31,7 +31,7 @@ namespace GameLibrary {
 		PRIVATE ID3D11SamplerState* samplerState;
 
 		PUBLIC Sprite(const char* path) {
-			Game::GetWindow();
+			CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 			IWICImagingFactory* factory = nullptr;
 			CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 			IWICBitmapDecoder* decoder = nullptr;
@@ -156,6 +156,8 @@ namespace GameLibrary {
 			};
 			indexCount = sizeof(index) / sizeof(index[0]);
 
+			int x = Game::GetSize().x;
+			int y = Game::GetSize().y;
 			constant.view = DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 			constant.projection = DirectX::XMMatrixOrthographicLH(Game::GetSize().x * 1.0f, Game::GetSize().y * 1.0f, -1.0f, 1.0f);
 

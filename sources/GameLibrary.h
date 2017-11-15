@@ -48,11 +48,12 @@ namespace GameLibrary {
 			return window;
 		}
 		PUBLIC static DirectX::XMINT2 GetSize() {
-			return Size();
+			RECT clientRect = {};
+			GetClientRect(GetWindow(), &clientRect);
+
+			return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 		}
 		PUBLIC static void SetSize(int width, int height) {
-			Size() = DirectX::XMINT2(width, height);
-
 			RECT windowRect = {};
 			RECT clientRect = {};
 			GetWindowRect(GetWindow(), &windowRect);
@@ -254,7 +255,6 @@ namespace GameLibrary {
 				return false;
 			}
 
-			ProcessSize();
 			ProcessMousePosition();
 			ProcessKey();
 			PrecessDeltaTime();
@@ -263,10 +263,6 @@ namespace GameLibrary {
 			GetDeviceContext().ClearRenderTargetView(&GetRenderTargetView(), color);
 
 			return true;
-		}
-		PRIVATE static DirectX::XMINT2& Size() {
-			static DirectX::XMINT2 size;
-			return size;
 		}
 		PRIVATE static DirectX::XMINT2& MousePosition() {
 			static DirectX::XMINT2 mousePosition;
@@ -319,12 +315,6 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
 				MessageBoxA(GetWindow(), (char*)errorBlob->GetBufferPointer(), "Shader Error", MB_OK);
 				errorBlob->Release();
 			}
-		}
-		PRIVATE static void ProcessSize() {
-			RECT clientRect = {};
-			GetClientRect(GetWindow(), &clientRect);
-
-			Size() = DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 		}
 		PRIVATE static void ProcessMousePosition() {
 			POINT point = {};
@@ -418,7 +408,7 @@ namespace GameLibrary {
 		PRIVATE ID3D11SamplerState* samplerState;
 
 		PUBLIC Sprite(const char* path) {
-			Game::GetWindow();
+			CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 			IWICImagingFactory* factory = nullptr;
 			CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 			IWICBitmapDecoder* decoder = nullptr;
@@ -543,6 +533,8 @@ namespace GameLibrary {
 			};
 			indexCount = sizeof(index) / sizeof(index[0]);
 
+			int x = Game::GetSize().x;
+			int y = Game::GetSize().y;
 			constant.view = DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 			constant.projection = DirectX::XMMatrixOrthographicLH(Game::GetSize().x * 1.0f, Game::GetSize().y * 1.0f, -1.0f, 1.0f);
 
