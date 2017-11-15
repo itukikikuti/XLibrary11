@@ -246,6 +246,15 @@ namespace GameLibrary {
 		PUBLIC static void AddFont(const char* path) {
 			AddFontResourceExA(path, FR_PRIVATE, nullptr);
 		}
+		PUBLIC static std::wstring CharToWideString(const char* cstr) {
+			size_t length = strlen(cstr) + 1;
+			wchar_t* wstr = new wchar_t[length];
+			mbstowcs_s(nullptr, wstr, length, cstr, _TRUNCATE);
+
+			std::wstring wideString(wstr);
+			delete wstr;
+			return wideString;
+		}
 		PUBLIC static bool Loop() {
 			static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -303,11 +312,7 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
 				D3DCompile(shader, strlen(shader), nullptr, nullptr, nullptr, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 			}
 			else {
-				size_t length = strlen(path) + 1;
-				wchar_t* wstring = new wchar_t[length];
-				mbstowcs_s(nullptr, wstring, length, path, _TRUNCATE);
-				D3DCompileFromFile(wstring, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
-				delete wstring;
+				D3DCompileFromFile(CharToWideString(path).c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 			}
 
 			if (errorBlob != nullptr) {
