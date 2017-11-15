@@ -1,5 +1,6 @@
 // (c) 2017 Naoki Nakagawa
 #pragma once
+#define OEMRESOURCE
 #include <string>
 #include <windows.h>
 #include <wrl.h>
@@ -32,13 +33,13 @@ namespace GameLibrary {
 				windowClass.hInstance = instance;
 				windowClass.hIcon = nullptr;
 				windowClass.hCursor = nullptr;
-				windowClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+				windowClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 				windowClass.lpszMenuName = nullptr;
 				windowClass.lpszClassName = "GameLibrary";
 				windowClass.hIconSm = nullptr;
 				if (!RegisterClassExA(&windowClass)) return nullptr;
 
-				window = CreateWindowA("GameLibrary", "GameLibrary", WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
+				window = CreateWindowA("GameLibrary", "GameLibrary", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
 
 				SetSize(1280, 720);
 
@@ -65,7 +66,7 @@ namespace GameLibrary {
 			int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
 			int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
 
-			SetWindowPos(GetWindow(), nullptr, x, y, w, h, SWP_NOZORDER);
+			SetWindowPos(GetWindow(), nullptr, x, y, w, h, SWP_NOZORDER | SWP_FRAMECHANGED);
 		}
 		PUBLIC static char* GetTitle() {
 			char* title = nullptr;
@@ -74,6 +75,21 @@ namespace GameLibrary {
 		}
 		PUBLIC static void SetTitle(const char* title) {
 			SetWindowTextA(GetWindow(), title);
+		}
+		PUBLIC static void SetFullScreen(bool isFullscreen) {
+			static DirectX::XMINT2 size = GetSize();
+
+			if (isFullscreen) {
+				size = GetSize();
+				int w = GetSystemMetrics(SM_CXSCREEN);
+				int h = GetSystemMetrics(SM_CYSCREEN);
+				SetWindowLongPtr(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_POPUP);
+				SetWindowPos(GetWindow(), HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
+			}
+			else {
+				SetWindowLongPtr(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+				SetSize(size.x, size.y);
+			}
 		}
 		PUBLIC static ID3D11Device& GetDevice() {
 			static Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
@@ -140,6 +156,7 @@ namespace GameLibrary {
 				swapChainDesc.Windowed = true;
 
 				factory->CreateSwapChain(&GetDevice(), &swapChainDesc, swapChain.GetAddressOf());
+				factory->MakeWindowAssociation(GetWindow(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
 				factory->Release();
 				adapter->Release();

@@ -42,7 +42,6 @@ int Main() {
 
 	LinkLibrary();
 
-	Game::SetSize(1024, 768);
 	Sprite sprite1("clock.png");
 	sprite1.Position() = XMFLOAT2(200.0f, 200.0f);
 	Sprite sprite2("4.JPG");
@@ -56,6 +55,7 @@ int Main() {
 	Text text2("Ç†", "ÇlÇr ñæí©");
 	Text text3("ã ", "çtéRñ—ïMÉtÉHÉìÉgçsèë");
 
+	bool isFullscreen = false;
 	float t = 0.0f;
 	while (Game::Loop()) {
 		t += Game::GetDeltaTime();
@@ -71,6 +71,11 @@ int Main() {
 		sprite1.Draw();
 
 		sprite2.Draw();
+
+		if (Game::GetKeyDown(VK_RBUTTON)) {
+			isFullscreen = !isFullscreen;
+			Game::SetFullScreen(isFullscreen);
+		}
 
 		if (Game::GetKey(VK_LBUTTON)) {
 			text1.Position() = XMFLOAT2(Game::GetMousePosition().x, Game::GetMousePosition().y);
