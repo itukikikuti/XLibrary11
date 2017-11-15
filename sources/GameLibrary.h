@@ -602,7 +602,11 @@ namespace GameLibrary {
 
 namespace GameLibrary {
 	class Text : public Sprite {
-		PUBLIC Text(const char* text, const char* fontFamily = "‚l‚r –¾’©") {
+		PUBLIC Text(const char* text, const char* fontFamily = "") {
+			if (text == "") {
+				text = "?";
+			}
+
 			LOGFONTA logFont = {};
 			logFont.lfHeight = 256;
 			logFont.lfWidth = 0;
