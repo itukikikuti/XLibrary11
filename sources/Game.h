@@ -66,7 +66,7 @@ namespace GameLibrary {
 			int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
 			int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
 
-			SetWindowPos(GetWindow(), nullptr, x, y, w, h, SWP_NOZORDER | SWP_FRAMECHANGED);
+			SetWindowPos(GetWindow(), nullptr, x, y, w, h, SWP_NOZORDER);
 		}
 		PUBLIC static char* GetTitle() {
 			char* title = nullptr;
@@ -88,6 +88,7 @@ namespace GameLibrary {
 			}
 			else {
 				SetWindowLongPtr(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+				SetWindowPos(GetWindow(), nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED);
 				SetSize(size.x, size.y);
 			}
 		}

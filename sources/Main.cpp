@@ -37,7 +37,7 @@ void LinkLibrary() {
 	libraryFile.close();
 }
 
-int Main() {
+int main() {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	LinkLibrary();
@@ -75,6 +75,10 @@ int Main() {
 		if (Game::GetKeyDown(VK_RBUTTON)) {
 			isFullscreen = !isFullscreen;
 			Game::SetFullScreen(isFullscreen);
+			if (!isFullscreen) {
+				XMINT2 size = Game::GetSize();
+				printf("%d, %d\n", size.x, size.y);
+			}
 		}
 
 		if (Game::GetKey(VK_LBUTTON)) {
