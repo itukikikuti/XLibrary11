@@ -32,27 +32,43 @@ namespace GameLibrary {
 
 		PUBLIC Sprite(const char* path) {
 			CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+
 			IWICImagingFactory* factory = nullptr;
 			CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+
 			IWICBitmapDecoder* decoder = nullptr;
-			factory->CreateDecoderFromFilename(Game::CharToWideString(path).c_str(), 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
-			IWICBitmapFrameDecode* frame = nullptr;
-			decoder->GetFrame(0, &frame);
-			frame->GetSize(&width, &height);
-			WICPixelFormatGUID pixelFormat;
-			frame->GetPixelFormat(&pixelFormat);
-			BYTE* textureBuffer = new BYTE[width * height * 4];
+			BYTE* textureBuffer = nullptr;
 
-			if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
-				IWICFormatConverter* formatConverter = nullptr;
-				factory->CreateFormatConverter(&formatConverter);
+			if (SUCCEEDED(factory->CreateDecoderFromFilename(Game::CharToWideString(path).c_str(), 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder))) {
+				IWICBitmapFrameDecode* frame = nullptr;
+				decoder->GetFrame(0, &frame);
+				frame->GetSize(&width, &height);
 
-				formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
+				WICPixelFormatGUID pixelFormat;
+				frame->GetPixelFormat(&pixelFormat);
+				textureBuffer = new BYTE[width * height * 4];
 
-				formatConverter->CopyPixels(0, width * 4, width * height * 4, textureBuffer);
+				if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
+					IWICFormatConverter* formatConverter = nullptr;
+					factory->CreateFormatConverter(&formatConverter);
+
+					formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
+
+					formatConverter->CopyPixels(0, width * 4, width * height * 4, textureBuffer);
+				}
+				else {
+					frame->CopyPixels(0, width * 4, width * height * 4, textureBuffer);
+				}
 			}
 			else {
-				frame->CopyPixels(0, width * 4, width * height * 4, textureBuffer);
+				width = height = 100;
+				textureBuffer = new BYTE[width * height * 4];
+				for (int y = 0; y < height; y++) {
+					for (int x = 0; x < width; x++) {
+						DWORD color = 0xffff00ff;
+						memcpy(&textureBuffer[x * 4 + y * (width * 4)], &color, sizeof(DWORD));
+					}
+				}
 			}
 
 			D3D11_TEXTURE2D_DESC textureDesc = {};

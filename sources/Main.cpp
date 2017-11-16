@@ -42,7 +42,7 @@ int main() {
 
 	LinkLibrary();
 
-	Sprite sprite1("clock.png");
+	Sprite sprite1("clockpng");
 	sprite1.position = XMFLOAT2(200.0f, 200.0f);
 	Sprite sprite2("4.JPG");
 	sprite2.position = XMFLOAT2(1000.0f, 250.0f);
