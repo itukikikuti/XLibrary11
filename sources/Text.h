@@ -42,8 +42,8 @@ namespace GameLibrary {
 			GLYPHMETRICS glyphMetrics;
 			const MAT2 matrix = { { 0, 1 },{ 0, 0 },{ 0, 0 },{ 0, 1 } };
 			DWORD size = GetGlyphOutlineA(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
-			BYTE* ptr = new BYTE[size];
-			GetGlyphOutlineA(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, ptr, &matrix);
+			BYTE* textureBuffer = new BYTE[size];
+			GetGlyphOutlineA(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, textureBuffer, &matrix);
 
 			SelectObject(dc, oldFont);
 			DeleteObject(font);
@@ -82,21 +82,21 @@ namespace GameLibrary {
 
 			for (int y = origin.y; y < origin.y + bitmapSize.y; y++) {
 				for (int x = origin.x; x < origin.x + bitmapSize.x; x++) {
-					DWORD alpha = (255 * ptr[x - origin.x + bitmapSize.x * (y - origin.y)]) / (LEVEL - 1);
+					DWORD alpha = (255 * textureBuffer[x - origin.x + bitmapSize.x * (y - origin.y)]) / (LEVEL - 1);
 					DWORD color = 0x00ffffff | (alpha << 24);
 					memcpy((BYTE*)bits + mapped.RowPitch * y + 4 * x, &color, sizeof(DWORD));
 				}
 			}
 
 			Game::GetDeviceContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
-			delete[] ptr;
+			delete[] textureBuffer;
 
 			Initialize();
 
-			Position() = DirectX::XMFLOAT2(0.0f, 0.0f);
-			Angle() = 0.0f;
-			Scale() = DirectX::XMFLOAT2(1.0f, 1.0f);
-			Color() = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+			position = DirectX::XMFLOAT2(0.0f, 0.0f);
+			angle = 0.0f;
+			scale = DirectX::XMFLOAT2(1.0f, 1.0f);
+			color = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 		}
 	};
 }

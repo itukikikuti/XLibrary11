@@ -43,15 +43,15 @@ int main() {
 	LinkLibrary();
 
 	Sprite sprite1("clock.png");
-	sprite1.Position() = XMFLOAT2(200.0f, 200.0f);
+	sprite1.position = XMFLOAT2(200.0f, 200.0f);
 	Sprite sprite2("4.JPG");
-	sprite2.Position() = XMFLOAT2(1000.0f, 250.0f);
+	sprite2.position = XMFLOAT2(1000.0f, 250.0f);
 
 	Game::AddFont("çtéRñ—ïMÉtÉHÉìÉgçsèë.ttf");
 	Game::SetTitle("Ç≠ÇüwÇπdrftgyÇ”Ç∂Ç±lp");
 
 	Text text1("");
-	text1.SetScale(0.5f);
+	text1.scale.x = text1.scale.y = 0.5f;
 	Text text2("Ç†", "ÇlÇr ñæí©");
 	Text text3("ã ", "çtéRñ—ïMÉtÉHÉìÉgçsèë");
 
@@ -60,14 +60,14 @@ int main() {
 	while (Game::Loop()) {
 		t += Game::GetDeltaTime();
 
-		sprite1.Angle() = t * (360.0f);
-		sprite1.Scale().y = 1.3f;
+		sprite1.angle = t * (360.0f);
+		sprite1.scale.y = 1.3f;
 		sprite1.Draw();
-		sprite1.Angle() = t * (360.0f / 60.0f);
-		sprite1.Scale().y = 1.0f;
+		sprite1.angle = t * (360.0f / 60.0f);
+		sprite1.scale.y = 1.0f;
 		sprite1.Draw();
-		sprite1.Angle() = t * (360.0f / 60.0f / 12.0f);
-		sprite1.Scale().y = 0.7f;
+		sprite1.angle = t * (360.0f / 60.0f / 12.0f);
+		sprite1.scale.y = 0.7f;
 		sprite1.Draw();
 
 		sprite2.Draw();
@@ -82,16 +82,16 @@ int main() {
 		}
 
 		if (Game::GetKey(VK_LBUTTON)) {
-			text1.Position() = XMFLOAT2(Game::GetMousePosition().x, Game::GetMousePosition().y);
+			text1.position = XMFLOAT2(Game::GetMousePosition().x, Game::GetMousePosition().y);
 		}
-		text1.Angle() = Game::GetTime() * -100.0f;
+		text1.angle = Game::GetTime() * -100.0f;
 		text1.Draw();
 
-		text2.Position() = XMFLOAT2(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f - 200.0f);
+		text2.position = XMFLOAT2(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f - 200.0f);
 		text2.Draw();
 
-		text3.Position() = XMFLOAT2(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f + 200.0f);
-		text3.SetScale(2.0f + sinf(t) * 1.0f);
+		text3.position = XMFLOAT2(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f + 200.0f);
+		text3.scale.x = text3.scale.y = 2.0f + sinf(t) * 1.0f;
 		text3.Draw();
 	}
 

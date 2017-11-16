@@ -393,8 +393,10 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
 			return false;
 		}
 		PRIVATE static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
-			if (message == WM_DESTROY) {
+			switch (message) {
+			case WM_DESTROY:
 				PostQuitMessage(0);
+				return 0;
 			}
 			return DefWindowProcA(window, message, wParam, lParam);
 		}

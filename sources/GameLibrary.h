@@ -393,8 +393,10 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
 			return false;
 		}
 		PRIVATE static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
-			if (message == WM_DESTROY) {
+			switch (message) {
+			case WM_DESTROY:
 				PostQuitMessage(0);
+				return 0;
 			}
 			return DefWindowProcA(window, message, wParam, lParam);
 		}
@@ -418,10 +420,10 @@ namespace GameLibrary {
 			DirectX::XMFLOAT2 uv;
 		};
 
-		PROTECTED DirectX::XMFLOAT2 position;
-		PROTECTED float angle;
-		PROTECTED DirectX::XMFLOAT2 scale;
-		PROTECTED DirectX::XMFLOAT4 color;
+		PUBLIC DirectX::XMFLOAT2 position;
+		PUBLIC float angle;
+		PUBLIC DirectX::XMFLOAT2 scale;
+		PUBLIC DirectX::XMFLOAT4 color;
 		PROTECTED UINT width;
 		PROTECTED UINT height;
 		PROTECTED ID3D11Texture2D* texture;
@@ -481,10 +483,10 @@ namespace GameLibrary {
 
 			Initialize();
 
-			Position() = DirectX::XMFLOAT2(0.0f, 0.0f);
-			Angle() = 0.0f;
-			Scale() = DirectX::XMFLOAT2(1.0f, 1.0f);
-			Color() = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+			position = DirectX::XMFLOAT2(0.0f, 0.0f);
+			angle = 0.0f;
+			scale = DirectX::XMFLOAT2(1.0f, 1.0f);
+			color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 		}
 		PUBLIC virtual ~Sprite() {
 			if (texture)
@@ -508,29 +510,14 @@ namespace GameLibrary {
 		PUBLIC DirectX::XMINT2 GetSize() {
 			return DirectX::XMINT2(width, height);
 		}
-		PUBLIC void SetScale(float scale) {
-			Scale() = DirectX::XMFLOAT2(scale, scale);
-		}
-		PUBLIC DirectX::XMFLOAT2& Position() {
-			return position;
-		}
-		PUBLIC float& Angle() {
-			return angle;
-		}
-		PUBLIC DirectX::XMFLOAT2& Scale() {
-			return scale;
-		}
-		PUBLIC DirectX::XMFLOAT4& Color() {
-			return color;
-		}
 		PUBLIC void Draw() {
 			constant.world = DirectX::XMMatrixIdentity();
-			constant.world *= DirectX::XMMatrixScaling(width * Scale().x, height * Scale().y, 1.0f);
-			constant.world *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-Angle()));
-			constant.world *= DirectX::XMMatrixTranslation(Position().x, -Position().y, 0.0f);
+			constant.world *= DirectX::XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
+			constant.world *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-angle));
+			constant.world *= DirectX::XMMatrixTranslation(position.x, -position.y, 0.0f);
 			constant.view = Game::GetViewMatrix();
 			constant.projection = Game::GetProjectionMatrix();
-			constant.color = Color();
+			constant.color = color;
 
 			Game::GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
 
@@ -661,8 +648,8 @@ namespace GameLibrary {
 			GLYPHMETRICS glyphMetrics;
 			const MAT2 matrix = { { 0, 1 },{ 0, 0 },{ 0, 0 },{ 0, 1 } };
 			DWORD size = GetGlyphOutlineA(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
-			BYTE* ptr = new BYTE[size];
-			GetGlyphOutlineA(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, ptr, &matrix);
+			BYTE* textureBuffer = new BYTE[size];
+			GetGlyphOutlineA(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, textureBuffer, &matrix);
 
 			SelectObject(dc, oldFont);
 			DeleteObject(font);
@@ -701,21 +688,21 @@ namespace GameLibrary {
 
 			for (int y = origin.y; y < origin.y + bitmapSize.y; y++) {
 				for (int x = origin.x; x < origin.x + bitmapSize.x; x++) {
-					DWORD alpha = (255 * ptr[x - origin.x + bitmapSize.x * (y - origin.y)]) / (LEVEL - 1);
+					DWORD alpha = (255 * textureBuffer[x - origin.x + bitmapSize.x * (y - origin.y)]) / (LEVEL - 1);
 					DWORD color = 0x00ffffff | (alpha << 24);
 					memcpy((BYTE*)bits + mapped.RowPitch * y + 4 * x, &color, sizeof(DWORD));
 				}
 			}
 
 			Game::GetDeviceContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
-			delete[] ptr;
+			delete[] textureBuffer;
 
 			Initialize();
 
-			Position() = DirectX::XMFLOAT2(0.0f, 0.0f);
-			Angle() = 0.0f;
-			Scale() = DirectX::XMFLOAT2(1.0f, 1.0f);
-			Color() = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+			position = DirectX::XMFLOAT2(0.0f, 0.0f);
+			angle = 0.0f;
+			scale = DirectX::XMFLOAT2(1.0f, 1.0f);
+			color = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 		}
 	};
 }
