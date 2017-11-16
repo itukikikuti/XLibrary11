@@ -240,6 +240,12 @@ namespace GameLibrary {
 
 			return *renderTargetView.Get();
 		}
+		PUBLIC static DirectX::XMMATRIX GetViewMatrix() {
+			return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+		}
+		PUBLIC static DirectX::XMMATRIX GetProjectionMatrix() {
+			return DirectX::XMMatrixOrthographicLH(Game::GetSize().x * 1.0f, Game::GetSize().y * 1.0f, -1.0f, 1.0f);
+		}
 		PUBLIC static DirectX::XMINT2 GetMousePosition() {
 			return MousePosition();
 		}

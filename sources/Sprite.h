@@ -125,6 +125,8 @@ namespace GameLibrary {
 			constant.world *= DirectX::XMMatrixScaling(width * Scale().x, height * Scale().y, 1.0f);
 			constant.world *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-Angle()));
 			constant.world *= DirectX::XMMatrixTranslation(Position().x, -Position().y, 0.0f);
+			constant.view = Game::GetViewMatrix();
+			constant.projection = Game::GetProjectionMatrix();
 			constant.color = Color();
 
 			Game::GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
@@ -154,8 +156,6 @@ namespace GameLibrary {
 
 			int x = Game::GetSize().x;
 			int y = Game::GetSize().y;
-			constant.view = DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-			constant.projection = DirectX::XMMatrixOrthographicLH(Game::GetSize().x * 1.0f, Game::GetSize().y * 1.0f, -1.0f, 1.0f);
 
 			D3D11_BUFFER_DESC vertexBufferDesc = {};
 			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
