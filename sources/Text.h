@@ -6,7 +6,7 @@ namespace GameLibrary {
 	class Text : public Sprite {
 		PUBLIC Text(const char* text, const char* fontFamily = "") {
 			if (text == "") {
-				text = "?";
+				text = " ";
 			}
 
 			LOGFONTA logFont = {};
