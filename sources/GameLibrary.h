@@ -83,11 +83,11 @@ namespace GameLibrary {
 				size = GetSize();
 				int w = GetSystemMetrics(SM_CXSCREEN);
 				int h = GetSystemMetrics(SM_CYSCREEN);
-				SetWindowLongPtr(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_POPUP);
+				SetWindowLongPtrA(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_POPUP);
 				SetWindowPos(GetWindow(), HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
 			}
 			else {
-				SetWindowLongPtr(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+				SetWindowLongPtrA(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
 				SetWindowPos(GetWindow(), nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED);
 				SetSize(size.x, size.y);
 			}
