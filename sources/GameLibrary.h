@@ -32,7 +32,7 @@ namespace GameLibrary {
 				windowClass.cbWndExtra = 0;
 				windowClass.hInstance = instance;
 				windowClass.hIcon = nullptr;
-				windowClass.hCursor = nullptr;
+				windowClass.hCursor = (HCURSOR)LoadImageA(nullptr, MAKEINTRESOURCEA(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
 				windowClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 				windowClass.lpszMenuName = nullptr;
 				windowClass.lpszClassName = "GameLibrary";
