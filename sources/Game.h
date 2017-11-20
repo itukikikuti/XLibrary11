@@ -281,7 +281,7 @@ namespace GameLibrary {
 
 			GetSwapChain().Present(0, 0);
 
-			if (!ProcessResponse()) {
+			if (!ProcessMessage()) {
 				return false;
 			}
 
@@ -377,13 +377,13 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
 			DeltaTime() = (float)(time.QuadPart - preTime.QuadPart) / frequency.QuadPart;
 			preTime = GetCounter();
 		}
-		PRIVATE static bool ProcessResponse() {
-			static MSG response = {};
+		PRIVATE static bool ProcessMessage() {
+			static MSG message = {};
 
-			while (response.message != WM_QUIT) {
-				if (PeekMessageA(&response, nullptr, 0, 0, PM_REMOVE)) {
-					TranslateMessage(&response);
-					DispatchMessageA(&response);
+			while (message.message != WM_QUIT) {
+				if (PeekMessageA(&message, nullptr, 0, 0, PM_REMOVE)) {
+					TranslateMessage(&message);
+					DispatchMessageA(&message);
 				}
 				else {
 					return true;
@@ -396,9 +396,11 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
 			switch (message) {
 			case WM_DESTROY:
 				PostQuitMessage(0);
-				return 0;
+				break;
+			default:
+				return DefWindowProcA(window, message, wParam, lParam);
 			}
-			return DefWindowProcA(window, message, wParam, lParam);
+			return 0;
 		}
 	};
 }
