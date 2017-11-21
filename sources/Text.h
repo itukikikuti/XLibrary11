@@ -1,4 +1,3 @@
-// (c) 2017 Naoki Nakagawa
 #pragma once
 #include <strsafe.h>
 

@@ -264,6 +264,9 @@ namespace GameLibrary {
 		PUBLIC static float GetDeltaTime() {
 			return DeltaTime();
 		}
+		PUBLIC static int GetFrameRate() {
+			return FrameRate();
+		}
 		PUBLIC static void AddFont(const char* path) {
 			AddFontResourceExA(path, FR_PRIVATE, nullptr);
 		}
@@ -289,6 +292,7 @@ namespace GameLibrary {
 			ProcessKey();
 			PrecessDeltaTime();
 			PrecessTime();
+			ProcessFrameRate();
 
 			GetDeviceContext().ClearRenderTargetView(&GetRenderTargetView(), color);
 
@@ -313,6 +317,10 @@ namespace GameLibrary {
 		PRIVATE static float& DeltaTime() {
 			static float deltaTime = 0.0f;
 			return deltaTime;
+		}
+		PRIVATE static int& FrameRate() {
+			static int frameRate = 0;
+			return frameRate;
 		}
 		PRIVATE static void CompileShader(const char* path, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 			DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -376,6 +384,18 @@ float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
 			LARGE_INTEGER time = GetCounter();
 			DeltaTime() = (float)(time.QuadPart - preTime.QuadPart) / frequency.QuadPart;
 			preTime = GetCounter();
+		}
+		PRIVATE static void ProcessFrameRate() {
+			static float time = 0.0f;
+			static int c = 0;
+
+			c++;
+			time += GetDeltaTime();
+			if (time >= 1.0f) {
+				FrameRate() = c;
+				c = 0;
+				time -= 1.0f;
+			}
 		}
 		PRIVATE static bool ProcessMessage() {
 			static MSG message = {};
