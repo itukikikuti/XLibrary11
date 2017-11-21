@@ -8,8 +8,8 @@ using namespace std;
 using namespace DirectX;
 using namespace GameLibrary;
 
-string GetSourceCode(const char* path) {
-	ifstream sourceFile(path);
+string GetSourceCode(const char* filePath) {
+	ifstream sourceFile(filePath);
 	istreambuf_iterator<char> iterator(sourceFile);
 	istreambuf_iterator<char> last;
 	string sourceCode(iterator, last);
@@ -19,10 +19,10 @@ string GetSourceCode(const char* path) {
 
 void MargeSourceCode(const char* file, string& sourceCode) {
 	string from = "#include \"" + string(file) + "\"";
-	string path = "sources/" + string(file);
+	string filePath = "sources/" + string(file);
 
 	string::size_type pos = sourceCode.find(from);
-	sourceCode.replace(pos, from.size(), GetSourceCode(path.c_str()));
+	sourceCode.replace(pos, from.size(), GetSourceCode(filePath.c_str()));
 }
 
 void LinkLibrary() {

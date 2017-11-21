@@ -29,7 +29,7 @@ namespace GameLibrary {
 		PRIVATE ID3D11ShaderResourceView* shaderResourceView;
 		PRIVATE ID3D11SamplerState* samplerState;
 
-		PUBLIC Sprite(const char* path) {
+		PUBLIC Sprite(const char* filePath) {
 			CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
 			IWICImagingFactory* factory = nullptr;
@@ -38,7 +38,7 @@ namespace GameLibrary {
 			IWICBitmapDecoder* decoder = nullptr;
 			BYTE* textureBuffer = nullptr;
 
-			if (SUCCEEDED(factory->CreateDecoderFromFilename(Game::CharToWideString(path).c_str(), 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder))) {
+			if (SUCCEEDED(factory->CreateDecoderFromFilename(Game::CharToWideString(filePath).c_str(), 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder))) {
 				IWICBitmapFrameDecode* frame = nullptr;
 				decoder->GetFrame(0, &frame);
 				frame->GetSize(&width, &height);

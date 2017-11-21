@@ -267,8 +267,8 @@ namespace GameLibrary {
 		PUBLIC static int GetFrameRate() {
 			return FrameRate();
 		}
-		PUBLIC static void AddFont(const char* path) {
-			AddFontResourceExA(path, FR_PRIVATE, nullptr);
+		PUBLIC static void AddFont(const char* filePath) {
+			AddFontResourceExA(filePath, FR_PRIVATE, nullptr);
 		}
 		PUBLIC static std::wstring CharToWideString(const char* cstr) {
 			size_t length = strlen(cstr) + 1;
@@ -322,7 +322,7 @@ namespace GameLibrary {
 			static int frameRate = 0;
 			return frameRate;
 		}
-		PRIVATE static void CompileShader(const char* path, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
+		PRIVATE static void CompileShader(const char* filePath, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 			DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
 			shaderFlags |= D3DCOMPILE_DEBUG;
@@ -330,18 +330,18 @@ namespace GameLibrary {
 
 			ID3DBlob *errorBlob = nullptr;
 
-			if (path == nullptr) {
+			if (filePath == nullptr) {
 				char* shader = "\
 cbuffer CB:register(b0){matrix W;matrix V;matrix P;float4 C;};\
-Texture2D Tex:register(t0);SamplerState S:register(s0);\
+Texture2D tex:register(t0);SamplerState samp:register(s0);\
 struct VO{float4 pos:SV_POSITION;float4 c:COLOR;float2 uv:TEXCOORD;};\
 VO VS(float4 v:POSITION,float2 uv:TEXCOORD){VO o=(VO)0;o.pos=mul(W,v);o.pos=mul(V,o.pos);o.pos=mul(P,o.pos);o.c=C;o.uv=uv;return o;}\
-float4 PS(VO o):SV_TARGET{return Tex.Sample(S,o.uv)*o.c;}";
+float4 PS(VO o):SV_TARGET{return tex.Sample(samp,o.uv)*o.c;}";
 
 				D3DCompile(shader, strlen(shader), nullptr, nullptr, nullptr, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 			}
 			else {
-				D3DCompileFromFile(CharToWideString(path).c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
+				D3DCompileFromFile(CharToWideString(filePath).c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 			}
 
 			if (errorBlob != nullptr) {
