@@ -75,10 +75,6 @@ int main() {
 		if (Game::GetKeyDown(VK_RBUTTON)) {
 			isFullscreen = !isFullscreen;
 			Game::SetFullScreen(isFullscreen);
-			if (!isFullscreen) {
-				XMINT2 size = Game::GetSize();
-				printf("%d, %d\n", size.x, size.y);
-			}
 		}
 
 		if (Game::GetKey(VK_LBUTTON)) {
