@@ -42,7 +42,7 @@ int main() {
 
 	LinkLibrary();
 
-	Sprite sprite1("clockpng");
+	Sprite sprite1("clock.png");
 	sprite1.position = XMFLOAT2(200.0f, 200.0f);
 	Sprite sprite2("4.JPG");
 	sprite2.position = XMFLOAT2(1000.0f, 250.0f);
@@ -50,7 +50,7 @@ int main() {
 	Game::AddFont("衡山毛筆フォント行書.ttf");
 	Game::SetTitle("くぁwせdrftgyふじこlp");
 
-	Text text1("");
+	Text text1("あ");
 	text1.scale.x = text1.scale.y = 0.5f;
 	Text text2("あ", "ＭＳ 明朝");
 	Text text3("玉", "衡山毛筆フォント行書");
