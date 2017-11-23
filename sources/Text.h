@@ -1,8 +1,4 @@
-﻿// © 2017 Naoki Nakagawa
-#pragma once
-#include <strsafe.h>
-
-namespace GameLibrary {
+﻿namespace GameLibrary {
 	class Text : public Sprite {
 		PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"") {
 			if (text == L"") {

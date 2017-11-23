@@ -1,8 +1,4 @@
-﻿// © 2017 Naoki Nakagawa
-#pragma once
-#include <wincodec.h>
-
-namespace GameLibrary {
+﻿namespace GameLibrary {
 	class Sprite {
 		PROTECTED struct Constant {
 			DirectX::XMMATRIX world;

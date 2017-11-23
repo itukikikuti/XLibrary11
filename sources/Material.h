@@ -1,7 +1,4 @@
-﻿// © 2017 Naoki Nakagawa
-#pragma once
-
-namespace GameLibrary {
+﻿namespace GameLibrary {
 	class Material {
 	};
 }

@@ -1,9 +1,12 @@
 ﻿// © 2017 Naoki Nakagawa
-#pragma once
+#ifndef _GAME_LIBRARY_
+#define _GAME_LIBRARY_
+
 #define OEMRESOURCE
-#include <string>
-#include <windows.h>
+#include <strsafe.h>
 #include <wrl.h>
+#include <windows.h>
+#include <wincodec.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
@@ -97,7 +100,7 @@ namespace GameLibrary {
 
 			if (device == nullptr) {
 				int createDeviceFlag = 0;
-#if defined(_DEBUG)
+#if defined(DEBUG) || defined(_DEBUG)
 				createDeviceFlag |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
@@ -315,7 +318,7 @@ namespace GameLibrary {
 		}
 		PRIVATE static void CompileShader(const wchar_t* filePath, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 			DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-#if defined(_DEBUG)
+#if defined(DEBUG) || defined(_DEBUG)
 			shaderFlags |= D3DCOMPILE_DEBUG;
 #endif
 
@@ -418,3 +421,5 @@ namespace GameLibrary {
 
 #include "Sprite.h"
 #include "Text.h"
+
+#endif
