@@ -1,3 +1,4 @@
+﻿// © 2017 Naoki Nakagawa
 #pragma once
 #include <wincodec.h>
 
@@ -29,7 +30,7 @@ namespace GameLibrary {
 		PRIVATE ID3D11ShaderResourceView* shaderResourceView;
 		PRIVATE ID3D11SamplerState* samplerState;
 
-		PUBLIC Sprite(const char* filePath) {
+		PUBLIC Sprite(const wchar_t* filePath) {
 			CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
 			IWICImagingFactory* factory = nullptr;
@@ -38,7 +39,7 @@ namespace GameLibrary {
 			IWICBitmapDecoder* decoder = nullptr;
 			BYTE* textureBuffer = nullptr;
 
-			if (SUCCEEDED(factory->CreateDecoderFromFilename(Game::CharToWideString(filePath).c_str(), 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder))) {
+			if (SUCCEEDED(factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder))) {
 				IWICBitmapFrameDecode* frame = nullptr;
 				decoder->GetFrame(0, &frame);
 				frame->GetSize(&width, &height);
@@ -64,8 +65,8 @@ namespace GameLibrary {
 				textureBuffer = new BYTE[width * height * 4];
 				for (int y = 0; y < height; y++) {
 					for (int x = 0; x < width; x++) {
-						DWORD color = 0xffff00ff;
-						memcpy(&textureBuffer[x * 4 + y * (width * 4)], &color, sizeof(DWORD));
+						BYTE color[4] = { 0xff, 0x00, 0xff, 0xff };
+						memcpy(&textureBuffer[x * 4 + y * (width * 4)], color, sizeof(DWORD));
 					}
 				}
 			}

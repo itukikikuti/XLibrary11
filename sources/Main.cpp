@@ -1,3 +1,4 @@
+ï»¿// Â© 2017 Naoki Nakagawa
 #include <fstream>
 #include <string>
 #include <regex>
@@ -42,18 +43,18 @@ int main() {
 
 	LinkLibrary();
 
-	Sprite sprite1("clock.png");
+	Sprite sprite1(L"clock.png");
 	sprite1.position = XMFLOAT2(200.0f, 200.0f);
-	Sprite sprite2("4.JPG");
+	Sprite sprite2(L"4.JPG");
 	sprite2.position = XMFLOAT2(1000.0f, 250.0f);
 
-	Game::AddFont("tR–Ñ•MƒtƒHƒ“ƒgs‘.ttf");
-	Game::SetTitle("‚­‚Ÿw‚¹drftgy‚Ó‚¶‚±lp");
+	Game::AddFont(L"è¡¡å±±æ¯›ç­†ãƒ•ã‚©ãƒ³ãƒˆè¡Œæ›¸.ttf");
+	Game::SetTitle(L"ããwã›drftgyãµã˜ã“lp");
 
-	Text text1("‚ ");
+	Text text1(L"ã‚");
 	text1.scale.x = text1.scale.y = 0.5f;
-	Text text2("‚ ", "‚l‚r –¾’©");
-	Text text3("‹Ê", "tR–Ñ•MƒtƒHƒ“ƒgs‘");
+	Text text2(L"ã‚", L"ï¼­ï¼³ æ˜æœ");
+	Text text3(L"ç‰", L"è¡¡å±±æ¯›ç­†ãƒ•ã‚©ãƒ³ãƒˆè¡Œæ›¸");
 
 	bool isFullscreen = false;
 	float t = 0.0f;

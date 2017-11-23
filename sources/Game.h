@@ -1,4 +1,4 @@
-// (c) 2017 Naoki Nakagawa
+﻿// © 2017 Naoki Nakagawa
 #pragma once
 #define OEMRESOURCE
 #include <string>
@@ -10,7 +10,7 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
-#define Main() WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+#define Main() WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 #define PUBLIC public:
 #define PRIVATE private:
 #define PROTECTED protected:
@@ -22,24 +22,24 @@ namespace GameLibrary {
 			static HWND window = nullptr;
 
 			if (window == nullptr) {
-				HINSTANCE instance = GetModuleHandleA(nullptr);
+				HINSTANCE instance = GetModuleHandleW(nullptr);
 
-				WNDCLASSEXA windowClass = {};
-				windowClass.cbSize = sizeof(WNDCLASSEXA);
+				WNDCLASSEXW windowClass = {};
+				windowClass.cbSize = sizeof(WNDCLASSEXW);
 				windowClass.style = CS_HREDRAW | CS_VREDRAW;
 				windowClass.lpfnWndProc = ProcessWindow;
 				windowClass.cbClsExtra = 0;
 				windowClass.cbWndExtra = 0;
 				windowClass.hInstance = instance;
 				windowClass.hIcon = nullptr;
-				windowClass.hCursor = (HCURSOR)LoadImageA(nullptr, MAKEINTRESOURCEA(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+				windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
 				windowClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 				windowClass.lpszMenuName = nullptr;
-				windowClass.lpszClassName = "GameLibrary";
+				windowClass.lpszClassName = L"GameLibrary";
 				windowClass.hIconSm = nullptr;
-				if (!RegisterClassExA(&windowClass)) return nullptr;
+				if (!RegisterClassExW(&windowClass)) return nullptr;
 
-				window = CreateWindowA("GameLibrary", "GameLibrary", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
+				window = CreateWindowW(L"GameLibrary", L"GameLibrary", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
 
 				SetSize(1280, 720);
 
@@ -68,13 +68,13 @@ namespace GameLibrary {
 
 			SetWindowPos(GetWindow(), nullptr, x, y, w, h, SWP_NOZORDER);
 		}
-		PUBLIC static char* GetTitle() {
-			char* title = nullptr;
-			GetWindowTextA(GetWindow(), title, GetWindowTextLengthA(GetWindow()));
+		PUBLIC static wchar_t* GetTitle() {
+			wchar_t* title = nullptr;
+			GetWindowTextW(GetWindow(), title, GetWindowTextLengthW(GetWindow()));
 			return title;
 		}
-		PUBLIC static void SetTitle(const char* title) {
-			SetWindowTextA(GetWindow(), title);
+		PUBLIC static void SetTitle(const wchar_t* title) {
+			SetWindowTextW(GetWindow(), title);
 		}
 		PUBLIC static void SetFullScreen(bool isFullscreen) {
 			static DirectX::XMINT2 size = GetSize();
@@ -83,11 +83,11 @@ namespace GameLibrary {
 				size = GetSize();
 				int w = GetSystemMetrics(SM_CXSCREEN);
 				int h = GetSystemMetrics(SM_CYSCREEN);
-				SetWindowLongPtrA(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_POPUP);
+				SetWindowLongPtrW(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_POPUP);
 				SetWindowPos(GetWindow(), HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
 			}
 			else {
-				SetWindowLongPtrA(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+				SetWindowLongPtrW(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
 				SetWindowPos(GetWindow(), nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED);
 				SetSize(size.x, size.y);
 			}
@@ -267,17 +267,8 @@ namespace GameLibrary {
 		PUBLIC static int GetFrameRate() {
 			return FrameRate();
 		}
-		PUBLIC static void AddFont(const char* filePath) {
-			AddFontResourceExA(filePath, FR_PRIVATE, nullptr);
-		}
-		PUBLIC static std::wstring CharToWideString(const char* cstr) {
-			size_t length = strlen(cstr) + 1;
-			wchar_t* wstr = new wchar_t[length];
-			mbstowcs_s(nullptr, wstr, length, cstr, _TRUNCATE);
-
-			std::wstring wideString(wstr);
-			delete wstr;
-			return wideString;
+		PUBLIC static void AddFont(const wchar_t* filePath) {
+			AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
 		}
 		PUBLIC static bool Loop() {
 			static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -322,7 +313,7 @@ namespace GameLibrary {
 			static int frameRate = 0;
 			return frameRate;
 		}
-		PRIVATE static void CompileShader(const char* filePath, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
+		PRIVATE static void CompileShader(const wchar_t* filePath, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 			DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
 			shaderFlags |= D3DCOMPILE_DEBUG;
@@ -331,17 +322,17 @@ namespace GameLibrary {
 			ID3DBlob *errorBlob = nullptr;
 
 			if (filePath == nullptr) {
-				char* shader = "\
-cbuffer CB:register(b0){matrix W;matrix V;matrix P;float4 C;};\
-Texture2D tex:register(t0);SamplerState samp:register(s0);\
-struct VO{float4 pos:SV_POSITION;float4 c:COLOR;float2 uv:TEXCOORD;};\
-VO VS(float4 v:POSITION,float2 uv:TEXCOORD){VO o=(VO)0;o.pos=mul(W,v);o.pos=mul(V,o.pos);o.pos=mul(P,o.pos);o.c=C;o.uv=uv;return o;}\
-float4 PS(VO o):SV_TARGET{return tex.Sample(samp,o.uv)*o.c;}";
+				char* shader = ""
+					"cbuffer CB:register(b0){matrix W;matrix V;matrix P;float4 C;};"
+					"Texture2D tex:register(t0);SamplerState s:register(s0);"
+					"struct VO{float4 pos:SV_POSITION;float4 c:COLOR;float2 uv:TEXCOORD;};"
+					"VO VS(float4 v:POSITION,float2 uv:TEXCOORD){VO o=(VO)0;o.pos=mul(W,v);o.pos=mul(V,o.pos);o.pos=mul(P,o.pos);o.c=C;o.uv=uv;return o;}"
+					"float4 PS(VO o):SV_TARGET{return tex.Sample(s,o.uv)*o.c;}";
 
 				D3DCompile(shader, strlen(shader), nullptr, nullptr, nullptr, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 			}
 			else {
-				D3DCompileFromFile(CharToWideString(filePath).c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
+				D3DCompileFromFile(filePath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 			}
 
 			if (errorBlob != nullptr) {
@@ -401,9 +392,9 @@ float4 PS(VO o):SV_TARGET{return tex.Sample(samp,o.uv)*o.c;}";
 			static MSG message = {};
 
 			while (message.message != WM_QUIT) {
-				if (PeekMessageA(&message, nullptr, 0, 0, PM_REMOVE)) {
+				if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
 					TranslateMessage(&message);
-					DispatchMessageA(&message);
+					DispatchMessageW(&message);
 				}
 				else {
 					return true;
@@ -418,7 +409,7 @@ float4 PS(VO o):SV_TARGET{return tex.Sample(samp,o.uv)*o.c;}";
 				PostQuitMessage(0);
 				break;
 			default:
-				return DefWindowProcA(window, message, wParam, lParam);
+				return DefWindowProcW(window, message, wParam, lParam);
 			}
 			return 0;
 		}

@@ -1,14 +1,15 @@
+﻿// © 2017 Naoki Nakagawa
 #pragma once
 #include <strsafe.h>
 
 namespace GameLibrary {
 	class Text : public Sprite {
-		PUBLIC Text(const char* text, const char* fontFamily = "") {
-			if (text == "") {
-				text = " ";
+		PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"") {
+			if (text == L"") {
+				text = L"\uFFFD";
 			}
 
-			LOGFONTA logFont = {};
+			LOGFONTW logFont = {};
 			logFont.lfHeight = 256;
 			logFont.lfWidth = 0;
 			logFont.lfEscapement = 0;
@@ -22,27 +23,20 @@ namespace GameLibrary {
 			logFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 			logFont.lfQuality = PROOF_QUALITY;
 			logFont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
-			StringCchCopyA(logFont.lfFaceName, 32, fontFamily);
-			HFONT font = CreateFontIndirectA(&logFont);
+			StringCchCopyW(logFont.lfFaceName, 32, fontFamily);
+			HFONT font = CreateFontIndirectW(&logFont);
 
 			HDC dc = GetDC(nullptr);
 			HFONT oldFont = (HFONT)SelectObject(dc, font);
+			UINT code = text[0];
 
-			UINT code = 0;
-			if (IsDBCSLeadByte(*text)) {
-				code = (BYTE)text[0] << 8 | (BYTE)text[1];
-			}
-			else {
-				code = text[0];
-			}
-
-			TEXTMETRICA textMetrics = {};
-			GetTextMetricsA(dc, &textMetrics);
+			TEXTMETRICW textMetrics = {};
+			GetTextMetricsW(dc, &textMetrics);
 			GLYPHMETRICS glyphMetrics;
 			const MAT2 matrix = { { 0, 1 },{ 0, 0 },{ 0, 0 },{ 0, 1 } };
-			DWORD size = GetGlyphOutlineA(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
+			DWORD size = GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
 			BYTE* textureBuffer = new BYTE[size];
-			GetGlyphOutlineA(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, textureBuffer, &matrix);
+			GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, textureBuffer, &matrix);
 
 			SelectObject(dc, oldFont);
 			DeleteObject(font);
