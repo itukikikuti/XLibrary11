@@ -1,5 +1,5 @@
-﻿// © 2017 Naoki Nakagawa
-#include <fstream>
+﻿#include <fstream>
+#include <codecvt>
 #include <string>
 #include <regex>
 #include <crtdbg.h>
@@ -9,32 +9,34 @@ using namespace std;
 using namespace DirectX;
 using namespace GameLibrary;
 
-string GetSourceCode(const char* filePath) {
-	ifstream sourceFile(filePath);
-	istreambuf_iterator<char> iterator(sourceFile);
-	istreambuf_iterator<char> last;
-	string sourceCode(iterator, last);
+wstring GetSourceCode(const wchar_t* filePath) {
+	wifstream sourceFile(filePath);
+	sourceFile.imbue(locale(locale(""), new codecvt_utf8_utf16<wchar_t, 0x10ffff, consume_header>()));
+	istreambuf_iterator<wchar_t> iterator(sourceFile);
+	istreambuf_iterator<wchar_t> last;
+	wstring sourceCode(iterator, last);
 	sourceFile.close();
 	return sourceCode;
 }
 
-void MargeSourceCode(const char* file, string& sourceCode) {
-	string from = "#include \"" + string(file) + "\"";
-	string filePath = "sources/" + string(file);
+void MargeSourceCode(const wchar_t* fileName, wstring& sourceCode) {
+	wstring from = L"#include \"" + wstring(fileName) + L"\"";
+	wstring filePath = L"sources/" + wstring(fileName);
 
-	string::size_type pos = sourceCode.find(from);
+	wstring::size_type pos = sourceCode.find(from);
 	sourceCode.replace(pos, from.size(), GetSourceCode(filePath.c_str()));
 }
 
 void LinkLibrary() {
-	string game = GetSourceCode("sources/Game.h");
+	wstring library = GetSourceCode(L"sources/Game.h");
 
-	//MargeSourceCode("Material.h", game);
-	MargeSourceCode("Sprite.h", game);
-	MargeSourceCode("Text.h", game);
+	//MargeSourceCode(L"Material.h", game);
+	MargeSourceCode(L"Sprite.h", library);
+	MargeSourceCode(L"Text.h", library);
 
-	ofstream libraryFile("sources/GameLibrary.h");
-	libraryFile << game;
+	wofstream libraryFile(L"sources/GameLibrary.h");
+	libraryFile.imbue(locale(locale(""), new codecvt_utf8_utf16<wchar_t, 0x10ffff, generate_header>()));
+	libraryFile << library;
 	libraryFile.close();
 }
 
@@ -53,7 +55,7 @@ int main() {
 
 	Text text1(L"あ");
 	text1.scale.x = text1.scale.y = 0.5f;
-	Text text2(L"あ", L"ＭＳ 明朝");
+	Text text2(L"", L"ＭＳ 明朝");
 	Text text3(L"玉", L"衡山毛筆フォント行書");
 
 	bool isFullscreen = false;
