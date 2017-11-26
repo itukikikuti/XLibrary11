@@ -483,8 +483,8 @@ class Sprite {
 		else {
 			width = height = 100;
 			textureBuffer = new BYTE[width * height * 4];
-			for (int y = 0; y < height; y++) {
-				for (int x = 0; x < width; x++) {
+			for (UINT y = 0; y < height; y++) {
+				for (UINT x = 0; x < width; x++) {
 					BYTE color[4] = { 0xff, 0x00, 0xff, 0xff };
 					memcpy(&textureBuffer[x * 4 + y * (width * 4)], color, sizeof(DWORD));
 				}
@@ -666,7 +666,7 @@ class Text : public Sprite {
 
 		TEXTMETRICW textMetrics = {};
 		GetTextMetricsW(dc, &textMetrics);
-		GLYPHMETRICS glyphMetrics;
+		GLYPHMETRICS glyphMetrics = {};
 		const MAT2 matrix = { { 0, 1 },{ 0, 0 },{ 0, 0 },{ 0, 1 } };
 		DWORD size = GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
 		BYTE* textureBuffer = new BYTE[size];

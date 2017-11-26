@@ -60,8 +60,8 @@ class Sprite {
 		else {
 			width = height = 100;
 			textureBuffer = new BYTE[width * height * 4];
-			for (int y = 0; y < height; y++) {
-				for (int x = 0; x < width; x++) {
+			for (UINT y = 0; y < height; y++) {
+				for (UINT x = 0; x < width; x++) {
 					BYTE color[4] = { 0xff, 0x00, 0xff, 0xff };
 					memcpy(&textureBuffer[x * 4 + y * (width * 4)], color, sizeof(DWORD));
 				}

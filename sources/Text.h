@@ -29,7 +29,7 @@ class Text : public Sprite {
 
 		TEXTMETRICW textMetrics = {};
 		GetTextMetricsW(dc, &textMetrics);
-		GLYPHMETRICS glyphMetrics;
+		GLYPHMETRICS glyphMetrics = {};
 		const MAT2 matrix = { { 0, 1 },{ 0, 0 },{ 0, 0 },{ 0, 1 } };
 		DWORD size = GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
 		BYTE* textureBuffer = new BYTE[size];
