@@ -50,6 +50,7 @@ class Game {
 			window = CreateWindowW(L"GameLibrary", L"GameLibrary", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
 
 			SetSize(1280, 720);
+			SetFullScreen(false);
 
 			ShowWindow(window, SW_SHOWNORMAL);
 		}
@@ -74,7 +75,7 @@ class Game {
 		int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
 		int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
 
-		SetWindowPos(GetWindow(), nullptr, x, y, w, h, SWP_NOZORDER);
+		SetWindowPos(GetWindow(), nullptr, x, y, w, h, SWP_FRAMECHANGED);
 	}
 	PUBLIC static wchar_t* GetTitle() {
 		wchar_t* title = nullptr;
@@ -96,7 +97,7 @@ class Game {
 		}
 		else {
 			SetWindowLongPtrW(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
-			SetWindowPos(GetWindow(), nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED);
+			SetWindowPos(GetWindow(), nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 			SetSize(size.x, size.y);
 		}
 	}
