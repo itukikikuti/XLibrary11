@@ -21,6 +21,9 @@
 #define PROTECTED protected:
 
 GAME_LIBRARY_BEGIN
+
+using namespace DirectX;
+
 class Game {
 	PUBLIC Game() = delete;
 	PUBLIC static HWND GetWindow() {
@@ -53,11 +56,11 @@ class Game {
 
 		return window;
 	}
-	PUBLIC static DirectX::XMINT2 GetSize() {
+	PUBLIC static XMINT2 GetSize() {
 		RECT clientRect = {};
 		GetClientRect(GetWindow(), &clientRect);
 
-		return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+		return XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 	}
 	PUBLIC static void SetSize(int width, int height) {
 		RECT windowRect = {};
@@ -82,7 +85,7 @@ class Game {
 		SetWindowTextW(GetWindow(), title);
 	}
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
-		static DirectX::XMINT2 size = GetSize();
+		static XMINT2 size = GetSize();
 
 		if (isFullscreen) {
 			size = GetSize();
@@ -245,13 +248,13 @@ class Game {
 
 		return *renderTargetView.Get();
 	}
-	PUBLIC static DirectX::XMMATRIX GetViewMatrix() {
-		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	PUBLIC static XMMATRIX GetViewMatrix() {
+		return XMMatrixLookAtLH(XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	}
-	PUBLIC static DirectX::XMMATRIX GetProjectionMatrix() {
-		return DirectX::XMMatrixOrthographicLH(Game::GetSize().x * 1.0f, Game::GetSize().y * 1.0f, -1.0f, 1.0f);
+	PUBLIC static XMMATRIX GetProjectionMatrix() {
+		return XMMatrixOrthographicLH(Game::GetSize().x * 1.0f, Game::GetSize().y * 1.0f, -1.0f, 1.0f);
 	}
-	PUBLIC static DirectX::XMINT2 GetMousePosition() {
+	PUBLIC static XMINT2 GetMousePosition() {
 		return MousePosition();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
@@ -294,8 +297,8 @@ class Game {
 
 		return true;
 	}
-	PRIVATE static DirectX::XMINT2& MousePosition() {
-		static DirectX::XMINT2 mousePosition;
+	PRIVATE static XMINT2& MousePosition() {
+		static XMINT2 mousePosition;
 		return mousePosition;
 	}
 	PRIVATE static BYTE* PreKeyState() {
@@ -351,7 +354,7 @@ class Game {
 		GetCursorPos(&point);
 
 		ScreenToClient(GetWindow(), &point);
-		MousePosition() = DirectX::XMINT2(point.x, point.y);
+		MousePosition() = XMINT2(point.x, point.y);
 	}
 	PRIVATE static void ProcessKey() {
 		for (int i = 0; i < 256; i++) {
@@ -419,26 +422,28 @@ class Game {
 		return 0;
 	}
 };
+
 GAME_LIBRARY_END
 
-
+#include "Texture.h"
 GAME_LIBRARY_BEGIN
+
 class Sprite {
 	PROTECTED struct Constant {
-		DirectX::XMMATRIX world;
-		DirectX::XMMATRIX view;
-		DirectX::XMMATRIX projection;
-		DirectX::XMFLOAT4 color;
+		XMMATRIX world;
+		XMMATRIX view;
+		XMMATRIX projection;
+		XMFLOAT4 color;
 	};
 	PRIVATE struct Vertex {
-		DirectX::XMFLOAT3 position;
-		DirectX::XMFLOAT2 uv;
+		XMFLOAT3 position;
+		XMFLOAT2 uv;
 	};
 
-	PUBLIC DirectX::XMFLOAT2 position;
+	PUBLIC XMFLOAT2 position;
 	PUBLIC float angle;
-	PUBLIC DirectX::XMFLOAT2 scale;
-	PUBLIC DirectX::XMFLOAT4 color;
+	PUBLIC XMFLOAT2 scale;
+	PUBLIC XMFLOAT4 color;
 	PROTECTED UINT width;
 	PROTECTED UINT height;
 	PROTECTED ID3D11Texture2D* texture;
@@ -501,7 +506,7 @@ class Sprite {
 		textureDesc.SampleDesc.Quality = 0;
 		textureDesc.Usage = D3D11_USAGE_DEFAULT;
 		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		textureDesc.CPUAccessFlags = 0;
+		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 		textureDesc.MiscFlags = 0;
 
 		D3D11_SUBRESOURCE_DATA textureSubresourceData;
@@ -514,10 +519,10 @@ class Sprite {
 
 		Initialize();
 
-		position = DirectX::XMFLOAT2(0.0f, 0.0f);
+		position = XMFLOAT2(0.0f, 0.0f);
 		angle = 0.0f;
-		scale = DirectX::XMFLOAT2(1.0f, 1.0f);
-		color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		scale = XMFLOAT2(1.0f, 1.0f);
+		color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 	PUBLIC virtual ~Sprite() {
 		if (texture)
@@ -538,14 +543,14 @@ class Sprite {
 		if (constantBuffer)
 			constantBuffer->Release();
 	}
-	PUBLIC DirectX::XMINT2 GetSize() {
-		return DirectX::XMINT2(width, height);
+	PUBLIC XMINT2 GetSize() {
+		return XMINT2(width, height);
 	}
 	PUBLIC void Draw() {
-		constant.world = DirectX::XMMatrixIdentity();
-		constant.world *= DirectX::XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
-		constant.world *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-angle));
-		constant.world *= DirectX::XMMatrixTranslation(position.x, -position.y, 0.0f);
+		constant.world = XMMatrixIdentity();
+		constant.world *= XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
+		constant.world *= XMMatrixRotationZ(XMConvertToRadians(-angle));
+		constant.world *= XMMatrixTranslation(position.x, -position.y, 0.0f);
 		constant.view = Game::GetViewMatrix();
 		constant.projection = Game::GetProjectionMatrix();
 		constant.color = color;
@@ -562,10 +567,10 @@ class Sprite {
 	}
 	PROTECTED void Initialize() {
 		Vertex quad[] = {
-			{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) },
-			{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
-			{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) },
-			{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) },
+			{ XMFLOAT3(-0.5f, 0.5f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
+			{ XMFLOAT3(0.5f, 0.5f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+			{ XMFLOAT3(-0.5f, -0.5f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+			{ XMFLOAT3(0.5f, -0.5f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
 		};
 		int vertexCount = sizeof(quad) / sizeof(quad[0]);
 
@@ -633,10 +638,11 @@ class Sprite {
 		Game::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
 	}
 };
+
 GAME_LIBRARY_END
 
-
 GAME_LIBRARY_BEGIN
+
 class Text : public Sprite {
 	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"") {
 		if (text == L"") {
@@ -698,10 +704,10 @@ class Text : public Sprite {
 		Game::GetDeviceContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 
 		BYTE* bits = (BYTE*)mapped.pData;
-		DirectX::XMINT2 origin;
+		XMINT2 origin;
 		origin.x = glyphMetrics.gmptGlyphOrigin.x;
 		origin.y = textMetrics.tmAscent - glyphMetrics.gmptGlyphOrigin.y;
-		DirectX::XMINT2 bitmapSize;
+		XMINT2 bitmapSize;
 		bitmapSize.x = glyphMetrics.gmBlackBoxX + (4 - (glyphMetrics.gmBlackBoxX % 4)) % 4;
 		bitmapSize.y = glyphMetrics.gmBlackBoxY;
 		const int LEVEL = 17;
@@ -720,12 +726,13 @@ class Text : public Sprite {
 
 		Initialize();
 
-		position = DirectX::XMFLOAT2(0.0f, 0.0f);
+		position = XMFLOAT2(0.0f, 0.0f);
 		angle = 0.0f;
-		scale = DirectX::XMFLOAT2(1.0f, 1.0f);
-		color = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		scale = XMFLOAT2(1.0f, 1.0f);
+		color = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 };
+
 GAME_LIBRARY_END
 
 

@@ -1,5 +1,5 @@
-﻿
-GAME_LIBRARY_BEGIN
+﻿GAME_LIBRARY_BEGIN
+
 class Text : public Sprite {
 	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"") {
 		if (text == L"") {
@@ -61,10 +61,10 @@ class Text : public Sprite {
 		Game::GetDeviceContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 
 		BYTE* bits = (BYTE*)mapped.pData;
-		DirectX::XMINT2 origin;
+		XMINT2 origin;
 		origin.x = glyphMetrics.gmptGlyphOrigin.x;
 		origin.y = textMetrics.tmAscent - glyphMetrics.gmptGlyphOrigin.y;
-		DirectX::XMINT2 bitmapSize;
+		XMINT2 bitmapSize;
 		bitmapSize.x = glyphMetrics.gmBlackBoxX + (4 - (glyphMetrics.gmBlackBoxX % 4)) % 4;
 		bitmapSize.y = glyphMetrics.gmBlackBoxY;
 		const int LEVEL = 17;
@@ -83,10 +83,11 @@ class Text : public Sprite {
 
 		Initialize();
 
-		position = DirectX::XMFLOAT2(0.0f, 0.0f);
+		position = XMFLOAT2(0.0f, 0.0f);
 		angle = 0.0f;
-		scale = DirectX::XMFLOAT2(1.0f, 1.0f);
-		color = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		scale = XMFLOAT2(1.0f, 1.0f);
+		color = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 };
+
 GAME_LIBRARY_END

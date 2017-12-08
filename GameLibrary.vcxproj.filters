@@ -23,5 +23,8 @@
     <ClInclude Include="sources\Material.h">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\Texture.h">
+      <Filter>sources</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

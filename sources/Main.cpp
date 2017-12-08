@@ -6,7 +6,6 @@
 #include "Game.h"
 
 using namespace std;
-using namespace DirectX;
 using namespace GameLibrary;
 
 wstring GetSourceCode(const wchar_t* filePath) {
@@ -30,7 +29,6 @@ void MargeSourceCode(const wchar_t* fileName, wstring& sourceCode) {
 void LinkLibrary() {
 	wstring library = GetSourceCode(L"sources/Game.h");
 
-	//MargeSourceCode(L"Material.h", game);
 	MargeSourceCode(L"Sprite.h", library);
 	MargeSourceCode(L"Text.h", library);
 
