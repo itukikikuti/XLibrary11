@@ -1,3 +1,3 @@
 # GameLibrary
 
-Download [GameLibrary.h](https://raw.githubusercontent.com/Naoki-Nakagawa/GameLibrary/master/sources/GameLibrary.h)
+Download <a href='https://raw.githubusercontent.com/Naoki-Nakagawa/GameLibrary/master/sources/GameLibrary.h' download='GameLibrary.h'>GameLibrary.h</a>
