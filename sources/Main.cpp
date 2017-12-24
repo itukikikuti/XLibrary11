@@ -32,7 +32,7 @@ void LinkLibrary() {
 	MargeSourceCode(L"Sprite.h", library);
 	MargeSourceCode(L"Text.h", library);
 
-	wofstream libraryFile(L"sources/GameLibrary.h");
+	wofstream libraryFile(L"GameLibrary.h");
 	libraryFile.imbue(locale(locale(""), new codecvt_utf8_utf16<wchar_t, 0x10ffff, generate_header>()));
 	libraryFile << library;
 	libraryFile.close();
@@ -58,7 +58,7 @@ int Main() {
 
 	bool isFullscreen = false;
 	float t = 0.0f;
-	while (Game::Loop()) {
+	while (Game::Update()) {
 		t += Game::GetDeltaTime();
 
 		sprite1.angle = t * (360.0f);

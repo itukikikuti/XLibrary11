@@ -50,7 +50,6 @@ class Game {
 			window = CreateWindowW(L"GameLibrary", L"GameLibrary", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
 
 			SetSize(1280, 720);
-			//SetFullScreen(false);
 
 			ShowWindow(window, SW_SHOWNORMAL);
 		}
@@ -226,29 +225,6 @@ class Game {
 
 		return *deviceContext.Get();
 	}
-	PUBLIC static ID3D11RenderTargetView& GetRenderTargetView() {
-		static Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-		static Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTargetTexture = nullptr;
-
-		if (renderTargetView == nullptr) {
-			GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)renderTargetTexture.GetAddressOf());
-
-			GetDevice().CreateRenderTargetView(renderTargetTexture.Get(), nullptr, renderTargetView.GetAddressOf());
-
-			GetDeviceContext().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
-
-			D3D11_VIEWPORT viewPort = {};
-			viewPort.Width = (float)GetSize().x;
-			viewPort.Height = (float)GetSize().y;
-			viewPort.MinDepth = 0.0f;
-			viewPort.MaxDepth = 1.0f;
-			viewPort.TopLeftX = 0;
-			viewPort.TopLeftY = 0;
-			GetDeviceContext().RSSetViewports(1, &viewPort);
-		}
-
-		return *renderTargetView.Get();
-	}
 	PUBLIC static XMMATRIX GetViewMatrix() {
 		return XMMatrixLookAtLH(XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	}
@@ -279,7 +255,7 @@ class Game {
 	PUBLIC static void AddFont(const wchar_t* filePath) {
 		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
 	}
-	PUBLIC static bool Loop() {
+	PUBLIC static bool Update() {
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 		GetSwapChain().Present(0, 0);
@@ -364,6 +340,38 @@ class Game {
 
 		GetKeyboardState(KeyState());
 	}
+	PRIVATE static ID3D11RenderTargetView& GetRenderTargetView(bool isResize = false) {
+		static Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+		static Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTargetTexture = nullptr;
+
+		if (renderTargetView != nullptr && isResize) {
+			ID3D11RenderTargetView* nullView = nullptr;
+			GetDeviceContext().OMSetRenderTargets(1, &nullView, nullptr);
+			renderTargetView.Reset();
+			renderTargetTexture.Reset();
+			GetDeviceContext().Flush();
+			GetSwapChain().ResizeBuffers(2, GetSize().x, GetSize().y, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+		}
+
+		if (renderTargetView == nullptr || isResize) {
+			GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)renderTargetTexture.GetAddressOf());
+
+			GetDevice().CreateRenderTargetView(renderTargetTexture.Get(), nullptr, renderTargetView.GetAddressOf());
+
+			GetDeviceContext().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
+
+			D3D11_VIEWPORT viewPort = {};
+			viewPort.Width = (float)GetSize().x;
+			viewPort.Height = (float)GetSize().y;
+			viewPort.MinDepth = 0.0f;
+			viewPort.MaxDepth = 1.0f;
+			viewPort.TopLeftX = 0;
+			viewPort.TopLeftY = 0;
+			GetDeviceContext().RSSetViewports(1, &viewPort);
+		}
+
+		return *renderTargetView.Get();
+	}
 	PRIVATE static LARGE_INTEGER GetCounter() {
 		LARGE_INTEGER counter;
 		QueryPerformanceCounter(&counter);
@@ -416,6 +424,9 @@ class Game {
 		switch (message) {
 		case WM_DESTROY:
 			PostQuitMessage(0);
+			break;
+		case WM_SIZE:
+			GetRenderTargetView(true);
 			break;
 		default:
 			return DefWindowProcW(window, message, wParam, lParam);
