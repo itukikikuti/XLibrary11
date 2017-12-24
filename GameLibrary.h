@@ -437,7 +437,6 @@ class Game {
 
 GAME_LIBRARY_END
 
-#include "Texture.h"
 GAME_LIBRARY_BEGIN
 
 class Sprite {
