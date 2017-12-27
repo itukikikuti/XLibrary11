@@ -255,7 +255,7 @@ class Game {
 	PUBLIC static void AddFont(const wchar_t* filePath) {
 		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
 	}
-	PUBLIC static bool Update() {
+	PUBLIC static bool Refresh() {
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 		GetSwapChain().Present(0, 0);

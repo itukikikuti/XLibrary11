@@ -58,7 +58,7 @@ int Main() {
 
 	bool isFullscreen = false;
 	float t = 0.0f;
-	while (Game::Update()) {
+	while (Game::Refresh()) {
 		t += Game::GetDeltaTime();
 
 		sprite1.angle = t * (360.0f);
