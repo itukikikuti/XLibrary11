@@ -44,12 +44,12 @@ int Main() {
 
 	LinkLibrary();
 
-	Sprite sprite1(L"clock.png");
+	Sprite sprite1(L"assets/clock.png");
 	sprite1.position = XMFLOAT2(200.0f, 200.0f);
-	Sprite sprite2(L"4.JPG");
+	Sprite sprite2(L"assets/4.JPG");
 	sprite2.position = XMFLOAT2(1000.0f, 250.0f);
 
-	Game::AddFont(L"衡山毛筆フォント行書.ttf");
+	Game::AddFont(L"assets/衡山毛筆フォント行書.ttf");
 	Game::SetTitle(L"くぁwせdrftgyふじこlp");
 
 	Text text1(L"あ");
