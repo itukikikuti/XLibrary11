@@ -439,6 +439,15 @@ GAME_LIBRARY_END
 
 GAME_LIBRARY_BEGIN
 
+class Mesh {
+	PUBLIC Mesh(const wchar_t* filePath) {
+	}
+};
+
+GAME_LIBRARY_END
+
+GAME_LIBRARY_BEGIN
+
 class Sprite {
 	PROTECTED struct Constant {
 		XMMATRIX world;

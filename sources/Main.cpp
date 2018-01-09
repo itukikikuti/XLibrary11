@@ -29,6 +29,7 @@ void MargeSourceCode(const wchar_t* fileName, wstring& sourceCode) {
 void LinkLibrary() {
 	wstring library = GetSourceCode(L"sources/Game.h");
 
+	MargeSourceCode(L"Mesh.h", library);
 	MargeSourceCode(L"Sprite.h", library);
 	MargeSourceCode(L"Text.h", library);
 

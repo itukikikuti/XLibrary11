@@ -26,5 +26,8 @@
     <ClInclude Include="sources\Texture.h">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\Mesh.h">
+      <Filter>sources</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

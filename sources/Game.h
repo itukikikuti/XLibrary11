@@ -437,6 +437,7 @@ class Game {
 
 GAME_LIBRARY_END
 
+#include "Mesh.h"
 #include "Sprite.h"
 #include "Text.h"
 
