@@ -435,18 +435,11 @@ class Game {
 	}
 };
 
-GAME_LIBRARY_END
-
-GAME_LIBRARY_BEGIN
 
 class Mesh {
 	PUBLIC Mesh(const wchar_t* filePath) {
 	}
 };
-
-GAME_LIBRARY_END
-
-GAME_LIBRARY_BEGIN
 
 class Sprite {
 	PROTECTED struct Constant {
@@ -659,10 +652,6 @@ class Sprite {
 	}
 };
 
-GAME_LIBRARY_END
-
-GAME_LIBRARY_BEGIN
-
 class Text : public Sprite {
 	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"") {
 		if (text == L"") {
@@ -753,7 +742,7 @@ class Text : public Sprite {
 	}
 };
 
-GAME_LIBRARY_END
 
+GAME_LIBRARY_END
 
 #endif

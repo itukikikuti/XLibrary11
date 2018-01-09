@@ -1,6 +1,4 @@
-﻿GAME_LIBRARY_BEGIN
-
-class Text : public Sprite {
+﻿class Text : public Sprite {
 	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"") {
 		if (text == L"") {
 			text = L"\uFFFD";
@@ -89,5 +87,3 @@ class Text : public Sprite {
 		color = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 };
-
-GAME_LIBRARY_END

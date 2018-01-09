@@ -1,6 +1,4 @@
-﻿GAME_LIBRARY_BEGIN
-
-class Sprite {
+﻿class Sprite {
 	PROTECTED struct Constant {
 		XMMATRIX world;
 		XMMATRIX view;
@@ -210,5 +208,3 @@ class Sprite {
 		Game::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
 	}
 };
-
-GAME_LIBRARY_END
