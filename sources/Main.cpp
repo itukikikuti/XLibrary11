@@ -57,6 +57,8 @@ int Main() {
 	Text text2(L"", L"ＭＳ 明朝");
 	Text text3(L"玉", L"衡山毛筆フォント行書");
 
+	Mesh mesh(L"assets/monkey.obj");
+
 	bool isFullscreen = false;
 	float t = 0.0f;
 	while (Game::Refresh()) {

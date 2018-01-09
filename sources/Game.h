@@ -3,13 +3,16 @@
 #define _GAME_LIBRARY_
 
 #define OEMRESOURCE
-#include <strsafe.h>
-#include <wrl.h>
-#include <windows.h>
-#include <wincodec.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <strsafe.h>
+#include <wincodec.h>
+#include <windows.h>
+#include <wrl.h>
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
@@ -47,7 +50,7 @@ class Game {
 			windowClass.hIconSm = nullptr;
 			if (!RegisterClassExW(&windowClass)) return nullptr;
 
-			window = CreateWindowW(L"GameLibrary", L"GameLibrary", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
+			window = CreateWindowW(L"GameLibrary", L"GameLibrary", GetWindowStyle(), CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
 
 			SetSize(1280, 720);
 
@@ -95,7 +98,7 @@ class Game {
 			SetWindowPos(GetWindow(), HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
 		}
 		else {
-			SetWindowLongPtrW(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+			SetWindowLongPtrW(GetWindow(), GWL_STYLE, WS_VISIBLE | GetWindowStyle());
 			SetWindowPos(GetWindow(), nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 			SetSize(size.x, size.y);
 		}
@@ -273,6 +276,9 @@ class Game {
 		GetDeviceContext().ClearRenderTargetView(&GetRenderTargetView(), color);
 
 		return true;
+	}
+	PRIVATE static DWORD GetWindowStyle() {
+		return WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
 	}
 	PRIVATE static XMINT2& MousePosition() {
 		static XMINT2 mousePosition;
