@@ -8,6 +8,7 @@
 #include <DirectXMath.h>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <string>
 #include <strsafe.h>
 #include <wincodec.h>
