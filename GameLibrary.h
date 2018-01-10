@@ -449,19 +449,31 @@ class Mesh {
 		std::wstring meshSource;
 
 		std::vector<XMFLOAT3> vertices;
+		std::vector<XMFLOAT2> texcoords;
+		std::vector<XMFLOAT3> normals;
 
 		while (getline(meshFile, meshSource)) {
 			if (meshSource.substr(0, 2) == L"v ") {
 				std::vector<std::wstring> results = SplitString(meshSource.substr(2));
 				if (results.size() >= 3) {
-					vertices.push_back(XMFLOAT3(std::stod(results[0]), std::stod(results[1]), std::stod(results[2])));
+					vertices.push_back(XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
+				}
+			}
+			if (meshSource.substr(0, 3) == L"vt ") {
+				std::vector<std::wstring> results = SplitString(meshSource.substr(3));
+				if (results.size() >= 2) {
+					texcoords.push_back(XMFLOAT2(std::stof(results[0]), std::stof(results[1])));
+				}
+			}
+			if (meshSource.substr(0, 3) == L"vn ") {
+				std::vector<std::wstring> results = SplitString(meshSource.substr(3));
+				if (results.size() >= 3) {
+					normals.push_back(XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
 				}
 			}
 		}
 
-		std::vector<std::wstring> a = SplitString(L"402/372", u'/');
-		a.size();
-		std::wcout << a.size();
+		printf("");
 	}
 	PRIVATE std::vector<std::wstring> SplitString(const std::wstring &str, wchar_t delimiter = u' ') {
 		std::vector<std::wstring> results;
