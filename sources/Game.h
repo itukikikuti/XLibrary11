@@ -8,9 +8,9 @@
 #include <DirectXMath.h>
 #include <fstream>
 #include <iostream>
-#include <regex>
 #include <string>
 #include <strsafe.h>
+#include <vector>
 #include <wincodec.h>
 #include <windows.h>
 #include <wrl.h>
