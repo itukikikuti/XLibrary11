@@ -459,25 +459,23 @@ class Mesh {
 			}
 		}
 
-		std::wcout << L"a";
+		std::vector<std::wstring> a = SplitString(L"402/372", u'/');
+		a.size();
+		std::wcout << a.size();
 	}
 	PRIVATE std::vector<std::wstring> SplitString(const std::wstring &str, wchar_t delimiter = u' ') {
 		std::vector<std::wstring> results;
 		std::wstring temp;
 		for (wchar_t character : str) {
 			if (character == delimiter) {
-				if (!temp.empty()) {
-					results.push_back(temp);
-				}
+				results.push_back(temp);
 				temp.clear();
 			}
 			else {
 				temp += character;
 			}
 		}
-		if (!temp.empty()) {
-			results.push_back(temp);
-		}
+		results.push_back(temp);
 		return results;
 	}
 };
