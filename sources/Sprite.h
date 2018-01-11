@@ -5,10 +5,6 @@
 		XMMATRIX projection;
 		XMFLOAT4 color;
 	};
-	PRIVATE struct Vertex {
-		XMFLOAT3 position;
-		XMFLOAT2 uv;
-	};
 
 	PUBLIC XMFLOAT2 position;
 	PUBLIC float angle;

@@ -8,6 +8,7 @@
 #include <DirectXMath.h>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <string>
 #include <strsafe.h>
 #include <vector>
@@ -443,20 +444,27 @@ class Game {
 };
 
 
+struct Vertex {
+	XMFLOAT3 position;
+	XMFLOAT2 texcoord;
+	XMFLOAT3 normal;
+};
+
 class Mesh {
 	PUBLIC Mesh(const wchar_t* filePath) {
 		std::wifstream meshFile(filePath);
 		std::wstring meshSource;
 
-		std::vector<XMFLOAT3> vertices;
+		std::vector<XMFLOAT3> positions;
 		std::vector<XMFLOAT2> texcoords;
 		std::vector<XMFLOAT3> normals;
+		std::vector<Vertex> vertices;
 
 		while (getline(meshFile, meshSource)) {
 			if (meshSource.substr(0, 2) == L"v ") {
 				std::vector<std::wstring> results = SplitString(meshSource.substr(2));
 				if (results.size() >= 3) {
-					vertices.push_back(XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
+					positions.push_back(XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
 				}
 			}
 			if (meshSource.substr(0, 3) == L"vt ") {
@@ -471,9 +479,18 @@ class Mesh {
 					normals.push_back(XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
 				}
 			}
+			if (meshSource.substr(0, 2) == L"f ") {
+				std::vector<std::wstring> results = SplitString(std::regex_replace(meshSource.substr(2), std::wregex(LR"([a-z]|[A-Z])"), L""));
+				if (results.size() >= 3) {
+					for (int i = 0; i < results.size(); i++) {
+						std::vector<std::wstring> tokens = SplitString(results[i], u'/');
+
+					}
+				}
+			}
 		}
 
-		printf("");
+		std::cout << "" << std::endl;
 	}
 	PRIVATE std::vector<std::wstring> SplitString(const std::wstring &str, wchar_t delimiter = u' ') {
 		std::vector<std::wstring> results;
@@ -498,10 +515,6 @@ class Sprite {
 		XMMATRIX view;
 		XMMATRIX projection;
 		XMFLOAT4 color;
-	};
-	PRIVATE struct Vertex {
-		XMFLOAT3 position;
-		XMFLOAT2 uv;
 	};
 
 	PUBLIC XMFLOAT2 position;
