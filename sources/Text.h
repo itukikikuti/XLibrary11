@@ -59,10 +59,10 @@
 		Game::GetDeviceContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 
 		BYTE* bits = (BYTE*)mapped.pData;
-		XMINT2 origin;
+		DirectX::XMINT2 origin;
 		origin.x = glyphMetrics.gmptGlyphOrigin.x;
 		origin.y = textMetrics.tmAscent - glyphMetrics.gmptGlyphOrigin.y;
-		XMINT2 bitmapSize;
+		DirectX::XMINT2 bitmapSize;
 		bitmapSize.x = glyphMetrics.gmBlackBoxX + (4 - (glyphMetrics.gmBlackBoxX % 4)) % 4;
 		bitmapSize.y = glyphMetrics.gmBlackBoxY;
 		const int LEVEL = 17;
@@ -81,9 +81,9 @@
 
 		Initialize();
 
-		position = XMFLOAT2(0.0f, 0.0f);
+		position = DirectX::XMFLOAT2(0.0f, 0.0f);
 		angle = 0.0f;
-		scale = XMFLOAT2(1.0f, 1.0f);
-		color = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		scale = DirectX::XMFLOAT2(1.0f, 1.0f);
+		color = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 };

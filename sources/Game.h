@@ -27,8 +27,6 @@
 
 GAME_LIBRARY_BEGIN
 
-using namespace DirectX;
-
 class Game {
 	PUBLIC Game() = delete;
 	PUBLIC static HWND GetWindow() {
@@ -61,11 +59,11 @@ class Game {
 
 		return window;
 	}
-	PUBLIC static XMINT2 GetSize() {
+	PUBLIC static DirectX::XMINT2 GetSize() {
 		RECT clientRect = {};
 		GetClientRect(GetWindow(), &clientRect);
 
-		return XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+		return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 	}
 	PUBLIC static void SetSize(int width, int height) {
 		RECT windowRect = {};
@@ -90,7 +88,7 @@ class Game {
 		SetWindowTextW(GetWindow(), title);
 	}
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
-		static XMINT2 size = GetSize();
+		static DirectX::XMINT2 size = GetSize();
 
 		if (isFullscreen) {
 			size = GetSize();
@@ -230,13 +228,13 @@ class Game {
 
 		return *deviceContext.Get();
 	}
-	PUBLIC static XMMATRIX GetViewMatrix() {
-		return XMMatrixLookAtLH(XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	PUBLIC static DirectX::XMMATRIX GetViewMatrix() {
+		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	}
-	PUBLIC static XMMATRIX GetProjectionMatrix() {
-		return XMMatrixOrthographicLH(Game::GetSize().x * 1.0f, Game::GetSize().y * 1.0f, -1.0f, 1.0f);
+	PUBLIC static DirectX::XMMATRIX GetProjectionMatrix() {
+		return DirectX::XMMatrixOrthographicLH(Game::GetSize().x * 1.0f, Game::GetSize().y * 1.0f, -1.0f, 1.0f);
 	}
-	PUBLIC static XMINT2 GetMousePosition() {
+	PUBLIC static DirectX::XMINT2 GetMousePosition() {
 		return MousePosition();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
@@ -282,8 +280,8 @@ class Game {
 	PRIVATE static DWORD GetWindowStyle() {
 		return WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
 	}
-	PRIVATE static XMINT2& MousePosition() {
-		static XMINT2 mousePosition;
+	PRIVATE static DirectX::XMINT2& MousePosition() {
+		static DirectX::XMINT2 mousePosition;
 		return mousePosition;
 	}
 	PRIVATE static BYTE* PreKeyState() {
@@ -339,7 +337,7 @@ class Game {
 		GetCursorPos(&point);
 
 		ScreenToClient(GetWindow(), &point);
-		MousePosition() = XMINT2(point.x, point.y);
+		MousePosition() = DirectX::XMINT2(point.x, point.y);
 	}
 	PRIVATE static void ProcessKey() {
 		for (int i = 0; i < 256; i++) {

@@ -27,8 +27,6 @@
 
 GAME_LIBRARY_BEGIN
 
-using namespace DirectX;
-
 class Game {
 	PUBLIC Game() = delete;
 	PUBLIC static HWND GetWindow() {
@@ -61,11 +59,11 @@ class Game {
 
 		return window;
 	}
-	PUBLIC static XMINT2 GetSize() {
+	PUBLIC static DirectX::XMINT2 GetSize() {
 		RECT clientRect = {};
 		GetClientRect(GetWindow(), &clientRect);
 
-		return XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+		return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 	}
 	PUBLIC static void SetSize(int width, int height) {
 		RECT windowRect = {};
@@ -90,7 +88,7 @@ class Game {
 		SetWindowTextW(GetWindow(), title);
 	}
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
-		static XMINT2 size = GetSize();
+		static DirectX::XMINT2 size = GetSize();
 
 		if (isFullscreen) {
 			size = GetSize();
@@ -230,13 +228,13 @@ class Game {
 
 		return *deviceContext.Get();
 	}
-	PUBLIC static XMMATRIX GetViewMatrix() {
-		return XMMatrixLookAtLH(XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	PUBLIC static DirectX::XMMATRIX GetViewMatrix() {
+		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	}
-	PUBLIC static XMMATRIX GetProjectionMatrix() {
-		return XMMatrixOrthographicLH(Game::GetSize().x * 1.0f, Game::GetSize().y * 1.0f, -1.0f, 1.0f);
+	PUBLIC static DirectX::XMMATRIX GetProjectionMatrix() {
+		return DirectX::XMMatrixOrthographicLH(Game::GetSize().x * 1.0f, Game::GetSize().y * 1.0f, -1.0f, 1.0f);
 	}
-	PUBLIC static XMINT2 GetMousePosition() {
+	PUBLIC static DirectX::XMINT2 GetMousePosition() {
 		return MousePosition();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
@@ -282,8 +280,8 @@ class Game {
 	PRIVATE static DWORD GetWindowStyle() {
 		return WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
 	}
-	PRIVATE static XMINT2& MousePosition() {
-		static XMINT2 mousePosition;
+	PRIVATE static DirectX::XMINT2& MousePosition() {
+		static DirectX::XMINT2 mousePosition;
 		return mousePosition;
 	}
 	PRIVATE static BYTE* PreKeyState() {
@@ -339,7 +337,7 @@ class Game {
 		GetCursorPos(&point);
 
 		ScreenToClient(GetWindow(), &point);
-		MousePosition() = XMINT2(point.x, point.y);
+		MousePosition() = DirectX::XMINT2(point.x, point.y);
 	}
 	PRIVATE static void ProcessKey() {
 		for (int i = 0; i < 256; i++) {
@@ -445,9 +443,9 @@ class Game {
 
 
 struct Vertex {
-	XMFLOAT3 position;
-	XMFLOAT2 texcoord;
-	XMFLOAT3 normal;
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT2 texcoord;
+	DirectX::XMFLOAT3 normal;
 };
 
 class Mesh {
@@ -455,28 +453,28 @@ class Mesh {
 		std::wifstream meshFile(filePath);
 		std::wstring meshSource;
 
-		std::vector<XMFLOAT3> positions;
-		std::vector<XMFLOAT2> texcoords;
-		std::vector<XMFLOAT3> normals;
+		std::vector<DirectX::XMFLOAT3> positions;
+		std::vector<DirectX::XMFLOAT2> texcoords;
+		std::vector<DirectX::XMFLOAT3> normals;
 		std::vector<Vertex> vertices;
 
 		while (getline(meshFile, meshSource)) {
 			if (meshSource.substr(0, 2) == L"v ") {
 				std::vector<std::wstring> results = SplitString(meshSource.substr(2));
 				if (results.size() >= 3) {
-					positions.push_back(XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
+					positions.push_back(DirectX::XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
 				}
 			}
 			if (meshSource.substr(0, 3) == L"vt ") {
 				std::vector<std::wstring> results = SplitString(meshSource.substr(3));
 				if (results.size() >= 2) {
-					texcoords.push_back(XMFLOAT2(std::stof(results[0]), std::stof(results[1])));
+					texcoords.push_back(DirectX::XMFLOAT2(std::stof(results[0]), std::stof(results[1])));
 				}
 			}
 			if (meshSource.substr(0, 3) == L"vn ") {
 				std::vector<std::wstring> results = SplitString(meshSource.substr(3));
 				if (results.size() >= 3) {
-					normals.push_back(XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
+					normals.push_back(DirectX::XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
 				}
 			}
 			if (meshSource.substr(0, 2) == L"f ") {
@@ -484,7 +482,13 @@ class Mesh {
 				if (results.size() >= 3) {
 					for (int i = 0; i < results.size(); i++) {
 						std::vector<std::wstring> tokens = SplitString(results[i], u'/');
+						Vertex vertex;
+						vertex.position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+						vertex.texcoord = DirectX::XMFLOAT2(0.0f, 0.0f);
+						vertex.normal = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 
+						int index = 0;
+						vertices.push_back(vertex);
 					}
 				}
 			}
@@ -511,16 +515,16 @@ class Mesh {
 
 class Sprite {
 	PROTECTED struct Constant {
-		XMMATRIX world;
-		XMMATRIX view;
-		XMMATRIX projection;
-		XMFLOAT4 color;
+		DirectX::XMMATRIX world;
+		DirectX::XMMATRIX view;
+		DirectX::XMMATRIX projection;
+		DirectX::XMFLOAT4 color;
 	};
 
-	PUBLIC XMFLOAT2 position;
+	PUBLIC DirectX::XMFLOAT2 position;
 	PUBLIC float angle;
-	PUBLIC XMFLOAT2 scale;
-	PUBLIC XMFLOAT4 color;
+	PUBLIC DirectX::XMFLOAT2 scale;
+	PUBLIC DirectX::XMFLOAT4 color;
 	PROTECTED UINT width;
 	PROTECTED UINT height;
 	PROTECTED ID3D11Texture2D* texture;
@@ -596,10 +600,10 @@ class Sprite {
 
 		Initialize();
 
-		position = XMFLOAT2(0.0f, 0.0f);
+		position = DirectX::XMFLOAT2(0.0f, 0.0f);
 		angle = 0.0f;
-		scale = XMFLOAT2(1.0f, 1.0f);
-		color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		scale = DirectX::XMFLOAT2(1.0f, 1.0f);
+		color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 	PUBLIC virtual ~Sprite() {
 		if (texture)
@@ -620,14 +624,14 @@ class Sprite {
 		if (constantBuffer)
 			constantBuffer->Release();
 	}
-	PUBLIC XMINT2 GetSize() {
-		return XMINT2(width, height);
+	PUBLIC DirectX::XMINT2 GetSize() {
+		return DirectX::XMINT2(width, height);
 	}
 	PUBLIC void Draw() {
-		constant.world = XMMatrixIdentity();
-		constant.world *= XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
-		constant.world *= XMMatrixRotationZ(XMConvertToRadians(-angle));
-		constant.world *= XMMatrixTranslation(position.x, -position.y, 0.0f);
+		constant.world = DirectX::XMMatrixIdentity();
+		constant.world *= DirectX::XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
+		constant.world *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-angle));
+		constant.world *= DirectX::XMMatrixTranslation(position.x, -position.y, 0.0f);
 		constant.view = Game::GetViewMatrix();
 		constant.projection = Game::GetProjectionMatrix();
 		constant.color = color;
@@ -644,10 +648,10 @@ class Sprite {
 	}
 	PROTECTED void Initialize() {
 		Vertex quad[] = {
-			{ XMFLOAT3(-0.5f, 0.5f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
-			{ XMFLOAT3(0.5f, 0.5f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
-			{ XMFLOAT3(-0.5f, -0.5f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
-			{ XMFLOAT3(0.5f, -0.5f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+			{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) },
+			{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
+			{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) },
+			{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) },
 		};
 		int vertexCount = sizeof(quad) / sizeof(quad[0]);
 
@@ -777,10 +781,10 @@ class Text : public Sprite {
 		Game::GetDeviceContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 
 		BYTE* bits = (BYTE*)mapped.pData;
-		XMINT2 origin;
+		DirectX::XMINT2 origin;
 		origin.x = glyphMetrics.gmptGlyphOrigin.x;
 		origin.y = textMetrics.tmAscent - glyphMetrics.gmptGlyphOrigin.y;
-		XMINT2 bitmapSize;
+		DirectX::XMINT2 bitmapSize;
 		bitmapSize.x = glyphMetrics.gmBlackBoxX + (4 - (glyphMetrics.gmBlackBoxX % 4)) % 4;
 		bitmapSize.y = glyphMetrics.gmBlackBoxY;
 		const int LEVEL = 17;
@@ -799,10 +803,10 @@ class Text : public Sprite {
 
 		Initialize();
 
-		position = XMFLOAT2(0.0f, 0.0f);
+		position = DirectX::XMFLOAT2(0.0f, 0.0f);
 		angle = 0.0f;
-		scale = XMFLOAT2(1.0f, 1.0f);
-		color = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		scale = DirectX::XMFLOAT2(1.0f, 1.0f);
+		color = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 };
 

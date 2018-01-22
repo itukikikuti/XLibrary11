@@ -6,6 +6,7 @@
 #include "Game.h"
 
 using namespace std;
+using namespace DirectX;
 using namespace GameLibrary;
 
 wstring GetSourceCode(const wchar_t* filePath) {

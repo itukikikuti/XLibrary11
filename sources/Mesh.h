@@ -1,7 +1,7 @@
 ﻿struct Vertex {
-	XMFLOAT3 position;
-	XMFLOAT2 texcoord;
-	XMFLOAT3 normal;
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT2 texcoord;
+	DirectX::XMFLOAT3 normal;
 };
 
 class Mesh {
@@ -9,28 +9,28 @@ class Mesh {
 		std::wifstream meshFile(filePath);
 		std::wstring meshSource;
 
-		std::vector<XMFLOAT3> positions;
-		std::vector<XMFLOAT2> texcoords;
-		std::vector<XMFLOAT3> normals;
+		std::vector<DirectX::XMFLOAT3> positions;
+		std::vector<DirectX::XMFLOAT2> texcoords;
+		std::vector<DirectX::XMFLOAT3> normals;
 		std::vector<Vertex> vertices;
 
 		while (getline(meshFile, meshSource)) {
 			if (meshSource.substr(0, 2) == L"v ") {
 				std::vector<std::wstring> results = SplitString(meshSource.substr(2));
 				if (results.size() >= 3) {
-					positions.push_back(XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
+					positions.push_back(DirectX::XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
 				}
 			}
 			if (meshSource.substr(0, 3) == L"vt ") {
 				std::vector<std::wstring> results = SplitString(meshSource.substr(3));
 				if (results.size() >= 2) {
-					texcoords.push_back(XMFLOAT2(std::stof(results[0]), std::stof(results[1])));
+					texcoords.push_back(DirectX::XMFLOAT2(std::stof(results[0]), std::stof(results[1])));
 				}
 			}
 			if (meshSource.substr(0, 3) == L"vn ") {
 				std::vector<std::wstring> results = SplitString(meshSource.substr(3));
 				if (results.size() >= 3) {
-					normals.push_back(XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
+					normals.push_back(DirectX::XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
 				}
 			}
 			if (meshSource.substr(0, 2) == L"f ") {
@@ -39,9 +39,9 @@ class Mesh {
 					for (int i = 0; i < results.size(); i++) {
 						std::vector<std::wstring> tokens = SplitString(results[i], u'/');
 						Vertex vertex;
-						vertex.position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-						vertex.texcoord = XMFLOAT2(0.0f, 0.0f);
-						vertex.normal = XMFLOAT3(0.0f, 0.0f, 0.0f);
+						vertex.position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+						vertex.texcoord = DirectX::XMFLOAT2(0.0f, 0.0f);
+						vertex.normal = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 
 						int index = 0;
 						vertices.push_back(vertex);

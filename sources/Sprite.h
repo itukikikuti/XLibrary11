@@ -1,15 +1,15 @@
 ﻿class Sprite {
 	PROTECTED struct Constant {
-		XMMATRIX world;
-		XMMATRIX view;
-		XMMATRIX projection;
-		XMFLOAT4 color;
+		DirectX::XMMATRIX world;
+		DirectX::XMMATRIX view;
+		DirectX::XMMATRIX projection;
+		DirectX::XMFLOAT4 color;
 	};
 
-	PUBLIC XMFLOAT2 position;
+	PUBLIC DirectX::XMFLOAT2 position;
 	PUBLIC float angle;
-	PUBLIC XMFLOAT2 scale;
-	PUBLIC XMFLOAT4 color;
+	PUBLIC DirectX::XMFLOAT2 scale;
+	PUBLIC DirectX::XMFLOAT4 color;
 	PROTECTED UINT width;
 	PROTECTED UINT height;
 	PROTECTED ID3D11Texture2D* texture;
@@ -85,10 +85,10 @@
 
 		Initialize();
 
-		position = XMFLOAT2(0.0f, 0.0f);
+		position = DirectX::XMFLOAT2(0.0f, 0.0f);
 		angle = 0.0f;
-		scale = XMFLOAT2(1.0f, 1.0f);
-		color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		scale = DirectX::XMFLOAT2(1.0f, 1.0f);
+		color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 	PUBLIC virtual ~Sprite() {
 		if (texture)
@@ -109,14 +109,14 @@
 		if (constantBuffer)
 			constantBuffer->Release();
 	}
-	PUBLIC XMINT2 GetSize() {
-		return XMINT2(width, height);
+	PUBLIC DirectX::XMINT2 GetSize() {
+		return DirectX::XMINT2(width, height);
 	}
 	PUBLIC void Draw() {
-		constant.world = XMMatrixIdentity();
-		constant.world *= XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
-		constant.world *= XMMatrixRotationZ(XMConvertToRadians(-angle));
-		constant.world *= XMMatrixTranslation(position.x, -position.y, 0.0f);
+		constant.world = DirectX::XMMatrixIdentity();
+		constant.world *= DirectX::XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
+		constant.world *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-angle));
+		constant.world *= DirectX::XMMatrixTranslation(position.x, -position.y, 0.0f);
 		constant.view = Game::GetViewMatrix();
 		constant.projection = Game::GetProjectionMatrix();
 		constant.color = color;
@@ -133,10 +133,10 @@
 	}
 	PROTECTED void Initialize() {
 		Vertex quad[] = {
-			{ XMFLOAT3(-0.5f, 0.5f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
-			{ XMFLOAT3(0.5f, 0.5f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
-			{ XMFLOAT3(-0.5f, -0.5f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
-			{ XMFLOAT3(0.5f, -0.5f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+			{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) },
+			{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
+			{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) },
+			{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) },
 		};
 		int vertexCount = sizeof(quad) / sizeof(quad[0]);
 
