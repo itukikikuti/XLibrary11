@@ -114,9 +114,10 @@
     <ClCompile Include="sources\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sources\Game.h" />
+    <ClInclude Include="sources\App.h" />
     <ClInclude Include="sources\Material.h" />
     <ClInclude Include="sources\Mesh.h" />
+    <ClInclude Include="sources\Screen.h" />
     <ClInclude Include="sources\Sprite.h" />
     <ClInclude Include="sources\Text.h" />
     <ClInclude Include="sources\Texture.h" />

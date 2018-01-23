@@ -1,9 +1,9 @@
-﻿#include <fstream>
+﻿#include "App.h"
+#include <fstream>
 #include <codecvt>
 #include <string>
 #include <regex>
 #include <crtdbg.h>
-#include "Game.h"
 
 using namespace std;
 using namespace DirectX;
@@ -11,6 +11,10 @@ using namespace GameLibrary;
 
 wstring GetSourceCode(const wchar_t* filePath) {
 	wifstream sourceFile(filePath);
+	if (sourceFile.fail()) {
+		wstring empty = L"";
+		return empty;
+	}
 	sourceFile.imbue(locale(locale(""), new codecvt_utf8_utf16<wchar_t, 0x10ffff, consume_header>()));
 	istreambuf_iterator<wchar_t> iterator(sourceFile);
 	istreambuf_iterator<wchar_t> last;
@@ -18,7 +22,6 @@ wstring GetSourceCode(const wchar_t* filePath) {
 	sourceFile.close();
 	return sourceCode;
 }
-
 void MargeSourceCode(const wchar_t* fileName, wstring& sourceCode) {
 	wstring from = L"#include \"" + wstring(fileName) + L"\"";
 	wstring filePath = L"sources/" + wstring(fileName);
@@ -26,11 +29,11 @@ void MargeSourceCode(const wchar_t* fileName, wstring& sourceCode) {
 	wstring::size_type pos = sourceCode.find(from);
 	sourceCode.replace(pos, from.size(), GetSourceCode(filePath.c_str()));
 }
-
 void LinkLibrary() {
-	wstring library = GetSourceCode(L"sources/Game.h");
+	wstring library = GetSourceCode(L"sources/App.h");
 
 	MargeSourceCode(L"Window.h", library);
+	MargeSourceCode(L"Screen.h", library);
 	MargeSourceCode(L"Mesh.h", library);
 	MargeSourceCode(L"Sprite.h", library);
 	MargeSourceCode(L"Text.h", library);

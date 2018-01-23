@@ -14,9 +14,6 @@
     <ClInclude Include="sources\Sprite.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Game.h">
-      <Filter>sources</Filter>
-    </ClInclude>
     <ClInclude Include="sources\Text.h">
       <Filter>sources</Filter>
     </ClInclude>
@@ -30,6 +27,12 @@
       <Filter>sources</Filter>
     </ClInclude>
     <ClInclude Include="sources\Window.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\App.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Screen.h">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>

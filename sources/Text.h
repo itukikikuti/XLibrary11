@@ -56,7 +56,7 @@
 		App::GetDevice().CreateTexture2D(&textureDesc, nullptr, &texture);
 
 		D3D11_MAPPED_SUBRESOURCE mapped;
-		App::GetDeviceContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+		App::GetContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 
 		BYTE* bits = (BYTE*)mapped.pData;
 		DirectX::XMINT2 origin;
@@ -76,7 +76,7 @@
 			}
 		}
 
-		App::GetDeviceContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
+		App::GetContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
 		delete[] textureBuffer;
 
 		Initialize();

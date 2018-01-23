@@ -121,13 +121,13 @@
 		constant.projection = App::GetProjectionMatrix();
 		constant.color = color;
 
-		App::GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
+		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
 
-		App::GetDeviceContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-		App::GetDeviceContext().PSSetShaderResources(0, 1, &shaderResourceView);
-		App::GetDeviceContext().PSSetSamplers(0, 1, &samplerState);
+		App::GetContext().VSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetContext().PSSetShaderResources(0, 1, &shaderResourceView);
+		App::GetContext().PSSetSamplers(0, 1, &samplerState);
 
-		App::GetDeviceContext().DrawIndexed(indexCount, 0, 0);
+		App::GetContext().DrawIndexed(indexCount, 0, 0);
 	}
 	PROTECTED Sprite() {
 	}
@@ -160,8 +160,8 @@
 
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-		App::GetDeviceContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		App::GetDeviceContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		App::GetContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		App::GetContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		D3D11_BUFFER_DESC indexBufferDesc = {};
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -172,7 +172,7 @@
 		indexSubresourceData.pSysMem = index;
 		App::GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
-		App::GetDeviceContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		App::GetContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = sizeof(Constant);
