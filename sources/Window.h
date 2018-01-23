@@ -2,13 +2,13 @@
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
 
-	PUBLIC Window() {
+	PUBLIC Window(WNDPROC procedure) {
 		HINSTANCE instance = GetModuleHandleW(nullptr);
 
 		WNDCLASSEXW windowClass = {};
 		windowClass.cbSize = sizeof(WNDCLASSEXW);
 		windowClass.style = CS_HREDRAW | CS_VREDRAW;
-		windowClass.lpfnWndProc = Process;
+		windowClass.lpfnWndProc = procedure;
 		windowClass.cbClsExtra = 0;
 		windowClass.cbWndExtra = 0;
 		windowClass.hInstance = instance;
@@ -72,15 +72,5 @@
 			SetWindowPos(handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 			SetSize(size.x, size.y);
 		}
-	}
-	PRIVATE static LRESULT WINAPI Process(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
-		switch (message) {
-		case WM_DESTROY:
-			PostQuitMessage(0);
-			break;
-		default:
-			return DefWindowProcW(window, message, wParam, lParam);
-		}
-		return 0;
 	}
 };

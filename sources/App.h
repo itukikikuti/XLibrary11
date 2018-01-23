@@ -34,6 +34,7 @@ public:
 #include "Screen.h"
 #include "Input.h"
 #include "Time.h"
+
 	PUBLIC App() = delete;
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindowInstance().GetHandle();
@@ -111,6 +112,22 @@ public:
 
 		return true;
 	}
+	PRIVATE static Window& GetWindowInstance() {
+		static std::unique_ptr<Window> window(new Window(ProcessWindow));
+		return *window.get();
+	}
+	PRIVATE static Screen& GetScreenInstance() {
+		static std::unique_ptr<Screen> screen(new Screen());
+		return *screen.get();
+	}
+	PRIVATE static Input& GetInputInstance() {
+		static std::unique_ptr<Input> input(new Input());
+		return *input.get();
+	}
+	PRIVATE static Time& GetTimeInstance() {
+		static std::unique_ptr<Time> time(new Time());
+		return *time.get();
+	}
 	PRIVATE static bool ProcessMessage() {
 		static MSG message = {};
 
@@ -126,21 +143,15 @@ public:
 
 		return false;
 	}
-	PRIVATE static Window& GetWindowInstance() {
-		static std::unique_ptr<Window> window(new Window());
-		return *window.get();
-	}
-	PRIVATE static Screen& GetScreenInstance() {
-		static std::unique_ptr<Screen> screen(new Screen());
-		return *screen.get();
-	}
-	PRIVATE static Input& GetInputInstance() {
-		static std::unique_ptr<Input> input(new Input());
-		return *input.get();
-	}
-	PRIVATE static Time& GetTimeInstance() {
-		static std::unique_ptr<Time> time(new Time());
-		return *time.get();
+	PRIVATE static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
+		switch (message) {
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
+		default:
+			return DefWindowProcW(window, message, wParam, lParam);
+		}
+		return 0;
 	}
 };
 

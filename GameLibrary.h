@@ -34,13 +34,13 @@ class Window {
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
 
-	PUBLIC Window() {
+	PUBLIC Window(WNDPROC procedure) {
 		HINSTANCE instance = GetModuleHandleW(nullptr);
 
 		WNDCLASSEXW windowClass = {};
 		windowClass.cbSize = sizeof(WNDCLASSEXW);
 		windowClass.style = CS_HREDRAW | CS_VREDRAW;
-		windowClass.lpfnWndProc = Process;
+		windowClass.lpfnWndProc = procedure;
 		windowClass.cbClsExtra = 0;
 		windowClass.cbWndExtra = 0;
 		windowClass.hInstance = instance;
@@ -104,16 +104,6 @@ class Window {
 			SetWindowPos(handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 			SetSize(size.x, size.y);
 		}
-	}
-	PRIVATE static LRESULT WINAPI Process(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
-		switch (message) {
-		case WM_DESTROY:
-			PostQuitMessage(0);
-			break;
-		default:
-			return DefWindowProcW(window, message, wParam, lParam);
-		}
-		return 0;
 	}
 };
 
@@ -320,6 +310,7 @@ class Input {
 };
 
 #include "Time.h"
+
 	PUBLIC App() = delete;
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindowInstance().GetHandle();
@@ -397,6 +388,22 @@ class Input {
 
 		return true;
 	}
+	PRIVATE static Window& GetWindowInstance() {
+		static std::unique_ptr<Window> window(new Window(ProcessWindow));
+		return *window.get();
+	}
+	PRIVATE static Screen& GetScreenInstance() {
+		static std::unique_ptr<Screen> screen(new Screen());
+		return *screen.get();
+	}
+	PRIVATE static Input& GetInputInstance() {
+		static std::unique_ptr<Input> input(new Input());
+		return *input.get();
+	}
+	PRIVATE static Time& GetTimeInstance() {
+		static std::unique_ptr<Time> time(new Time());
+		return *time.get();
+	}
 	PRIVATE static bool ProcessMessage() {
 		static MSG message = {};
 
@@ -412,21 +419,15 @@ class Input {
 
 		return false;
 	}
-	PRIVATE static Window& GetWindowInstance() {
-		static std::unique_ptr<Window> window(new Window());
-		return *window.get();
-	}
-	PRIVATE static Screen& GetScreenInstance() {
-		static std::unique_ptr<Screen> screen(new Screen());
-		return *screen.get();
-	}
-	PRIVATE static Input& GetInputInstance() {
-		static std::unique_ptr<Input> input(new Input());
-		return *input.get();
-	}
-	PRIVATE static Time& GetTimeInstance() {
-		static std::unique_ptr<Time> time(new Time());
-		return *time.get();
+	PRIVATE static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
+		switch (message) {
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
+		default:
+			return DefWindowProcW(window, message, wParam, lParam);
+		}
+		return 0;
 	}
 };
 
