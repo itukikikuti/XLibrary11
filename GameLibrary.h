@@ -115,8 +115,8 @@ class Window {
 };
 
 
-class Game {
-	PUBLIC Game() = delete;
+class App {
+	PUBLIC App() = delete;
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindow().GetHandle();
 	}
@@ -261,10 +261,10 @@ class Game {
 		return *deviceContext.Get();
 	}
 	PUBLIC static DirectX::XMMATRIX GetViewMatrix() {
-		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(Game::GetWindowSize().x / 2.0f, -Game::GetWindowSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(Game::GetWindowSize().x / 2.0f, -Game::GetWindowSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	}
 	PUBLIC static DirectX::XMMATRIX GetProjectionMatrix() {
-		return DirectX::XMMatrixOrthographicLH(Game::GetWindowSize().x * 1.0f, Game::GetWindowSize().y * 1.0f, -1.0f, 1.0f);
+		return DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x * 1.0f, App::GetWindowSize().y * 1.0f, -1.0f, 1.0f);
 	}
 	PUBLIC static DirectX::XMINT2 GetMousePosition() {
 		return MousePosition();
@@ -613,7 +613,7 @@ class Sprite {
 		textureSubresourceData.pSysMem = textureBuffer;
 		textureSubresourceData.SysMemPitch = width * 4;
 		textureSubresourceData.SysMemSlicePitch = width * height * 4;
-		Game::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+		App::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
 
 		delete[] textureBuffer;
 
@@ -651,17 +651,17 @@ class Sprite {
 		constant.world *= DirectX::XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
 		constant.world *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-angle));
 		constant.world *= DirectX::XMMatrixTranslation(position.x, -position.y, 0.0f);
-		constant.view = Game::GetViewMatrix();
-		constant.projection = Game::GetProjectionMatrix();
+		constant.view = App::GetViewMatrix();
+		constant.projection = App::GetProjectionMatrix();
 		constant.color = color;
 
-		Game::GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
+		App::GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
 
-		Game::GetDeviceContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-		Game::GetDeviceContext().PSSetShaderResources(0, 1, &shaderResourceView);
-		Game::GetDeviceContext().PSSetSamplers(0, 1, &samplerState);
+		App::GetDeviceContext().VSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetDeviceContext().PSSetShaderResources(0, 1, &shaderResourceView);
+		App::GetDeviceContext().PSSetSamplers(0, 1, &samplerState);
 
-		Game::GetDeviceContext().DrawIndexed(indexCount, 0, 0);
+		App::GetDeviceContext().DrawIndexed(indexCount, 0, 0);
 	}
 	PROTECTED Sprite() {
 	}
@@ -680,8 +680,8 @@ class Sprite {
 		};
 		indexCount = sizeof(index) / sizeof(index[0]);
 
-		int x = Game::GetWindowSize().x;
-		int y = Game::GetWindowSize().y;
+		int x = App::GetWindowSize().x;
+		int y = App::GetWindowSize().y;
 
 		D3D11_BUFFER_DESC vertexBufferDesc = {};
 		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -690,12 +690,12 @@ class Sprite {
 		vertexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 		vertexSubresourceData.pSysMem = quad;
-		Game::GetDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+		App::GetDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
 
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-		Game::GetDeviceContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		Game::GetDeviceContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		App::GetDeviceContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		App::GetDeviceContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		D3D11_BUFFER_DESC indexBufferDesc = {};
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -704,22 +704,22 @@ class Sprite {
 		indexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 		indexSubresourceData.pSysMem = index;
-		Game::GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+		App::GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
-		Game::GetDeviceContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		App::GetDeviceContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = sizeof(Constant);
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		Game::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		App::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
-		Game::GetDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+		App::GetDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
 
 		D3D11_SAMPLER_DESC samplerDesc;
 		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -735,7 +735,7 @@ class Sprite {
 		samplerDesc.BorderColor[3] = 0;
 		samplerDesc.MinLOD = 0;
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-		Game::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
+		App::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
 	}
 };
 
@@ -794,10 +794,10 @@ class Text : public Sprite {
 		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		textureDesc.MiscFlags = 0;
 
-		Game::GetDevice().CreateTexture2D(&textureDesc, nullptr, &texture);
+		App::GetDevice().CreateTexture2D(&textureDesc, nullptr, &texture);
 
 		D3D11_MAPPED_SUBRESOURCE mapped;
-		Game::GetDeviceContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+		App::GetDeviceContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 
 		BYTE* bits = (BYTE*)mapped.pData;
 		DirectX::XMINT2 origin;
@@ -817,7 +817,7 @@ class Text : public Sprite {
 			}
 		}
 
-		Game::GetDeviceContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
+		App::GetDeviceContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
 		delete[] textureBuffer;
 
 		Initialize();

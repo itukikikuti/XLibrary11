@@ -53,10 +53,10 @@
 		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		textureDesc.MiscFlags = 0;
 
-		Game::GetDevice().CreateTexture2D(&textureDesc, nullptr, &texture);
+		App::GetDevice().CreateTexture2D(&textureDesc, nullptr, &texture);
 
 		D3D11_MAPPED_SUBRESOURCE mapped;
-		Game::GetDeviceContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+		App::GetDeviceContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 
 		BYTE* bits = (BYTE*)mapped.pData;
 		DirectX::XMINT2 origin;
@@ -76,7 +76,7 @@
 			}
 		}
 
-		Game::GetDeviceContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
+		App::GetDeviceContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
 		delete[] textureBuffer;
 
 		Initialize();

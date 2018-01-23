@@ -29,8 +29,8 @@ GAME_LIBRARY_BEGIN
 
 #include "Window.h"
 
-class Game {
-	PUBLIC Game() = delete;
+class App {
+	PUBLIC App() = delete;
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindow().GetHandle();
 	}
@@ -175,10 +175,10 @@ class Game {
 		return *deviceContext.Get();
 	}
 	PUBLIC static DirectX::XMMATRIX GetViewMatrix() {
-		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(Game::GetWindowSize().x / 2.0f, -Game::GetWindowSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(Game::GetWindowSize().x / 2.0f, -Game::GetWindowSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	}
 	PUBLIC static DirectX::XMMATRIX GetProjectionMatrix() {
-		return DirectX::XMMatrixOrthographicLH(Game::GetWindowSize().x * 1.0f, Game::GetWindowSize().y * 1.0f, -1.0f, 1.0f);
+		return DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x * 1.0f, App::GetWindowSize().y * 1.0f, -1.0f, 1.0f);
 	}
 	PUBLIC static DirectX::XMINT2 GetMousePosition() {
 		return MousePosition();

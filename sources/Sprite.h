@@ -79,7 +79,7 @@
 		textureSubresourceData.pSysMem = textureBuffer;
 		textureSubresourceData.SysMemPitch = width * 4;
 		textureSubresourceData.SysMemSlicePitch = width * height * 4;
-		Game::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+		App::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
 
 		delete[] textureBuffer;
 
@@ -117,17 +117,17 @@
 		constant.world *= DirectX::XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
 		constant.world *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-angle));
 		constant.world *= DirectX::XMMatrixTranslation(position.x, -position.y, 0.0f);
-		constant.view = Game::GetViewMatrix();
-		constant.projection = Game::GetProjectionMatrix();
+		constant.view = App::GetViewMatrix();
+		constant.projection = App::GetProjectionMatrix();
 		constant.color = color;
 
-		Game::GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
+		App::GetDeviceContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
 
-		Game::GetDeviceContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-		Game::GetDeviceContext().PSSetShaderResources(0, 1, &shaderResourceView);
-		Game::GetDeviceContext().PSSetSamplers(0, 1, &samplerState);
+		App::GetDeviceContext().VSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetDeviceContext().PSSetShaderResources(0, 1, &shaderResourceView);
+		App::GetDeviceContext().PSSetSamplers(0, 1, &samplerState);
 
-		Game::GetDeviceContext().DrawIndexed(indexCount, 0, 0);
+		App::GetDeviceContext().DrawIndexed(indexCount, 0, 0);
 	}
 	PROTECTED Sprite() {
 	}
@@ -146,8 +146,8 @@
 		};
 		indexCount = sizeof(index) / sizeof(index[0]);
 
-		int x = Game::GetWindowSize().x;
-		int y = Game::GetWindowSize().y;
+		int x = App::GetWindowSize().x;
+		int y = App::GetWindowSize().y;
 
 		D3D11_BUFFER_DESC vertexBufferDesc = {};
 		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -156,12 +156,12 @@
 		vertexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 		vertexSubresourceData.pSysMem = quad;
-		Game::GetDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+		App::GetDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
 
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-		Game::GetDeviceContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		Game::GetDeviceContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		App::GetDeviceContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		App::GetDeviceContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		D3D11_BUFFER_DESC indexBufferDesc = {};
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -170,22 +170,22 @@
 		indexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 		indexSubresourceData.pSysMem = index;
-		Game::GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+		App::GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
-		Game::GetDeviceContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		App::GetDeviceContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = sizeof(Constant);
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		Game::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		App::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
-		Game::GetDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+		App::GetDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
 
 		D3D11_SAMPLER_DESC samplerDesc;
 		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -201,6 +201,6 @@
 		samplerDesc.BorderColor[3] = 0;
 		samplerDesc.MinLOD = 0;
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-		Game::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
+		App::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
 	}
 };

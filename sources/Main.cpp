@@ -51,8 +51,8 @@ int Main() {
 	Sprite sprite2(L"assets/4.JPG");
 	sprite2.position = XMFLOAT2(1000.0f, 250.0f);
 
-	Game::AddFont(L"assets/衡山毛筆フォント行書.ttf");
-	Game::SetTitle(L"くぁwせdrftgyふじこlp");
+	App::AddFont(L"assets/衡山毛筆フォント行書.ttf");
+	App::SetTitle(L"くぁwせdrftgyふじこlp");
 
 	Text text1(L"あ");
 	text1.scale.x = text1.scale.y = 0.5f;
@@ -63,8 +63,8 @@ int Main() {
 
 	bool isFullscreen = false;
 	float t = 0.0f;
-	while (Game::Refresh()) {
-		t += Game::GetDeltaTime();
+	while (App::Refresh()) {
+		t += App::GetDeltaTime();
 
 		sprite1.angle = t * (360.0f);
 		sprite1.scale.y = 1.3f;
@@ -78,21 +78,21 @@ int Main() {
 
 		sprite2.Draw();
 
-		if (Game::GetKeyDown(VK_RBUTTON)) {
+		if (App::GetKeyDown(VK_RBUTTON)) {
 			isFullscreen = !isFullscreen;
-			Game::SetFullScreen(isFullscreen);
+			App::SetFullScreen(isFullscreen);
 		}
 
-		if (Game::GetKey(VK_LBUTTON)) {
-			text1.position = XMFLOAT2(Game::GetMousePosition().x, Game::GetMousePosition().y);
+		if (App::GetKey(VK_LBUTTON)) {
+			text1.position = XMFLOAT2(App::GetMousePosition().x, App::GetMousePosition().y);
 		}
-		text1.angle = Game::GetTime() * -100.0f;
+		text1.angle = App::GetTime() * -100.0f;
 		text1.Draw();
 
-		text2.position = XMFLOAT2(Game::GetWindowSize().x / 2.0f, Game::GetWindowSize().y / 2.0f - 200.0f);
+		text2.position = XMFLOAT2(App::GetWindowSize().x / 2.0f, App::GetWindowSize().y / 2.0f - 200.0f);
 		text2.Draw();
 
-		text3.position = XMFLOAT2(Game::GetWindowSize().x / 2.0f, Game::GetWindowSize().y / 2.0f + 200.0f);
+		text3.position = XMFLOAT2(App::GetWindowSize().x / 2.0f, App::GetWindowSize().y / 2.0f + 200.0f);
 		text3.scale.x = text3.scale.y = 2.0f + sinf(t) * 1.0f;
 		text3.Draw();
 	}
