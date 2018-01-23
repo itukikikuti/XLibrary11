@@ -35,5 +35,8 @@
     <ClInclude Include="sources\Screen.h">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\Input.h">
+      <Filter>sources</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

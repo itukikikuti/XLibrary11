@@ -8,6 +8,7 @@
 #include <DirectXMath.h>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <regex>
 #include <string>
 #include <strsafe.h>
@@ -28,39 +29,40 @@
 GAME_LIBRARY_BEGIN
 
 class App {
-	#include "Window.h"
-	#include "Screen.h"
-
+public:
+#include "Window.h"
+#include "Screen.h"
+#include "Input.h"
 	PUBLIC App() = delete;
 	PUBLIC static HWND GetWindowHandle() {
-		return GetWindow()->GetHandle();
+		return GetWindow().GetHandle();
 	}
 	PUBLIC static DirectX::XMINT2 GetWindowSize() {
-		return GetWindow()->GetSize();
+		return GetWindow().GetSize();
 	}
 	PUBLIC static void SetWindowSize(int width, int height) {
-		GetWindow()->SetSize(width, height);
+		GetWindow().SetSize(width, height);
 	}
 	PUBLIC static wchar_t* GetTitle() {
-		return GetWindow()->GetTitle();
+		return GetWindow().GetTitle();
 	}
 	PUBLIC static void SetTitle(const wchar_t* title) {
-		GetWindow()->SetTitle(title);
+		GetWindow().SetTitle(title);
 	}
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
-		GetWindow()->SetFullScreen(isFullscreen);
+		GetWindow().SetFullScreen(isFullscreen);
 	}
 	PUBLIC static ID3D11Device& GetDevice() {
-		return GetScreen()->GetDevice();
+		return GetScreen().GetDevice();
 	}
 	PUBLIC static IDXGISwapChain& GetSwapChain() {
-		return GetScreen()->GetSwapChain();
+		return GetScreen().GetSwapChain();
 	}
 	PUBLIC static ID3D11DeviceContext& GetContext() {
-		return GetScreen()->GetContext();
+		return GetScreen().GetContext();
 	}
 	PUBLIC static ID3D11RenderTargetView& GetRenderTargetView(bool isResize = false) {
-		return GetScreen()->GetRenderTargetView();
+		return GetScreen().GetRenderTargetView();
 	}
 	PUBLIC static DirectX::XMMATRIX GetViewMatrix() {
 		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
@@ -69,16 +71,16 @@ class App {
 		return DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x * 1.0f, App::GetWindowSize().y * 1.0f, -1.0f, 1.0f);
 	}
 	PUBLIC static DirectX::XMINT2 GetMousePosition() {
-		return MousePosition();
+		return GetInput().GetMousePosition();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
-		return KeyState()[VK_CODE] & 0x80;
+		return GetInput().GetKey(VK_CODE);
 	}
 	PUBLIC static bool GetKeyUp(int VK_CODE) {
-		return !(KeyState()[VK_CODE] & 0x80) && (PreKeyState()[VK_CODE] & 0x80);
+		return GetInput().GetKeyUp(VK_CODE);
 	}
 	PUBLIC static bool GetKeyDown(int VK_CODE) {
-		return (KeyState()[VK_CODE] & 0x80) && !(PreKeyState()[VK_CODE] & 0x80);
+		return GetInput().GetKeyDown(VK_CODE);
 	}
 	PUBLIC static float GetTime() {
 		return Time();
@@ -101,8 +103,7 @@ class App {
 			return false;
 		}
 
-		ProcessMousePosition();
-		ProcessKey();
+		GetInput().Update();
 		PrecessDeltaTime();
 		PrecessTime();
 		ProcessFrameRate();
@@ -110,18 +111,6 @@ class App {
 		GetContext().ClearRenderTargetView(&GetRenderTargetView(), color);
 
 		return true;
-	}
-	PRIVATE static DirectX::XMINT2& MousePosition() {
-		static DirectX::XMINT2 mousePosition;
-		return mousePosition;
-	}
-	PRIVATE static BYTE* PreKeyState() {
-		static BYTE preKeyState[256];
-		return preKeyState;
-	}
-	PRIVATE static BYTE* KeyState() {
-		static BYTE keyState[256];
-		return keyState;
 	}
 	PRIVATE static float& Time() {
 		static float time = 0.0f;
@@ -134,20 +123,6 @@ class App {
 	PRIVATE static int& FrameRate() {
 		static int frameRate = 0;
 		return frameRate;
-	}
-	PRIVATE static void ProcessMousePosition() {
-		POINT point = {};
-		GetCursorPos(&point);
-
-		ScreenToClient(GetWindowHandle(), &point);
-		MousePosition() = DirectX::XMINT2(point.x, point.y);
-	}
-	PRIVATE static void ProcessKey() {
-		for (int i = 0; i < 256; i++) {
-			PreKeyState()[i] = KeyState()[i];
-		}
-
-		GetKeyboardState(KeyState());
 	}
 	PRIVATE static LARGE_INTEGER GetCounter() {
 		LARGE_INTEGER counter;
@@ -197,13 +172,17 @@ class App {
 
 		return false;
 	}
-	PRIVATE static Window* GetWindow() {
-		static Window* window = new Window();
-		return window;
+	PRIVATE static Window& GetWindow() {
+		static std::unique_ptr<Window> window(new Window());
+		return *window.get();
 	}
-	PRIVATE static Screen* GetScreen() {
-		static Screen* screen = new Screen();
-		return screen;
+	PRIVATE static Screen& GetScreen() {
+		static std::unique_ptr<Screen> screen(new Screen());
+		return *screen.get();
+	}
+	PRIVATE static Input& GetInput() {
+		static std::unique_ptr<Input> input(new Input());
+		return *input.get();
 	}
 };
 

@@ -34,6 +34,7 @@ void LinkLibrary() {
 
 	MargeSourceCode(L"Window.h", library);
 	MargeSourceCode(L"Screen.h", library);
+	MargeSourceCode(L"Input.h", library);
 	MargeSourceCode(L"Mesh.h", library);
 	MargeSourceCode(L"Sprite.h", library);
 	MargeSourceCode(L"Text.h", library);
@@ -87,7 +88,7 @@ int Main() {
 		}
 
 		if (App::GetKey(VK_LBUTTON)) {
-			text1.position = XMFLOAT2(App::GetMousePosition().x, App::GetMousePosition().y);
+			text1.position = XMFLOAT2((float)App::GetMousePosition().x, (float)App::GetMousePosition().y);
 		}
 		text1.angle = App::GetTime() * -100.0f;
 		text1.Draw();
