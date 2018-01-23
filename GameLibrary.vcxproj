@@ -120,6 +120,7 @@
     <ClInclude Include="sources\Sprite.h" />
     <ClInclude Include="sources\Text.h" />
     <ClInclude Include="sources\Texture.h" />
+    <ClInclude Include="sources\Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

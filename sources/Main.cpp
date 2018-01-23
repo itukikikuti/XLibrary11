@@ -30,6 +30,7 @@ void MargeSourceCode(const wchar_t* fileName, wstring& sourceCode) {
 void LinkLibrary() {
 	wstring library = GetSourceCode(L"sources/Game.h");
 
+	MargeSourceCode(L"Window.h", library);
 	MargeSourceCode(L"Mesh.h", library);
 	MargeSourceCode(L"Sprite.h", library);
 	MargeSourceCode(L"Text.h", library);
@@ -88,10 +89,10 @@ int Main() {
 		text1.angle = Game::GetTime() * -100.0f;
 		text1.Draw();
 
-		text2.position = XMFLOAT2(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f - 200.0f);
+		text2.position = XMFLOAT2(Game::GetWindowSize().x / 2.0f, Game::GetWindowSize().y / 2.0f - 200.0f);
 		text2.Draw();
 
-		text3.position = XMFLOAT2(Game::GetSize().x / 2.0f, Game::GetSize().y / 2.0f + 200.0f);
+		text3.position = XMFLOAT2(Game::GetWindowSize().x / 2.0f, Game::GetWindowSize().y / 2.0f + 200.0f);
 		text3.scale.x = text3.scale.y = 2.0f + sinf(t) * 1.0f;
 		text3.Draw();
 	}

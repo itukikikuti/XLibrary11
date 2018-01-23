@@ -27,81 +27,27 @@
 
 GAME_LIBRARY_BEGIN
 
+#include "Window.h"
+
 class Game {
 	PUBLIC Game() = delete;
-	PUBLIC static HWND GetWindow() {
-		static HWND window = nullptr;
-
-		if (window == nullptr) {
-			HINSTANCE instance = GetModuleHandleW(nullptr);
-
-			WNDCLASSEXW windowClass = {};
-			windowClass.cbSize = sizeof(WNDCLASSEXW);
-			windowClass.style = CS_HREDRAW | CS_VREDRAW;
-			windowClass.lpfnWndProc = ProcessWindow;
-			windowClass.cbClsExtra = 0;
-			windowClass.cbWndExtra = 0;
-			windowClass.hInstance = instance;
-			windowClass.hIcon = nullptr;
-			windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
-			windowClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-			windowClass.lpszMenuName = nullptr;
-			windowClass.lpszClassName = L"GameLibrary";
-			windowClass.hIconSm = nullptr;
-			if (!RegisterClassExW(&windowClass)) return nullptr;
-
-			window = CreateWindowW(L"GameLibrary", L"GameLibrary", GetWindowStyle(), CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
-
-			SetSize(1280, 720);
-
-			ShowWindow(window, SW_SHOWNORMAL);
-		}
-
-		return window;
+	PUBLIC static HWND GetWindowHandle() {
+		return GetWindow().GetHandle();
 	}
-	PUBLIC static DirectX::XMINT2 GetSize() {
-		RECT clientRect = {};
-		GetClientRect(GetWindow(), &clientRect);
-
-		return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+	PUBLIC static DirectX::XMINT2 GetWindowSize() {
+		return GetWindow().GetSize();
 	}
-	PUBLIC static void SetSize(int width, int height) {
-		RECT windowRect = {};
-		RECT clientRect = {};
-		GetWindowRect(GetWindow(), &windowRect);
-		GetClientRect(GetWindow(), &clientRect);
-
-		int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + width;
-		int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + height;
-
-		int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
-		int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
-
-		SetWindowPos(GetWindow(), nullptr, x, y, w, h, SWP_FRAMECHANGED);
+	PUBLIC static void SetWindowSize(int width, int height) {
+		GetWindow().SetSize(width, height);
 	}
 	PUBLIC static wchar_t* GetTitle() {
-		wchar_t* title = nullptr;
-		GetWindowTextW(GetWindow(), title, GetWindowTextLengthW(GetWindow()));
-		return title;
+		return GetWindow().GetTitle();
 	}
 	PUBLIC static void SetTitle(const wchar_t* title) {
-		SetWindowTextW(GetWindow(), title);
+		GetWindow().SetTitle(title);
 	}
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
-		static DirectX::XMINT2 size = GetSize();
-
-		if (isFullscreen) {
-			size = GetSize();
-			int w = GetSystemMetrics(SM_CXSCREEN);
-			int h = GetSystemMetrics(SM_CYSCREEN);
-			SetWindowLongPtrW(GetWindow(), GWL_STYLE, WS_VISIBLE | WS_POPUP);
-			SetWindowPos(GetWindow(), HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
-		}
-		else {
-			SetWindowLongPtrW(GetWindow(), GWL_STYLE, WS_VISIBLE | GetWindowStyle());
-			SetWindowPos(GetWindow(), nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
-			SetSize(size.x, size.y);
-		}
+		GetWindow().SetFullScreen(isFullscreen);
 	}
 	PUBLIC static ID3D11Device& GetDevice() {
 		static Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
@@ -156,19 +102,19 @@ class Game {
 
 			DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 			swapChainDesc.BufferCount = SWAP_CHAIN_COUNT;
-			swapChainDesc.BufferDesc.Width = GetSize().x;
-			swapChainDesc.BufferDesc.Height = GetSize().y;
+			swapChainDesc.BufferDesc.Width = GetWindowSize().x;
+			swapChainDesc.BufferDesc.Height = GetWindowSize().y;
 			swapChainDesc.BufferDesc.Format = SWAP_CHAIN_FORMAT;
 			swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 			swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
-			swapChainDesc.OutputWindow = GetWindow();
+			swapChainDesc.OutputWindow = GetWindowHandle();
 			swapChainDesc.SampleDesc.Count = MULTI_SAMPLE_COUNT;
 			swapChainDesc.SampleDesc.Quality = MULTI_SAMPLE_QUALITY;
 			swapChainDesc.Windowed = true;
 
 			factory->CreateSwapChain(&GetDevice(), &swapChainDesc, swapChain.GetAddressOf());
-			factory->MakeWindowAssociation(GetWindow(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
+			factory->MakeWindowAssociation(GetWindowHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
 			factory->Release();
 			adapter->Release();
@@ -229,10 +175,10 @@ class Game {
 		return *deviceContext.Get();
 	}
 	PUBLIC static DirectX::XMMATRIX GetViewMatrix() {
-		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(Game::GetSize().x / 2.0f, -Game::GetSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(Game::GetWindowSize().x / 2.0f, -Game::GetWindowSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(Game::GetWindowSize().x / 2.0f, -Game::GetWindowSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	}
 	PUBLIC static DirectX::XMMATRIX GetProjectionMatrix() {
-		return DirectX::XMMatrixOrthographicLH(Game::GetSize().x * 1.0f, Game::GetSize().y * 1.0f, -1.0f, 1.0f);
+		return DirectX::XMMatrixOrthographicLH(Game::GetWindowSize().x * 1.0f, Game::GetWindowSize().y * 1.0f, -1.0f, 1.0f);
 	}
 	PUBLIC static DirectX::XMINT2 GetMousePosition() {
 		return MousePosition();
@@ -276,9 +222,6 @@ class Game {
 		GetDeviceContext().ClearRenderTargetView(&GetRenderTargetView(), color);
 
 		return true;
-	}
-	PRIVATE static DWORD GetWindowStyle() {
-		return WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
 	}
 	PRIVATE static DirectX::XMINT2& MousePosition() {
 		static DirectX::XMINT2 mousePosition;
@@ -328,7 +271,7 @@ class Game {
 
 		if (errorBlob != nullptr) {
 			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-			MessageBoxA(GetWindow(), (char*)errorBlob->GetBufferPointer(), "Shader Error", MB_OK);
+			MessageBoxA(GetWindowHandle(), (char*)errorBlob->GetBufferPointer(), "Shader Error", MB_OK);
 			errorBlob->Release();
 		}
 	}
@@ -336,7 +279,7 @@ class Game {
 		POINT point = {};
 		GetCursorPos(&point);
 
-		ScreenToClient(GetWindow(), &point);
+		ScreenToClient(GetWindowHandle(), &point);
 		MousePosition() = DirectX::XMINT2(point.x, point.y);
 	}
 	PRIVATE static void ProcessKey() {
@@ -356,7 +299,7 @@ class Game {
 			renderTargetView.Reset();
 			renderTargetTexture.Reset();
 			GetDeviceContext().Flush();
-			GetSwapChain().ResizeBuffers(2, GetSize().x, GetSize().y, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+			GetSwapChain().ResizeBuffers(2, GetWindowSize().x, GetWindowSize().y, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 		}
 
 		if (renderTargetView == nullptr || isResize) {
@@ -367,8 +310,8 @@ class Game {
 			GetDeviceContext().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
 
 			D3D11_VIEWPORT viewPort = {};
-			viewPort.Width = (float)GetSize().x;
-			viewPort.Height = (float)GetSize().y;
+			viewPort.Width = (float)GetWindowSize().x;
+			viewPort.Height = (float)GetWindowSize().y;
 			viewPort.MinDepth = 0.0f;
 			viewPort.MaxDepth = 1.0f;
 			viewPort.TopLeftX = 0;
@@ -426,21 +369,11 @@ class Game {
 
 		return false;
 	}
-	PRIVATE static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
-		switch (message) {
-		case WM_DESTROY:
-			PostQuitMessage(0);
-			break;
-		case WM_SIZE:
-			GetRenderTargetView(true);
-			break;
-		default:
-			return DefWindowProcW(window, message, wParam, lParam);
-		}
-		return 0;
+	PRIVATE static Window GetWindow() {
+		static Window window;
+		return window;
 	}
 };
-
 
 #include "Mesh.h"
 #include "Sprite.h"

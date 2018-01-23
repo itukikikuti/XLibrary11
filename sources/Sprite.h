@@ -146,8 +146,8 @@
 		};
 		indexCount = sizeof(index) / sizeof(index[0]);
 
-		int x = Game::GetSize().x;
-		int y = Game::GetSize().y;
+		int x = Game::GetWindowSize().x;
+		int y = Game::GetWindowSize().y;
 
 		D3D11_BUFFER_DESC vertexBufferDesc = {};
 		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
