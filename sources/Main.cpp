@@ -35,6 +35,8 @@ void LinkLibrary() {
 	MargeSourceCode(L"Window.h", library);
 	MargeSourceCode(L"Screen.h", library);
 	MargeSourceCode(L"Input.h", library);
+	MargeSourceCode(L"Time.h", library);
+	MargeSourceCode(L"Camera.h", library);
 	MargeSourceCode(L"Mesh.h", library);
 	MargeSourceCode(L"Sprite.h", library);
 	MargeSourceCode(L"Text.h", library);
@@ -50,10 +52,13 @@ int Main() {
 
 	LinkLibrary();
 
+	Camera camera;
+	camera.position.z = -800.0f;
+
 	Sprite sprite1(L"assets/clock.png");
 	sprite1.position = XMFLOAT2(200.0f, 200.0f);
 	Sprite sprite2(L"assets/4.JPG");
-	sprite2.position = XMFLOAT2(1000.0f, 250.0f);
+	sprite2.position = XMFLOAT2(0.0f, 0.0f);
 
 	App::AddFont(L"assets/衡山毛筆フォント行書.ttf");
 	App::SetTitle(L"くぁwせdrftgyふじこlp");
@@ -70,6 +75,8 @@ int Main() {
 	while (App::Refresh()) {
 		t += App::GetDeltaTime();
 
+		camera.Update();
+
 		sprite1.angle = t * (360.0f);
 		sprite1.scale.y = 1.3f;
 		sprite1.Draw();
@@ -80,6 +87,7 @@ int Main() {
 		sprite1.scale.y = 0.7f;
 		sprite1.Draw();
 
+		sprite2.angle = App::GetMousePosition().x;
 		sprite2.Draw();
 
 		if (App::GetKeyDown(VK_RBUTTON)) {

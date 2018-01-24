@@ -41,5 +41,8 @@
     <ClInclude Include="sources\Time.h">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\Camera.h">
+      <Filter>sources</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

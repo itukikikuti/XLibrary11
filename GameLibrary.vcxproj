@@ -115,6 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sources\App.h" />
+    <ClInclude Include="sources\Camera.h" />
     <ClInclude Include="sources\Input.h" />
     <ClInclude Include="sources\Material.h" />
     <ClInclude Include="sources\Mesh.h" />

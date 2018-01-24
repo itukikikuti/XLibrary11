@@ -1,8 +1,6 @@
 ﻿class Sprite {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX world;
-		DirectX::XMMATRIX view;
-		DirectX::XMMATRIX projection;
 		DirectX::XMFLOAT4 color;
 	};
 
@@ -115,10 +113,8 @@
 	PUBLIC void Draw() {
 		constant.world = DirectX::XMMatrixIdentity();
 		constant.world *= DirectX::XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
-		constant.world *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-angle));
+		constant.world *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(-angle));
 		constant.world *= DirectX::XMMatrixTranslation(position.x, -position.y, 0.0f);
-		constant.view = App::GetViewMatrix();
-		constant.projection = App::GetProjectionMatrix();
 		constant.color = color;
 
 		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);

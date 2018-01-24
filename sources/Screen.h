@@ -110,6 +110,13 @@
 		context->OMSetBlendState(blendState, blendFactor, 0xffffffff);
 		blendState->Release();
 
+		ID3D11RasterizerState* rasterizerState = nullptr;
+		D3D11_RASTERIZER_DESC rasterizerDesc = {};
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.CullMode = D3D11_CULL_NONE;
+		device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+		context->RSSetState(rasterizerState);
+
 		swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)renderTargetTexture.GetAddressOf());
 		device->CreateRenderTargetView(renderTargetTexture.Get(), nullptr, renderTargetView.GetAddressOf());
 		context->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
@@ -144,12 +151,34 @@
 		ID3DBlob *errorBlob = nullptr;
 
 		if (filePath == nullptr) {
-			char* shader = ""
-				"cbuffer CB:register(b0){matrix W;matrix V;matrix P;float4 C;};"
-				"Texture2D tex:register(t0);SamplerState s:register(s0);"
-				"struct VO{float4 pos:SV_POSITION;float4 c:COLOR;float2 uv:TEXCOORD;};"
-				"VO VS(float4 v:POSITION,float2 uv:TEXCOORD){VO o=(VO)0;o.pos=mul(W,v);o.pos=mul(V,o.pos);o.pos=mul(P,o.pos);o.c=C;o.uv=uv;return o;}"
-				"float4 PS(VO o):SV_TARGET{return tex.Sample(s,o.uv)*o.c;}";
+			char* shader =
+				"cbuffer Object : register(b0) {"
+				"    matrix _world;"
+				"    float4 _color;"
+				"};"
+				"cbuffer Camera : register(b1) {"
+				"    matrix _view;"
+				"    matrix _projection;"
+				"};"
+				"Texture2D tex : register(t0);"
+				"SamplerState samp : register(s0);"
+				"struct VertexOutput {"
+				"    float4 position : SV_POSITION;"
+				"    float4 color : COLOR;"
+				"    float2 uv : TEXCOORD;"
+				"};"
+				"VertexOutput VS(float4 vertex : POSITION, float2 uv : TEXCOORD) {"
+				"    VertexOutput output = (VertexOutput)0;"
+				"    output.position = mul(_world, vertex);"
+				"    output.position = mul(_view, output.position);"
+				"    output.position = mul(_projection, output.position);"
+				"    output.color = _color;"
+				"    output.uv = uv;"
+				"    return output;"
+				"}"
+				"float4 PS(VertexOutput input) : SV_TARGET {"
+				"    return tex.Sample(samp, input.uv) * input.color;"
+				"}";
 
 			D3DCompile(shader, strlen(shader), nullptr, nullptr, nullptr, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 		}

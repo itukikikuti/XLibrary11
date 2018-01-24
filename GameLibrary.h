@@ -219,6 +219,13 @@ class Screen {
 		context->OMSetBlendState(blendState, blendFactor, 0xffffffff);
 		blendState->Release();
 
+		ID3D11RasterizerState* rasterizerState = nullptr;
+		D3D11_RASTERIZER_DESC rasterizerDesc = {};
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.CullMode = D3D11_CULL_NONE;
+		device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+		context->RSSetState(rasterizerState);
+
 		swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)renderTargetTexture.GetAddressOf());
 		device->CreateRenderTargetView(renderTargetTexture.Get(), nullptr, renderTargetView.GetAddressOf());
 		context->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
@@ -253,12 +260,34 @@ class Screen {
 		ID3DBlob *errorBlob = nullptr;
 
 		if (filePath == nullptr) {
-			char* shader = ""
-				"cbuffer CB:register(b0){matrix W;matrix V;matrix P;float4 C;};"
-				"Texture2D tex:register(t0);SamplerState s:register(s0);"
-				"struct VO{float4 pos:SV_POSITION;float4 c:COLOR;float2 uv:TEXCOORD;};"
-				"VO VS(float4 v:POSITION,float2 uv:TEXCOORD){VO o=(VO)0;o.pos=mul(W,v);o.pos=mul(V,o.pos);o.pos=mul(P,o.pos);o.c=C;o.uv=uv;return o;}"
-				"float4 PS(VO o):SV_TARGET{return tex.Sample(s,o.uv)*o.c;}";
+			char* shader =
+				"cbuffer Object : register(b0) {"
+				"    matrix _world;"
+				"    float4 _color;"
+				"};"
+				"cbuffer Camera : register(b1) {"
+				"    matrix _view;"
+				"    matrix _projection;"
+				"};"
+				"Texture2D tex : register(t0);"
+				"SamplerState samp : register(s0);"
+				"struct VertexOutput {"
+				"    float4 position : SV_POSITION;"
+				"    float4 color : COLOR;"
+				"    float2 uv : TEXCOORD;"
+				"};"
+				"VertexOutput VS(float4 vertex : POSITION, float2 uv : TEXCOORD) {"
+				"    VertexOutput output = (VertexOutput)0;"
+				"    output.position = mul(_world, vertex);"
+				"    output.position = mul(_view, output.position);"
+				"    output.position = mul(_projection, output.position);"
+				"    output.color = _color;"
+				"    output.uv = uv;"
+				"    return output;"
+				"}"
+				"float4 PS(VertexOutput input) : SV_TARGET {"
+				"    return tex.Sample(samp, input.uv) * input.color;"
+				"}";
 
 			D3DCompile(shader, strlen(shader), nullptr, nullptr, nullptr, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 		}
@@ -309,7 +338,57 @@ class Input {
 	}
 };
 
-#include "Time.h"
+class Time {
+	PRIVATE float time = 0.0f;
+	PRIVATE float deltaTime = 0.0f;
+	PRIVATE int frameRate = 0;
+	PRIVATE float second = 0.0f;
+	PRIVATE int frameCount = 0;
+	LARGE_INTEGER preCount;
+	LARGE_INTEGER frequency;
+
+	PUBLIC Time() {
+		preCount = GetCounter();
+		frequency = GetCountFrequency();
+	}
+	PUBLIC float GetTime() {
+		return time;
+	}
+	PUBLIC float GetDeltaTime() {
+		return deltaTime;
+	}
+	PUBLIC int GetFrameRate() {
+		return frameRate;
+	}
+	PUBLIC void Update() {
+
+		LARGE_INTEGER count = GetCounter();
+		deltaTime = (float)(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
+		preCount = GetCounter();
+
+		time += deltaTime;
+
+
+		frameCount++;
+		second += deltaTime;
+		if (second >= 1.0f) {
+			frameRate = frameCount;
+			frameCount = 0;
+			second -= 1.0f;
+		}
+	}
+	PRIVATE LARGE_INTEGER GetCounter() {
+		LARGE_INTEGER counter;
+		QueryPerformanceCounter(&counter);
+		return counter;
+	}
+	PRIVATE LARGE_INTEGER GetCountFrequency() {
+		LARGE_INTEGER frequency;
+		QueryPerformanceFrequency(&frequency);
+		return frequency;
+	}
+};
+
 
 	PUBLIC App() = delete;
 	PUBLIC static HWND GetWindowHandle() {
@@ -364,10 +443,12 @@ class Input {
 		return GetTimeInstance().GetFrameRate();
 	}
 	PUBLIC static DirectX::XMMATRIX GetViewMatrix() {
-		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+		//return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, -800.0f, 0.0f), DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	}
 	PUBLIC static DirectX::XMMATRIX GetProjectionMatrix() {
-		return DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x * 1.0f, App::GetWindowSize().y * 1.0f, -1.0f, 1.0f);
+		//return DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x * 1.0f, App::GetWindowSize().y * 1.0f, -1.0f, 1.0f);
+		return DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(60.0f), App::GetWindowSize().x / (float)App::GetWindowSize().y, 0.1f, 2000.0f);
 	}
 	PUBLIC static void AddFont(const wchar_t* filePath) {
 		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
@@ -428,6 +509,42 @@ class Input {
 			return DefWindowProcW(window, message, wParam, lParam);
 		}
 		return 0;
+	}
+};
+
+class Camera {
+	PRIVATE struct ConstantBuffer {
+		DirectX::XMMATRIX view;
+		DirectX::XMMATRIX projection;
+	};
+
+	PUBLIC DirectX::XMFLOAT3 position;
+	PUBLIC DirectX::XMFLOAT3 angles;
+	PRIVATE ConstantBuffer cbuffer;
+	PRIVATE ID3D11Buffer* constantBuffer;
+
+	PUBLIC Camera() {
+		D3D11_BUFFER_DESC constantBufferDesc = {};
+		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
+		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags = 0;
+		App::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+
+		SetPerspective(60.0f, App::GetWindowSize().x / (float)App::GetWindowSize().y, 0.1f, 2000.0f);
+
+		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+	}
+	PUBLIC void SetPerspective(float fieldOfView, float aspectRatio, float nearClip, float farClip) {
+		cbuffer.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip);
+	}
+	PUBLIC void Update() {
+		cbuffer.view = DirectX::XMMatrixRotationRollPitchYaw(angles.x, angles.y, angles.z) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		cbuffer.view = DirectX::XMMatrixInverse(nullptr, cbuffer.view);
+		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
+		App::GetContext().VSSetConstantBuffers(1, 1, &constantBuffer);
+		App::GetContext().PSSetConstantBuffers(1, 1, &constantBuffer);
 	}
 };
 
@@ -505,8 +622,6 @@ class Mesh {
 class Sprite {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX world;
-		DirectX::XMMATRIX view;
-		DirectX::XMMATRIX projection;
 		DirectX::XMFLOAT4 color;
 	};
 
@@ -619,10 +734,8 @@ class Sprite {
 	PUBLIC void Draw() {
 		constant.world = DirectX::XMMatrixIdentity();
 		constant.world *= DirectX::XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
-		constant.world *= DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-angle));
+		constant.world *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(-angle));
 		constant.world *= DirectX::XMMatrixTranslation(position.x, -position.y, 0.0f);
-		constant.view = App::GetViewMatrix();
-		constant.projection = App::GetProjectionMatrix();
 		constant.color = color;
 
 		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
