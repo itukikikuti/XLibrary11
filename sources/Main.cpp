@@ -60,22 +60,30 @@ int Main() {
 	Sprite sprite2(L"assets/4.JPG");
 	sprite2.position = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
-	App::AddFont(L"assets/衡山毛筆フォント行書.ttf");
-	App::SetTitle(L"くぁwせdrftgyふじこlp");
+	App::SetMousePosition(App::GetWindowSize().x / 2.0f, App::GetWindowSize().y / 2.0f);
+	App::SetShowCursor(false);
 
-	Text text1(L"あ");
-	text1.scale.x = text1.scale.y = 0.5f;
-	Text text2(L"", L"ＭＳ 明朝");
-	Text text3(L"玉", L"衡山毛筆フォント行書");
-
-	Mesh mesh(L"assets/monkey.obj");
-
-	bool isFullscreen = false;
 	float t = 0.0f;
 	while (App::Refresh()) {
 		t += App::GetDeltaTime();
 
+		if (App::GetKey('A')) {
+			camera.position.x -= 0.5f * App::GetDeltaTime();
+		}
+		if (App::GetKey('D')) {
+			camera.position.x += 0.5f * App::GetDeltaTime();
+		}
+		if (App::GetKey('W')) {
+			camera.position.z += 0.5f * App::GetDeltaTime();
+		}
+		if (App::GetKey('S')) {
+			camera.position.z -= 0.5f * App::GetDeltaTime();
+		}
+		camera.angles.x += (App::GetMousePosition().y - App::GetWindowSize().y / 2.0f) * 0.1f;
+		camera.angles.y += (App::GetMousePosition().x - App::GetWindowSize().x / 2.0f) * 0.1f;
 		camera.Update();
+
+		App::SetMousePosition(App::GetWindowSize().x / 2.0f, App::GetWindowSize().y / 2.0f);
 
 		sprite1.angles.z = t * (360.0f);
 		sprite1.scale.y = 1.3f;
@@ -87,26 +95,9 @@ int Main() {
 		sprite1.scale.y = 0.7f;
 		sprite1.Draw();
 
-		sprite2.angles.y = App::GetMousePosition().x;
 		sprite2.Draw();
 
-		if (App::GetKeyDown(VK_RBUTTON)) {
-			isFullscreen = !isFullscreen;
-			App::SetFullScreen(isFullscreen);
-		}
-
-		if (App::GetKey(VK_LBUTTON)) {
-			text1.position = XMFLOAT3((float)App::GetMousePosition().x, (float)App::GetMousePosition().y, 0.0f);
-		}
-		text1.angles.z = App::GetTime() * -100.0f;
-		text1.Draw();
-
-		text2.position = XMFLOAT3(App::GetWindowSize().x / 2.0f, App::GetWindowSize().y / 2.0f - 200.0f, 0.0f);
-		text2.Draw();
-
-		text3.position = XMFLOAT3(App::GetWindowSize().x / 2.0f, App::GetWindowSize().y / 2.0f + 200.0f, 0.0f);
-		text3.scale.x = text3.scale.y = 2.0f + sinf(t) * 1.0f;
-		text3.Draw();
+		Sleep(5);
 	}
 
 	return 0;

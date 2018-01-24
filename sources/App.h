@@ -75,8 +75,17 @@ public:
 	PUBLIC static bool GetKeyDown(int VK_CODE) {
 		return GetInputInstance().GetKeyDown(VK_CODE);
 	}
-	PUBLIC static DirectX::XMINT2 GetMousePosition() {
+	PUBLIC static DirectX::XMFLOAT2 GetMousePosition() {
 		return GetInputInstance().GetMousePosition();
+	}
+	PUBLIC static void SetMousePosition(DirectX::XMFLOAT2 position) {
+		GetInputInstance().SetMousePosition(position.x, position.y);
+	}
+	PUBLIC static void SetMousePosition(float x, float y) {
+		GetInputInstance().SetMousePosition(x, y);
+	}
+	PUBLIC static void SetShowCursor(bool isShowCursor) {
+		GetInputInstance().SetShowCursor(isShowCursor);
 	}
 	PUBLIC static float GetTime() {
 		return GetTimeInstance().GetTime();
