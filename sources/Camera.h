@@ -26,7 +26,7 @@ class Camera {
 		cbuffer.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip);
 	}
 	PUBLIC void Update() {
-		cbuffer.view = DirectX::XMMatrixRotationRollPitchYaw(angles.x, angles.y, angles.z) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		cbuffer.view = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z)) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.view = DirectX::XMMatrixInverse(nullptr, cbuffer.view);
 		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
 		App::GetContext().VSSetConstantBuffers(1, 1, &constantBuffer);

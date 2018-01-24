@@ -442,14 +442,6 @@ class Time {
 	PUBLIC static int GetFrameRate() {
 		return GetTimeInstance().GetFrameRate();
 	}
-	PUBLIC static DirectX::XMMATRIX GetViewMatrix() {
-		//return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 1.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-		return DirectX::XMMatrixLookAtLH(DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, -800.0f, 0.0f), DirectX::XMVectorSet(App::GetWindowSize().x / 2.0f, -App::GetWindowSize().y / 2.0f, 0.0f, 0.0f), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-	}
-	PUBLIC static DirectX::XMMATRIX GetProjectionMatrix() {
-		//return DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x * 1.0f, App::GetWindowSize().y * 1.0f, -1.0f, 1.0f);
-		return DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(60.0f), App::GetWindowSize().x / (float)App::GetWindowSize().y, 0.1f, 2000.0f);
-	}
 	PUBLIC static void AddFont(const wchar_t* filePath) {
 		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
 	}
@@ -540,7 +532,7 @@ class Camera {
 		cbuffer.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip);
 	}
 	PUBLIC void Update() {
-		cbuffer.view = DirectX::XMMatrixRotationRollPitchYaw(angles.x, angles.y, angles.z) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		cbuffer.view = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z)) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.view = DirectX::XMMatrixInverse(nullptr, cbuffer.view);
 		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
 		App::GetContext().VSSetConstantBuffers(1, 1, &constantBuffer);
@@ -620,19 +612,19 @@ class Mesh {
 };
 
 class Sprite {
-	PROTECTED struct Constant {
+	PROTECTED struct ConstantBuffer {
 		DirectX::XMMATRIX world;
 		DirectX::XMFLOAT4 color;
 	};
 
-	PUBLIC DirectX::XMFLOAT2 position;
-	PUBLIC float angle;
-	PUBLIC DirectX::XMFLOAT2 scale;
+	PUBLIC DirectX::XMFLOAT3 position;
+	PUBLIC DirectX::XMFLOAT3 angles;
+	PUBLIC DirectX::XMFLOAT3 scale;
 	PUBLIC DirectX::XMFLOAT4 color;
 	PROTECTED UINT width;
 	PROTECTED UINT height;
 	PROTECTED ID3D11Texture2D* texture;
-	PROTECTED Constant constant;
+	PROTECTED ConstantBuffer cbuffer;
 	PRIVATE int indexCount;
 	PRIVATE ID3D11Buffer* vertexBuffer;
 	PRIVATE ID3D11Buffer* indexBuffer;
@@ -640,6 +632,9 @@ class Sprite {
 	PRIVATE ID3D11ShaderResourceView* shaderResourceView;
 	PRIVATE ID3D11SamplerState* samplerState;
 
+	PUBLIC Sprite() {
+		Initialize();
+	}
 	PUBLIC Sprite(const wchar_t* filePath) {
 		CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
@@ -703,11 +698,6 @@ class Sprite {
 		delete[] textureBuffer;
 
 		Initialize();
-
-		position = DirectX::XMFLOAT2(0.0f, 0.0f);
-		angle = 0.0f;
-		scale = DirectX::XMFLOAT2(1.0f, 1.0f);
-		color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 	PUBLIC virtual ~Sprite() {
 		if (texture)
@@ -732,23 +722,23 @@ class Sprite {
 		return DirectX::XMINT2(width, height);
 	}
 	PUBLIC void Draw() {
-		constant.world = DirectX::XMMatrixIdentity();
-		constant.world *= DirectX::XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
-		constant.world *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(-angle));
-		constant.world *= DirectX::XMMatrixTranslation(position.x, -position.y, 0.0f);
-		constant.color = color;
-
-		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-
+		cbuffer.world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z))* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		cbuffer.color = color;
+		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
 		App::GetContext().VSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetContext().PSSetConstantBuffers(0, 1, &constantBuffer);
+
 		App::GetContext().PSSetShaderResources(0, 1, &shaderResourceView);
 		App::GetContext().PSSetSamplers(0, 1, &samplerState);
 
 		App::GetContext().DrawIndexed(indexCount, 0, 0);
 	}
-	PROTECTED Sprite() {
-	}
 	PROTECTED void Initialize() {
+		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+		color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
 		Vertex quad[] = {
 			{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) },
 			{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
@@ -792,7 +782,7 @@ class Sprite {
 		App::GetContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		D3D11_BUFFER_DESC constantBufferDesc = {};
-		constantBufferDesc.ByteWidth = sizeof(Constant);
+		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
@@ -852,7 +842,7 @@ class Text : public Sprite {
 		TEXTMETRICW textMetrics = {};
 		GetTextMetricsW(dc, &textMetrics);
 		GLYPHMETRICS glyphMetrics = {};
-		const MAT2 matrix = { { 0, 1 },{ 0, 0 },{ 0, 0 },{ 0, 1 } };
+		const MAT2 matrix = { { 0, 1 }, { 0, 0 }, { 0, 0 }, { 0, 1 } };
 		DWORD size = GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
 		BYTE* textureBuffer = new BYTE[size];
 		GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, textureBuffer, &matrix);
@@ -902,13 +892,6 @@ class Text : public Sprite {
 
 		App::GetContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
 		delete[] textureBuffer;
-
-		Initialize();
-
-		position = DirectX::XMFLOAT2(0.0f, 0.0f);
-		angle = 0.0f;
-		scale = DirectX::XMFLOAT2(1.0f, 1.0f);
-		color = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 };
 

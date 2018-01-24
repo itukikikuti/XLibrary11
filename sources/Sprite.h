@@ -1,17 +1,17 @@
 ﻿class Sprite {
-	PROTECTED struct Constant {
+	PROTECTED struct ConstantBuffer {
 		DirectX::XMMATRIX world;
 		DirectX::XMFLOAT4 color;
 	};
 
-	PUBLIC DirectX::XMFLOAT2 position;
-	PUBLIC float angle;
-	PUBLIC DirectX::XMFLOAT2 scale;
+	PUBLIC DirectX::XMFLOAT3 position;
+	PUBLIC DirectX::XMFLOAT3 angles;
+	PUBLIC DirectX::XMFLOAT3 scale;
 	PUBLIC DirectX::XMFLOAT4 color;
 	PROTECTED UINT width;
 	PROTECTED UINT height;
 	PROTECTED ID3D11Texture2D* texture;
-	PROTECTED Constant constant;
+	PROTECTED ConstantBuffer cbuffer;
 	PRIVATE int indexCount;
 	PRIVATE ID3D11Buffer* vertexBuffer;
 	PRIVATE ID3D11Buffer* indexBuffer;
@@ -19,6 +19,9 @@
 	PRIVATE ID3D11ShaderResourceView* shaderResourceView;
 	PRIVATE ID3D11SamplerState* samplerState;
 
+	PUBLIC Sprite() {
+		Initialize();
+	}
 	PUBLIC Sprite(const wchar_t* filePath) {
 		CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
@@ -82,11 +85,6 @@
 		delete[] textureBuffer;
 
 		Initialize();
-
-		position = DirectX::XMFLOAT2(0.0f, 0.0f);
-		angle = 0.0f;
-		scale = DirectX::XMFLOAT2(1.0f, 1.0f);
-		color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 	PUBLIC virtual ~Sprite() {
 		if (texture)
@@ -111,23 +109,23 @@
 		return DirectX::XMINT2(width, height);
 	}
 	PUBLIC void Draw() {
-		constant.world = DirectX::XMMatrixIdentity();
-		constant.world *= DirectX::XMMatrixScaling(width * scale.x, height * scale.y, 1.0f);
-		constant.world *= DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(-angle));
-		constant.world *= DirectX::XMMatrixTranslation(position.x, -position.y, 0.0f);
-		constant.color = color;
-
-		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-
+		cbuffer.world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z))* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		cbuffer.color = color;
+		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
 		App::GetContext().VSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetContext().PSSetConstantBuffers(0, 1, &constantBuffer);
+
 		App::GetContext().PSSetShaderResources(0, 1, &shaderResourceView);
 		App::GetContext().PSSetSamplers(0, 1, &samplerState);
 
 		App::GetContext().DrawIndexed(indexCount, 0, 0);
 	}
-	PROTECTED Sprite() {
-	}
 	PROTECTED void Initialize() {
+		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+		color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
 		Vertex quad[] = {
 			{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) },
 			{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
@@ -171,7 +169,7 @@
 		App::GetContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		D3D11_BUFFER_DESC constantBufferDesc = {};
-		constantBufferDesc.ByteWidth = sizeof(Constant);
+		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;

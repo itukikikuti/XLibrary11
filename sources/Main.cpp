@@ -53,12 +53,12 @@ int Main() {
 	LinkLibrary();
 
 	Camera camera;
-	camera.position.z = -800.0f;
+	camera.position.z = -2.0f;
 
 	Sprite sprite1(L"assets/clock.png");
-	sprite1.position = XMFLOAT2(200.0f, 200.0f);
+	sprite1.position = XMFLOAT3(1.0f, 0.5f, 0.0f);
 	Sprite sprite2(L"assets/4.JPG");
-	sprite2.position = XMFLOAT2(0.0f, 0.0f);
+	sprite2.position = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
 	App::AddFont(L"assets/衡山毛筆フォント行書.ttf");
 	App::SetTitle(L"くぁwせdrftgyふじこlp");
@@ -77,17 +77,17 @@ int Main() {
 
 		camera.Update();
 
-		sprite1.angle = t * (360.0f);
+		sprite1.angles.z = t * (360.0f);
 		sprite1.scale.y = 1.3f;
 		sprite1.Draw();
-		sprite1.angle = t * (360.0f / 60.0f);
+		sprite1.angles.z = t * (360.0f / 60.0f);
 		sprite1.scale.y = 1.0f;
 		sprite1.Draw();
-		sprite1.angle = t * (360.0f / 60.0f / 12.0f);
+		sprite1.angles.z = t * (360.0f / 60.0f / 12.0f);
 		sprite1.scale.y = 0.7f;
 		sprite1.Draw();
 
-		sprite2.angle = App::GetMousePosition().x;
+		sprite2.angles.y = App::GetMousePosition().x;
 		sprite2.Draw();
 
 		if (App::GetKeyDown(VK_RBUTTON)) {
@@ -96,15 +96,15 @@ int Main() {
 		}
 
 		if (App::GetKey(VK_LBUTTON)) {
-			text1.position = XMFLOAT2((float)App::GetMousePosition().x, (float)App::GetMousePosition().y);
+			text1.position = XMFLOAT3((float)App::GetMousePosition().x, (float)App::GetMousePosition().y, 0.0f);
 		}
-		text1.angle = App::GetTime() * -100.0f;
+		text1.angles.z = App::GetTime() * -100.0f;
 		text1.Draw();
 
-		text2.position = XMFLOAT2(App::GetWindowSize().x / 2.0f, App::GetWindowSize().y / 2.0f - 200.0f);
+		text2.position = XMFLOAT3(App::GetWindowSize().x / 2.0f, App::GetWindowSize().y / 2.0f - 200.0f, 0.0f);
 		text2.Draw();
 
-		text3.position = XMFLOAT2(App::GetWindowSize().x / 2.0f, App::GetWindowSize().y / 2.0f + 200.0f);
+		text3.position = XMFLOAT3(App::GetWindowSize().x / 2.0f, App::GetWindowSize().y / 2.0f + 200.0f, 0.0f);
 		text3.scale.x = text3.scale.y = 2.0f + sinf(t) * 1.0f;
 		text3.Draw();
 	}

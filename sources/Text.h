@@ -28,7 +28,7 @@
 		TEXTMETRICW textMetrics = {};
 		GetTextMetricsW(dc, &textMetrics);
 		GLYPHMETRICS glyphMetrics = {};
-		const MAT2 matrix = { { 0, 1 },{ 0, 0 },{ 0, 0 },{ 0, 1 } };
+		const MAT2 matrix = { { 0, 1 }, { 0, 0 }, { 0, 0 }, { 0, 1 } };
 		DWORD size = GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
 		BYTE* textureBuffer = new BYTE[size];
 		GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, textureBuffer, &matrix);
@@ -78,12 +78,5 @@
 
 		App::GetContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
 		delete[] textureBuffer;
-
-		Initialize();
-
-		position = DirectX::XMFLOAT2(0.0f, 0.0f);
-		angle = 0.0f;
-		scale = DirectX::XMFLOAT2(1.0f, 1.0f);
-		color = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 };
