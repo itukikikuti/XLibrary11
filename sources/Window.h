@@ -1,9 +1,7 @@
-﻿#undef GetMessage
-
-class Window {
+﻿class Window {
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
-	PRIVATE MSG message = {};
+	PRIVATE std::queue<UINT> messageQueue;
 
 	PUBLIC Window() {
 		HINSTANCE instance = GetModuleHandleW(nullptr);
@@ -37,8 +35,8 @@ class Window {
 	PUBLIC HWND GetHandle() {
 		return handle;
 	}
-	PUBLIC MSG GetMessage() {
-		return message;
+	PUBLIC std::queue<UINT> GetMessageQueue() {
+		return messageQueue;
 	}
 	PUBLIC DirectX::XMINT2 GetSize() {
 		RECT clientRect = {};
@@ -85,6 +83,10 @@ class Window {
 		}
 	}
 	PUBLIC bool Update() {
+		static MSG message = {};
+
+		while (!messageQueue.empty()) messageQueue.pop();
+
 		while (message.message != WM_QUIT) {
 			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
 				TranslateMessage(&message);
@@ -98,12 +100,11 @@ class Window {
 		return false;
 	}
 	PRIVATE LRESULT Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
+		messageQueue.push(message);
+
 		switch (message) {
 		case WM_DESTROY:
 			PostQuitMessage(0);
-			break;
-		case WM_SIZE:
-			printf("WM_SIZE");
 			break;
 		default:
 			return DefWindowProcW(handle, message, wParam, lParam);

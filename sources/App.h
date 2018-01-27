@@ -9,10 +9,10 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <queue>
 #include <regex>
 #include <string>
 #include <strsafe.h>
-#include <vector>
 #include <wincodec.h>
 #include <windows.h>
 #include <wrl.h>
@@ -39,8 +39,8 @@ public:
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindow().GetHandle();
 	}
-	PUBLIC static MSG GetWindowMessage() {
-		return GetWindow().GetMessage();
+	PUBLIC static std::queue<UINT> GetWindowMessageQueue() {
+		return GetWindow().GetMessageQueue();
 	}
 	PUBLIC static DirectX::XMINT2 GetWindowSize() {
 		return GetWindow().GetSize();
