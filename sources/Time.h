@@ -11,6 +11,9 @@ class Time {
 		preCount = GetCounter();
 		frequency = GetCountFrequency();
 	}
+	PUBLIC ~Time() {
+
+	}
 	PUBLIC float GetTime() {
 		return time;
 	}

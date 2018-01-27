@@ -31,7 +31,7 @@ GAME_LIBRARY_BEGIN
 class App {
 public:
 #include "Window.h"
-#include "Screen.h"
+#include "Graphic.h"
 #include "Input.h"
 #include "Time.h"
 
@@ -55,16 +55,16 @@ public:
 		GetWindowInstance().SetFullScreen(isFullscreen);
 	}
 	PUBLIC static ID3D11Device& GetDevice() {
-		return GetScreenInstance().GetDevice();
+		return GetGraphicInstance().GetDevice();
 	}
 	PUBLIC static IDXGISwapChain& GetSwapChain() {
-		return GetScreenInstance().GetSwapChain();
+		return GetGraphicInstance().GetSwapChain();
 	}
 	PUBLIC static ID3D11DeviceContext& GetContext() {
-		return GetScreenInstance().GetContext();
+		return GetGraphicInstance().GetContext();
 	}
 	PUBLIC static ID3D11RenderTargetView& GetRenderTargetView(bool isResize = false) {
-		return GetScreenInstance().GetRenderTargetView();
+		return GetGraphicInstance().GetRenderTargetView();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
 		return GetInputInstance().GetKey(VK_CODE);
@@ -119,9 +119,9 @@ public:
 		static std::unique_ptr<Window> window(new Window(ProcessWindow));
 		return *window.get();
 	}
-	PRIVATE static Screen& GetScreenInstance() {
-		static std::unique_ptr<Screen> screen(new Screen());
-		return *screen.get();
+	PRIVATE static Graphic& GetGraphicInstance() {
+		static std::unique_ptr<Graphic> graphic(new Graphic());
+		return *graphic.get();
 	}
 	PRIVATE static Input& GetInputInstance() {
 		static std::unique_ptr<Input> input(new Input());

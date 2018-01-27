@@ -7,6 +7,9 @@ class Input {
 	PUBLIC Input() {
 		Update();
 	}
+	PUBLIC ~Input() {
+
+	}
 	PUBLIC bool GetKey(int keyCode) {
 		return keyState[keyCode] & 0x80;
 	}

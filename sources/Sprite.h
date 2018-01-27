@@ -25,15 +25,15 @@
 	PUBLIC Sprite(const wchar_t* filePath) {
 		CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
-		IWICImagingFactory* factory = nullptr;
-		CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+		Microsoft::WRL::ComPtr<IWICImagingFactory> factory = nullptr;
+		CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(factory.GetAddressOf()));
 
-		IWICBitmapDecoder* decoder = nullptr;
+		Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder = nullptr;
 		BYTE* textureBuffer = nullptr;
 
-		if (SUCCEEDED(factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder))) {
-			IWICBitmapFrameDecode* frame = nullptr;
-			decoder->GetFrame(0, &frame);
+		if (SUCCEEDED(factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, decoder.GetAddressOf()))) {
+			Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frame = nullptr;
+			decoder->GetFrame(0, frame.GetAddressOf());
 			frame->GetSize(&width, &height);
 
 			WICPixelFormatGUID pixelFormat;
@@ -41,10 +41,10 @@
 			textureBuffer = new BYTE[width * height * 4];
 
 			if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
-				IWICFormatConverter* formatConverter = nullptr;
-				factory->CreateFormatConverter(&formatConverter);
+				Microsoft::WRL::ComPtr<IWICFormatConverter> formatConverter = nullptr;
+				factory->CreateFormatConverter(formatConverter.GetAddressOf());
 
-				formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
+				formatConverter->Initialize(frame.Get(), GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
 
 				formatConverter->CopyPixels(0, width * 4, width * height * 4, textureBuffer);
 			}
@@ -87,23 +87,35 @@
 		Initialize();
 	}
 	PUBLIC virtual ~Sprite() {
-		if (texture)
+		if (texture) {
 			texture->Release();
+			texture = nullptr;
+		}
 
-		if (shaderResourceView)
+		if (shaderResourceView) {
 			shaderResourceView->Release();
+			shaderResourceView = nullptr;
+		}
 
-		if (samplerState)
+		if (samplerState) {
 			samplerState->Release();
+			samplerState = nullptr;
+		}
 
-		if (vertexBuffer)
+		if (vertexBuffer) {
 			vertexBuffer->Release();
+			vertexBuffer = nullptr;
+		}
 
-		if (indexBuffer)
+		if (indexBuffer) {
 			indexBuffer->Release();
+			indexBuffer = nullptr;
+		}
 
-		if (constantBuffer)
+		if (constantBuffer) {
 			constantBuffer->Release();
+			constantBuffer = nullptr;
+		}
 	}
 	PUBLIC DirectX::XMINT2 GetSize() {
 		return DirectX::XMINT2(width, height);

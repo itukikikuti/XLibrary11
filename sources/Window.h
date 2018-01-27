@@ -26,6 +26,9 @@
 
 		ShowWindow(handle, SW_SHOWNORMAL);
 	}
+	PUBLIC ~Window() {
+
+	}
 	PUBLIC HWND GetHandle() {
 		return handle;
 	}

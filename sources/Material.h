@@ -1,4 +1,1 @@
-﻿namespace GameLibrary {
-	class Material {
-	};
-}
+﻿

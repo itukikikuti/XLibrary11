@@ -32,9 +32,6 @@
     <ClInclude Include="sources\App.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Screen.h">
-      <Filter>sources</Filter>
-    </ClInclude>
     <ClInclude Include="sources\Input.h">
       <Filter>sources</Filter>
     </ClInclude>
@@ -42,6 +39,9 @@
       <Filter>sources</Filter>
     </ClInclude>
     <ClInclude Include="sources\Camera.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Graphic.h">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>

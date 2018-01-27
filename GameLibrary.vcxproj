@@ -119,7 +119,7 @@
     <ClInclude Include="sources\Input.h" />
     <ClInclude Include="sources\Material.h" />
     <ClInclude Include="sources\Mesh.h" />
-    <ClInclude Include="sources\Screen.h" />
+    <ClInclude Include="sources\Graphic.h" />
     <ClInclude Include="sources\Sprite.h" />
     <ClInclude Include="sources\Text.h" />
     <ClInclude Include="sources\Texture.h" />

@@ -1,19 +1,19 @@
-﻿class Screen {
+﻿class Graphic {
 	PRIVATE const int SWAP_CHAIN_COUNT = 2;
 	PRIVATE const DXGI_FORMAT SWAP_CHAIN_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 	PRIVATE const int MULTI_SAMPLE_COUNT = 1;
 	PRIVATE const int MULTI_SAMPLE_QUALITY = 0;
 
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTargetTexture = nullptr;
+	PRIVATE ID3D11Device* device = nullptr;
+	PRIVATE IDXGISwapChain* swapChain = nullptr;
+	PRIVATE ID3D11DeviceContext* context = nullptr;
+	PRIVATE ID3D11VertexShader* vertexShader = nullptr;
+	PRIVATE ID3D11PixelShader* pixelShader = nullptr;
+	PRIVATE ID3D11InputLayout* inputLayout = nullptr;
+	PRIVATE ID3D11RenderTargetView* renderTargetView = nullptr;
+	PRIVATE ID3D11Texture2D* renderTargetTexture = nullptr;
 
-	PUBLIC Screen() {
+	PUBLIC Graphic() {
 		int createDeviceFlag = 0;
 #if defined(DEBUG) || defined(_DEBUG)
 		createDeviceFlag |= D3D11_CREATE_DEVICE_DEBUG;
@@ -33,22 +33,6 @@
 		};
 		int featureLevelCount = sizeof(featureLevels) / sizeof(featureLevels[0]);
 
-		for (int i = 0; i < driverTypeCount; i++) {
-			HRESULT result = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, device.GetAddressOf(), nullptr, nullptr);
-
-			if (SUCCEEDED(result)) {
-				break;
-			}
-		}
-
-		IDXGIDevice1* dxgiDevice = nullptr;
-		IDXGIAdapter* adapter = nullptr;
-		IDXGIFactory* factory = nullptr;
-
-		device->QueryInterface(__uuidof(IDXGIDevice1), (void**)&dxgiDevice);
-		dxgiDevice->GetAdapter(&adapter);
-		adapter->GetParent(__uuidof(IDXGIFactory), (void**)&factory);
-
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		swapChainDesc.BufferCount = SWAP_CHAIN_COUNT;
 		swapChainDesc.BufferDesc.Width = App::GetWindowSize().x;
@@ -62,25 +46,23 @@
 		swapChainDesc.SampleDesc.Quality = MULTI_SAMPLE_QUALITY;
 		swapChainDesc.Windowed = true;
 
-		factory->CreateSwapChain(device.Get(), &swapChainDesc, swapChain.GetAddressOf());
-		factory->MakeWindowAssociation(App::GetWindowHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
+		for (int i = 0; i < driverTypeCount; i++) {
+			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device, nullptr, &context);
 
-		factory->Release();
-		adapter->Release();
-		dxgiDevice->Release();
+			if (SUCCEEDED(result)) {
+				break;
+			}
+		}
 
-		device->GetImmediateContext(&context);
+		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
+		CompileShader(nullptr, "VS", "vs_4_0", vertexShaderBlob.GetAddressOf());
+		device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
+		context->VSSetShader(vertexShader, nullptr, 0);
 
-		ID3DBlob *vertexShaderBlob = nullptr;
-		CompileShader(nullptr, "VS", "vs_4_0", &vertexShaderBlob);
-		device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
-		context->VSSetShader(vertexShader.Get(), nullptr, 0);
-
-		ID3DBlob *pixelShaderBlob = nullptr;
-		CompileShader(nullptr, "PS", "ps_4_0", &pixelShaderBlob);
-		device->CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, pixelShader.GetAddressOf());
-		pixelShaderBlob->Release();
-		context->PSSetShader(pixelShader.Get(), nullptr, 0);
+		Microsoft::WRL::ComPtr<ID3DBlob> pixelShaderBlob = nullptr;
+		CompileShader(nullptr, "PS", "ps_4_0", pixelShaderBlob.GetAddressOf());
+		device->CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
+		context->PSSetShader(pixelShader, nullptr, 0);
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -88,11 +70,10 @@
 		};
 		int inputElementDescCount = sizeof(inputElementDesc) / sizeof(inputElementDesc[0]);
 
-		device->CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
-		vertexShaderBlob->Release();
-		context->IASetInputLayout(inputLayout.Get());
+		device->CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
+		context->IASetInputLayout(inputLayout);
 
-		ID3D11BlendState* blendState = nullptr;
+		Microsoft::WRL::ComPtr<ID3D11BlendState> blendState = nullptr;
 		D3D11_BLEND_DESC blendDesc = {};
 		blendDesc.AlphaToCoverageEnable = false;
 		blendDesc.IndependentBlendEnable = false;
@@ -107,19 +88,18 @@
 
 		float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		device->CreateBlendState(&blendDesc, &blendState);
-		context->OMSetBlendState(blendState, blendFactor, 0xffffffff);
-		blendState->Release();
+		context->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
 
-		ID3D11RasterizerState* rasterizerState = nullptr;
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
 		D3D11_RASTERIZER_DESC rasterizerDesc = {};
 		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 		rasterizerDesc.CullMode = D3D11_CULL_NONE;
 		device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
-		context->RSSetState(rasterizerState);
+		context->RSSetState(rasterizerState.Get());
 
-		swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)renderTargetTexture.GetAddressOf());
-		device->CreateRenderTargetView(renderTargetTexture.Get(), nullptr, renderTargetView.GetAddressOf());
-		context->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
+		swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&renderTargetTexture);
+		device->CreateRenderTargetView(renderTargetTexture, nullptr, &renderTargetView);
+		context->OMSetRenderTargets(1, &renderTargetView, nullptr);
 
 		D3D11_VIEWPORT viewPort = {};
 		viewPort.Width = (float)App::GetWindowSize().x;
@@ -130,17 +110,59 @@
 		viewPort.TopLeftY = 0;
 		context->RSSetViewports(1, &viewPort);
 	}
+	PUBLIC ~Graphic() {
+		if (vertexShader) {
+			vertexShader->Release();
+			vertexShader = nullptr;
+		}
+
+		if (pixelShader) {
+			pixelShader->Release();
+			pixelShader = nullptr;
+		}
+
+		if (inputLayout) {
+			inputLayout->Release();
+			inputLayout = nullptr;
+		}
+
+		if (renderTargetTexture) {
+			renderTargetTexture->Release();
+			renderTargetTexture = nullptr;
+		}
+
+		if (renderTargetView) {
+			renderTargetView->Release();
+			renderTargetView = nullptr;
+		}
+
+		if (swapChain) {
+			swapChain->Release();
+			swapChain = nullptr;
+		}
+
+		if (context) {
+			context->Flush();
+			context->Release();
+			context = nullptr;
+		}
+
+		if (device) {
+			device->Release();
+			device = nullptr;
+		}
+	}
 	PUBLIC ID3D11Device& GetDevice() {
-		return *device.Get();
+		return *device;
 	}
 	PUBLIC IDXGISwapChain& GetSwapChain() {
-		return *swapChain.Get();
+		return *swapChain;
 	}
 	PUBLIC ID3D11DeviceContext& GetContext() {
-		return *context.Get();
+		return *context;
 	}
 	PUBLIC ID3D11RenderTargetView& GetRenderTargetView() {
-		return *renderTargetView.Get();
+		return *renderTargetView;
 	}
 	PRIVATE void CompileShader(const wchar_t* filePath, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -148,7 +170,7 @@
 		shaderFlags |= D3DCOMPILE_DEBUG;
 #endif
 
-		ID3DBlob *errorBlob = nullptr;
+		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
 
 		if (filePath == nullptr) {
 			char* shader =
@@ -189,7 +211,6 @@
 		if (errorBlob != nullptr) {
 			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
 			MessageBoxA(App::GetWindowHandle(), (char*)errorBlob->GetBufferPointer(), "Shader Error", MB_OK);
-			errorBlob->Release();
 		}
 	}
 };
