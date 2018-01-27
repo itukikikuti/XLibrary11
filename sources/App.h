@@ -31,7 +31,7 @@ GAME_LIBRARY_BEGIN
 class App {
 public:
 #include "Window.h"
-#include "Graphic.h"
+#include "Graphics.h"
 #include "Input.h"
 #include "Timer.h"
 
@@ -54,11 +54,14 @@ public:
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
 		GetWindow().SetFullScreen(isFullscreen);
 	}
-	PUBLIC static ID3D11Device& GetGraphicDevice() {
-		return GetGraphic().GetDevice();
+	PUBLIC static ID3D11Device& GetGraphicsDevice() {
+		return GetGraphics().GetDevice();
 	}
-	PUBLIC static ID3D11DeviceContext& GetGraphicContext() {
-		return GetGraphic().GetContext();
+	PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
+		return GetGraphics().GetContext();
+	}
+	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
+		return GetGraphics().GetMemory();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
 		return GetInput().GetKey(VK_CODE);
@@ -96,7 +99,7 @@ public:
 	PUBLIC static bool Refresh() {
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		GetGraphic().GetSwapChain().Present(1, 0);
+		GetGraphicsMemory().Present(1, 0);
 
 		static MSG message = {};
 
@@ -106,7 +109,7 @@ public:
 				DispatchMessageW(&message);
 			}
 			else {
-				GetGraphicContext().ClearRenderTargetView(&GetGraphic().GetRenderTargetView(), color);
+				GetGraphicsContext().ClearRenderTargetView(&GetGraphics().GetRenderTargetView(), color);
 
 				GetInput().Update();
 				GetTimer().Update();
@@ -121,9 +124,9 @@ public:
 		static std::unique_ptr<Window> window(new Window(ProcessWindow));
 		return *window.get();
 	}
-	PRIVATE static Graphic& GetGraphic() {
-		static std::unique_ptr<Graphic> graphic(new Graphic());
-		return *graphic.get();
+	PRIVATE static Graphics& GetGraphics() {
+		static std::unique_ptr<Graphics> graphics(new Graphics());
+		return *graphics.get();
 	}
 	PRIVATE static Input& GetInput() {
 		static std::unique_ptr<Input> input(new Input());

@@ -110,7 +110,7 @@ class Window {
 	}
 };
 
-class Graphic {
+class Graphics {
 	PRIVATE const int SWAP_CHAIN_COUNT = 2;
 	PRIVATE const DXGI_FORMAT SWAP_CHAIN_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 	PRIVATE const int MULTI_SAMPLE_COUNT = 1;
@@ -125,7 +125,7 @@ class Graphic {
 	PRIVATE ID3D11RenderTargetView* renderTargetView = nullptr;
 	PRIVATE ID3D11Texture2D* renderTargetTexture = nullptr;
 
-	PUBLIC Graphic() {
+	PUBLIC Graphics() {
 		int createDeviceFlag = 0;
 #if defined(DEBUG) || defined(_DEBUG)
 		createDeviceFlag |= D3D11_CREATE_DEVICE_DEBUG;
@@ -222,7 +222,7 @@ class Graphic {
 		viewPort.TopLeftY = 0;
 		context->RSSetViewports(1, &viewPort);
 	}
-	PUBLIC ~Graphic() {
+	PUBLIC ~Graphics() {
 		if (vertexShader) {
 			vertexShader->Release();
 			vertexShader = nullptr;
@@ -267,7 +267,7 @@ class Graphic {
 	PUBLIC ID3D11Device& GetDevice() {
 		return *device;
 	}
-	PUBLIC IDXGISwapChain& GetSwapChain() {
+	PUBLIC IDXGISwapChain& GetMemory() {
 		return *swapChain;
 	}
 	PUBLIC ID3D11DeviceContext& GetContext() {
@@ -459,11 +459,14 @@ class Timer {
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
 		GetWindow().SetFullScreen(isFullscreen);
 	}
-	PUBLIC static ID3D11Device& GetGraphicDevice() {
-		return GetGraphic().GetDevice();
+	PUBLIC static ID3D11Device& GetGraphicsDevice() {
+		return GetGraphics().GetDevice();
 	}
-	PUBLIC static ID3D11DeviceContext& GetGraphicContext() {
-		return GetGraphic().GetContext();
+	PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
+		return GetGraphics().GetContext();
+	}
+	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
+		return GetGraphics().GetMemory();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
 		return GetInput().GetKey(VK_CODE);
@@ -501,7 +504,7 @@ class Timer {
 	PUBLIC static bool Refresh() {
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		GetGraphic().GetSwapChain().Present(1, 0);
+		GetGraphicsMemory().Present(1, 0);
 
 		static MSG message = {};
 
@@ -511,7 +514,7 @@ class Timer {
 				DispatchMessageW(&message);
 			}
 			else {
-				GetGraphicContext().ClearRenderTargetView(&GetGraphic().GetRenderTargetView(), color);
+				GetGraphicsContext().ClearRenderTargetView(&GetGraphics().GetRenderTargetView(), color);
 
 				GetInput().Update();
 				GetTimer().Update();
@@ -526,9 +529,9 @@ class Timer {
 		static std::unique_ptr<Window> window(new Window(ProcessWindow));
 		return *window.get();
 	}
-	PRIVATE static Graphic& GetGraphic() {
-		static std::unique_ptr<Graphic> graphic(new Graphic());
-		return *graphic.get();
+	PRIVATE static Graphics& GetGraphics() {
+		static std::unique_ptr<Graphics> graphics(new Graphics());
+		return *graphics.get();
 	}
 	PRIVATE static Input& GetInput() {
 		static std::unique_ptr<Input> input(new Input());
@@ -567,7 +570,7 @@ class Camera {
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
 		SetPerspective(60.0f, App::GetWindowSize().x / (float)App::GetWindowSize().y, 0.1f, 2000.0f);
 
@@ -580,9 +583,9 @@ class Camera {
 	PUBLIC void Update() {
 		cbuffer.view = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z)) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.view = DirectX::XMMatrixInverse(nullptr, cbuffer.view);
-		App::GetGraphicContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
-		App::GetGraphicContext().VSSetConstantBuffers(1, 1, &constantBuffer);
-		App::GetGraphicContext().PSSetConstantBuffers(1, 1, &constantBuffer);
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, &constantBuffer);
+		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, &constantBuffer);
 	}
 };
 
@@ -739,7 +742,7 @@ class Sprite {
 		textureSubresourceData.pSysMem = textureBuffer;
 		textureSubresourceData.SysMemPitch = width * 4;
 		textureSubresourceData.SysMemSlicePitch = width * height * 4;
-		App::GetGraphicDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
 
 		delete[] textureBuffer;
 
@@ -782,14 +785,14 @@ class Sprite {
 	PUBLIC void Draw() {
 		cbuffer.world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z))* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.color = color;
-		App::GetGraphicContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
-		App::GetGraphicContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-		App::GetGraphicContext().PSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer);
 
-		App::GetGraphicContext().PSSetShaderResources(0, 1, &shaderResourceView);
-		App::GetGraphicContext().PSSetSamplers(0, 1, &samplerState);
+		App::GetGraphicsContext().PSSetShaderResources(0, 1, &shaderResourceView);
+		App::GetGraphicsContext().PSSetSamplers(0, 1, &samplerState);
 
-		App::GetGraphicContext().DrawIndexed(indexCount, 0, 0);
+		App::GetGraphicsContext().DrawIndexed(indexCount, 0, 0);
 	}
 	PROTECTED void Initialize() {
 		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -821,12 +824,12 @@ class Sprite {
 		vertexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 		vertexSubresourceData.pSysMem = quad;
-		App::GetGraphicDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
 
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-		App::GetGraphicContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		App::GetGraphicContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		App::GetGraphicsContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		App::GetGraphicsContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		D3D11_BUFFER_DESC indexBufferDesc = {};
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -835,22 +838,22 @@ class Sprite {
 		indexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 		indexSubresourceData.pSysMem = index;
-		App::GetGraphicDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
-		App::GetGraphicContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
-		App::GetGraphicDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+		App::GetGraphicsDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
 
 		D3D11_SAMPLER_DESC samplerDesc;
 		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -866,7 +869,7 @@ class Sprite {
 		samplerDesc.BorderColor[3] = 0;
 		samplerDesc.MinLOD = 0;
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-		App::GetGraphicDevice().CreateSamplerState(&samplerDesc, &samplerState);
+		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, &samplerState);
 	}
 };
 
@@ -925,10 +928,10 @@ class Text : public Sprite {
 		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		textureDesc.MiscFlags = 0;
 
-		App::GetGraphicDevice().CreateTexture2D(&textureDesc, nullptr, &texture);
+		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, nullptr, &texture);
 
 		D3D11_MAPPED_SUBRESOURCE mapped;
-		App::GetGraphicContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+		App::GetGraphicsContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 
 		BYTE* bits = (BYTE*)mapped.pData;
 		DirectX::XMINT2 origin;
@@ -948,7 +951,7 @@ class Text : public Sprite {
 			}
 		}
 
-		App::GetGraphicContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
+		App::GetGraphicsContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
 		delete[] textureBuffer;
 	}
 };

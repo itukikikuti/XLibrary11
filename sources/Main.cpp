@@ -33,7 +33,7 @@ void LinkLibrary() {
 	wstring library = GetSourceCode(L"sources/App.h");
 
 	MargeSourceCode(L"Window.h", library);
-	MargeSourceCode(L"Graphic.h", library);
+	MargeSourceCode(L"Graphics.h", library);
 	MargeSourceCode(L"Input.h", library);
 	MargeSourceCode(L"Timer.h", library);
 	MargeSourceCode(L"Camera.h", library);

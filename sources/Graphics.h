@@ -1,4 +1,4 @@
-﻿class Graphic {
+﻿class Graphics {
 	PRIVATE const int SWAP_CHAIN_COUNT = 2;
 	PRIVATE const DXGI_FORMAT SWAP_CHAIN_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 	PRIVATE const int MULTI_SAMPLE_COUNT = 1;
@@ -13,7 +13,7 @@
 	PRIVATE ID3D11RenderTargetView* renderTargetView = nullptr;
 	PRIVATE ID3D11Texture2D* renderTargetTexture = nullptr;
 
-	PUBLIC Graphic() {
+	PUBLIC Graphics() {
 		int createDeviceFlag = 0;
 #if defined(DEBUG) || defined(_DEBUG)
 		createDeviceFlag |= D3D11_CREATE_DEVICE_DEBUG;
@@ -110,7 +110,7 @@
 		viewPort.TopLeftY = 0;
 		context->RSSetViewports(1, &viewPort);
 	}
-	PUBLIC ~Graphic() {
+	PUBLIC ~Graphics() {
 		if (vertexShader) {
 			vertexShader->Release();
 			vertexShader = nullptr;
@@ -155,7 +155,7 @@
 	PUBLIC ID3D11Device& GetDevice() {
 		return *device;
 	}
-	PUBLIC IDXGISwapChain& GetSwapChain() {
+	PUBLIC IDXGISwapChain& GetMemory() {
 		return *swapChain;
 	}
 	PUBLIC ID3D11DeviceContext& GetContext() {

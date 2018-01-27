@@ -38,10 +38,10 @@
     <ClInclude Include="sources\Camera.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Graphic.h">
+    <ClInclude Include="sources\Timer.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Timer.h">
+    <ClInclude Include="sources\Graphics.h">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>
