@@ -1,14 +1,17 @@
-﻿class Window {
+﻿#undef GetMessage
+
+class Window {
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
+	PRIVATE MSG message = {};
 
-	PUBLIC Window(WNDPROC procedure) {
+	PUBLIC Window() {
 		HINSTANCE instance = GetModuleHandleW(nullptr);
 
 		WNDCLASSEXW windowClass = {};
 		windowClass.cbSize = sizeof(WNDCLASSEXW);
 		windowClass.style = CS_HREDRAW | CS_VREDRAW;
-		windowClass.lpfnWndProc = procedure;
+		windowClass.lpfnWndProc = Procedure;
 		windowClass.cbClsExtra = 0;
 		windowClass.cbWndExtra = 0;
 		windowClass.hInstance = instance;
@@ -25,12 +28,17 @@
 		SetSize(1280, 720);
 
 		ShowWindow(handle, SW_SHOWNORMAL);
+
+		SetWindowLongPtrW(handle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 	}
 	PUBLIC ~Window() {
 
 	}
 	PUBLIC HWND GetHandle() {
 		return handle;
+	}
+	PUBLIC MSG GetMessage() {
+		return message;
 	}
 	PUBLIC DirectX::XMINT2 GetSize() {
 		RECT clientRect = {};
@@ -75,5 +83,38 @@
 			SetWindowPos(handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 			SetSize(size.x, size.y);
 		}
+	}
+	PUBLIC bool Update() {
+		while (message.message != WM_QUIT) {
+			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
+				TranslateMessage(&message);
+				DispatchMessageW(&message);
+			}
+			else {
+				return true;
+			}
+		}
+
+		return false;
+	}
+	PRIVATE LRESULT Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
+		switch (message) {
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
+		case WM_SIZE:
+			printf("WM_SIZE");
+			break;
+		default:
+			return DefWindowProcW(handle, message, wParam, lParam);
+		}
+		return 0;
+	}
+	PRIVATE static LRESULT WINAPI Procedure(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
+		Window* window = (Window*)(GetWindowLongPtrW(handle, GWLP_USERDATA));
+		if (window) {
+			return window->Proceed(handle, message, wParam, lParam);
+		}
+		return DefWindowProcW(handle, message, wParam, lParam);
 	}
 };

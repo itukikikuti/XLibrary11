@@ -57,7 +57,7 @@ int Main() {
 	camera.position.z = -3.0f;
 
 	while (App::Refresh()) {
-		camera.Update();
+		camera.Refresh();
 
 		sprite.position = XMFLOAT3((App::GetMousePosition().x - App::GetWindowSize().x / 2.0f) * 0.01f, -(App::GetMousePosition().y - App::GetWindowSize().y / 2.0f) * 0.01f, 0.0f);
 		sprite.angles.y += App::GetDeltaTime() * 100.0f;

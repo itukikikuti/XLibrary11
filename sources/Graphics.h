@@ -10,8 +10,6 @@
 	PRIVATE ID3D11VertexShader* vertexShader = nullptr;
 	PRIVATE ID3D11PixelShader* pixelShader = nullptr;
 	PRIVATE ID3D11InputLayout* inputLayout = nullptr;
-	PRIVATE ID3D11RenderTargetView* renderTargetView = nullptr;
-	PRIVATE ID3D11Texture2D* renderTargetTexture = nullptr;
 
 	PUBLIC Graphics() {
 		int createDeviceFlag = 0;
@@ -96,19 +94,6 @@
 		rasterizerDesc.CullMode = D3D11_CULL_NONE;
 		device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
 		context->RSSetState(rasterizerState.Get());
-
-		swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&renderTargetTexture);
-		device->CreateRenderTargetView(renderTargetTexture, nullptr, &renderTargetView);
-		context->OMSetRenderTargets(1, &renderTargetView, nullptr);
-
-		D3D11_VIEWPORT viewPort = {};
-		viewPort.Width = (float)App::GetWindowSize().x;
-		viewPort.Height = (float)App::GetWindowSize().y;
-		viewPort.MinDepth = 0.0f;
-		viewPort.MaxDepth = 1.0f;
-		viewPort.TopLeftX = 0;
-		viewPort.TopLeftY = 0;
-		context->RSSetViewports(1, &viewPort);
 	}
 	PUBLIC ~Graphics() {
 		if (vertexShader) {
@@ -124,16 +109,6 @@
 		if (inputLayout) {
 			inputLayout->Release();
 			inputLayout = nullptr;
-		}
-
-		if (renderTargetTexture) {
-			renderTargetTexture->Release();
-			renderTargetTexture = nullptr;
-		}
-
-		if (renderTargetView) {
-			renderTargetView->Release();
-			renderTargetView = nullptr;
 		}
 
 		if (swapChain) {
@@ -160,9 +135,6 @@
 	}
 	PUBLIC ID3D11DeviceContext& GetContext() {
 		return *context;
-	}
-	PUBLIC ID3D11RenderTargetView& GetRenderTargetView() {
-		return *renderTargetView;
 	}
 	PRIVATE void CompileShader(const wchar_t* filePath, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;

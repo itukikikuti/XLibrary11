@@ -39,6 +39,9 @@ public:
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindow().GetHandle();
 	}
+	PUBLIC static MSG GetWindowMessage() {
+		return GetWindow().GetMessage();
+	}
 	PUBLIC static DirectX::XMINT2 GetWindowSize() {
 		return GetWindow().GetSize();
 	}
@@ -97,31 +100,18 @@ public:
 		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
 	}
 	PUBLIC static bool Refresh() {
-		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
 		GetGraphicsMemory().Present(1, 0);
 
 		static MSG message = {};
 
-		while (message.message != WM_QUIT) {
-			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
-				TranslateMessage(&message);
-				DispatchMessageW(&message);
-			}
-			else {
-				GetGraphicsContext().ClearRenderTargetView(&GetGraphics().GetRenderTargetView(), color);
+		if (!GetWindow().Update()) return false;
+		GetInput().Update();
+		GetTimer().Update();
 
-				GetInput().Update();
-				GetTimer().Update();
-
-				return true;
-			}
-		}
-
-		return false;
+		return true;
 	}
 	PRIVATE static Window& GetWindow() {
-		static std::unique_ptr<Window> window(new Window(ProcessWindow));
+		static std::unique_ptr<Window> window(new Window());
 		return *window.get();
 	}
 	PRIVATE static Graphics& GetGraphics() {
@@ -135,16 +125,6 @@ public:
 	PRIVATE static Timer& GetTimer() {
 		static std::unique_ptr<Timer> timer(new Timer());
 		return *timer.get();
-	}
-	PRIVATE static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
-		switch (message) {
-		case WM_DESTROY:
-			PostQuitMessage(0);
-			break;
-		default:
-			return DefWindowProcW(window, message, wParam, lParam);
-		}
-		return 0;
 	}
 };
 

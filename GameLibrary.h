@@ -30,17 +30,20 @@ GAME_LIBRARY_BEGIN
 
 class App {
 public:
+#undef GetMessage
+
 class Window {
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
+	PRIVATE MSG message = {};
 
-	PUBLIC Window(WNDPROC procedure) {
+	PUBLIC Window() {
 		HINSTANCE instance = GetModuleHandleW(nullptr);
 
 		WNDCLASSEXW windowClass = {};
 		windowClass.cbSize = sizeof(WNDCLASSEXW);
 		windowClass.style = CS_HREDRAW | CS_VREDRAW;
-		windowClass.lpfnWndProc = procedure;
+		windowClass.lpfnWndProc = Procedure;
 		windowClass.cbClsExtra = 0;
 		windowClass.cbWndExtra = 0;
 		windowClass.hInstance = instance;
@@ -57,12 +60,17 @@ class Window {
 		SetSize(1280, 720);
 
 		ShowWindow(handle, SW_SHOWNORMAL);
+
+		SetWindowLongPtrW(handle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 	}
 	PUBLIC ~Window() {
 
 	}
 	PUBLIC HWND GetHandle() {
 		return handle;
+	}
+	PUBLIC MSG GetMessage() {
+		return message;
 	}
 	PUBLIC DirectX::XMINT2 GetSize() {
 		RECT clientRect = {};
@@ -108,6 +116,39 @@ class Window {
 			SetSize(size.x, size.y);
 		}
 	}
+	PUBLIC bool Update() {
+		while (message.message != WM_QUIT) {
+			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
+				TranslateMessage(&message);
+				DispatchMessageW(&message);
+			}
+			else {
+				return true;
+			}
+		}
+
+		return false;
+	}
+	PRIVATE LRESULT Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
+		switch (message) {
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
+		case WM_SIZE:
+			printf("WM_SIZE");
+			break;
+		default:
+			return DefWindowProcW(handle, message, wParam, lParam);
+		}
+		return 0;
+	}
+	PRIVATE static LRESULT WINAPI Procedure(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
+		Window* window = (Window*)(GetWindowLongPtrW(handle, GWLP_USERDATA));
+		if (window) {
+			return window->Proceed(handle, message, wParam, lParam);
+		}
+		return DefWindowProcW(handle, message, wParam, lParam);
+	}
 };
 
 class Graphics {
@@ -122,8 +163,6 @@ class Graphics {
 	PRIVATE ID3D11VertexShader* vertexShader = nullptr;
 	PRIVATE ID3D11PixelShader* pixelShader = nullptr;
 	PRIVATE ID3D11InputLayout* inputLayout = nullptr;
-	PRIVATE ID3D11RenderTargetView* renderTargetView = nullptr;
-	PRIVATE ID3D11Texture2D* renderTargetTexture = nullptr;
 
 	PUBLIC Graphics() {
 		int createDeviceFlag = 0;
@@ -208,19 +247,6 @@ class Graphics {
 		rasterizerDesc.CullMode = D3D11_CULL_NONE;
 		device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
 		context->RSSetState(rasterizerState.Get());
-
-		swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&renderTargetTexture);
-		device->CreateRenderTargetView(renderTargetTexture, nullptr, &renderTargetView);
-		context->OMSetRenderTargets(1, &renderTargetView, nullptr);
-
-		D3D11_VIEWPORT viewPort = {};
-		viewPort.Width = (float)App::GetWindowSize().x;
-		viewPort.Height = (float)App::GetWindowSize().y;
-		viewPort.MinDepth = 0.0f;
-		viewPort.MaxDepth = 1.0f;
-		viewPort.TopLeftX = 0;
-		viewPort.TopLeftY = 0;
-		context->RSSetViewports(1, &viewPort);
 	}
 	PUBLIC ~Graphics() {
 		if (vertexShader) {
@@ -236,16 +262,6 @@ class Graphics {
 		if (inputLayout) {
 			inputLayout->Release();
 			inputLayout = nullptr;
-		}
-
-		if (renderTargetTexture) {
-			renderTargetTexture->Release();
-			renderTargetTexture = nullptr;
-		}
-
-		if (renderTargetView) {
-			renderTargetView->Release();
-			renderTargetView = nullptr;
 		}
 
 		if (swapChain) {
@@ -272,9 +288,6 @@ class Graphics {
 	}
 	PUBLIC ID3D11DeviceContext& GetContext() {
 		return *context;
-	}
-	PUBLIC ID3D11RenderTargetView& GetRenderTargetView() {
-		return *renderTargetView;
 	}
 	PRIVATE void CompileShader(const wchar_t* filePath, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -444,6 +457,9 @@ class Timer {
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindow().GetHandle();
 	}
+	PUBLIC static MSG GetWindowMessage() {
+		return GetWindow().GetMessage();
+	}
 	PUBLIC static DirectX::XMINT2 GetWindowSize() {
 		return GetWindow().GetSize();
 	}
@@ -502,31 +518,18 @@ class Timer {
 		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
 	}
 	PUBLIC static bool Refresh() {
-		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
 		GetGraphicsMemory().Present(1, 0);
 
 		static MSG message = {};
 
-		while (message.message != WM_QUIT) {
-			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
-				TranslateMessage(&message);
-				DispatchMessageW(&message);
-			}
-			else {
-				GetGraphicsContext().ClearRenderTargetView(&GetGraphics().GetRenderTargetView(), color);
+		if (!GetWindow().Update()) return false;
+		GetInput().Update();
+		GetTimer().Update();
 
-				GetInput().Update();
-				GetTimer().Update();
-
-				return true;
-			}
-		}
-
-		return false;
+		return true;
 	}
 	PRIVATE static Window& GetWindow() {
-		static std::unique_ptr<Window> window(new Window(ProcessWindow));
+		static std::unique_ptr<Window> window(new Window());
 		return *window.get();
 	}
 	PRIVATE static Graphics& GetGraphics() {
@@ -541,16 +544,6 @@ class Timer {
 		static std::unique_ptr<Timer> timer(new Timer());
 		return *timer.get();
 	}
-	PRIVATE static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
-		switch (message) {
-		case WM_DESTROY:
-			PostQuitMessage(0);
-			break;
-		default:
-			return DefWindowProcW(window, message, wParam, lParam);
-		}
-		return 0;
-	}
 };
 
 class Camera {
@@ -563,8 +556,23 @@ class Camera {
 	PUBLIC DirectX::XMFLOAT3 angles;
 	PRIVATE ConstantBuffer cbuffer;
 	PRIVATE ID3D11Buffer* constantBuffer;
+	PRIVATE ID3D11RenderTargetView* renderTarget = nullptr;
+	PRIVATE ID3D11Texture2D* texture = nullptr;
 
 	PUBLIC Camera() {
+		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&texture);
+		App::GetGraphicsDevice().CreateRenderTargetView(texture, nullptr, &renderTarget);
+		App::GetGraphicsContext().OMSetRenderTargets(1, &renderTarget, nullptr);
+
+		D3D11_VIEWPORT viewPort = {};
+		viewPort.Width = (float)App::GetWindowSize().x;
+		viewPort.Height = (float)App::GetWindowSize().y;
+		viewPort.MinDepth = 0.0f;
+		viewPort.MaxDepth = 1.0f;
+		viewPort.TopLeftX = 0;
+		viewPort.TopLeftY = 0;
+		App::GetGraphicsContext().RSSetViewports(1, &viewPort);
+
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -577,10 +585,29 @@ class Camera {
 		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 	}
+	PUBLIC ~Camera() {
+		if (constantBuffer) {
+			constantBuffer->Release();
+			constantBuffer = nullptr;
+		}
+
+		if (renderTarget) {
+			renderTarget->Release();
+			renderTarget = nullptr;
+		}
+
+		if (texture) {
+			texture->Release();
+			texture = nullptr;
+		}
+	}
 	PUBLIC void SetPerspective(float fieldOfView, float aspectRatio, float nearClip, float farClip) {
 		cbuffer.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip);
 	}
-	PUBLIC void Update() {
+	PUBLIC void Refresh() {
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		App::GetGraphicsContext().ClearRenderTargetView(renderTarget, color);
+
 		cbuffer.view = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z)) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.view = DirectX::XMMatrixInverse(nullptr, cbuffer.view);
 		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
