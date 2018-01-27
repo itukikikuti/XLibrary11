@@ -54,12 +54,13 @@ int Main() {
 	Camera camera;
 	Sprite sprite(L"assets/4.JPG");
 
-	camera.position.z = -1.0f;
+	camera.position.z = -3.0f;
 
 	while (App::Refresh()) {
 		camera.Update();
 
-		sprite.angles.y += App::GetDeltaTime() * 10.0f;
+		sprite.position = XMFLOAT3((App::GetMousePosition().x - App::GetWindowSize().x / 2.0f) * 0.01f, -(App::GetMousePosition().y - App::GetWindowSize().y / 2.0f) * 0.01f, 0.0f);
+		sprite.angles.y += App::GetDeltaTime() * 100.0f;
 		sprite.Draw();
 	}
 

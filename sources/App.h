@@ -102,7 +102,7 @@ public:
 	PUBLIC static bool Refresh() {
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		GetSwapChain().Present(0, 0);
+		GetSwapChain().Present(1, 0);
 
 		static MSG message = {};
 
