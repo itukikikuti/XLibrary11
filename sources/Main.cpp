@@ -47,20 +47,21 @@ void LinkLibrary() {
 	libraryFile.close();
 }
 
-int main() {
+int Main() {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	LinkLibrary();
 	Camera camera;
 	Sprite sprite(L"assets/4.JPG");
 
-	camera.position.z = -3.0f;
+	camera.position.z = -1.0f;
 
 	while (App::Refresh()) {
 		camera.Refresh();
 
-		sprite.position = XMFLOAT3((App::GetMousePosition().x - App::GetWindowSize().x / 2.0f) * 0.01f, -(App::GetMousePosition().y - App::GetWindowSize().y / 2.0f) * 0.01f, 0.0f);
-		sprite.angles.y += App::GetDeltaTime() * 100.0f;
+		if (!App::GetKey(VK_RETURN)) {
+			sprite.angles.y += App::GetDeltaTime() * 50.0f;
+		}
 		sprite.Draw();
 	}
 

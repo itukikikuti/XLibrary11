@@ -555,24 +555,16 @@ class Camera {
 
 	PUBLIC DirectX::XMFLOAT3 position;
 	PUBLIC DirectX::XMFLOAT3 angles;
+	PRIVATE float fieldOfView;
+	PRIVATE float nearClip;
+	PRIVATE float farClip;
 	PRIVATE ConstantBuffer cbuffer;
 	PRIVATE ID3D11Buffer* constantBuffer;
 	PRIVATE ID3D11RenderTargetView* renderTarget = nullptr;
 	PRIVATE ID3D11Texture2D* texture = nullptr;
 
 	PUBLIC Camera() {
-		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&texture);
-		App::GetGraphicsDevice().CreateRenderTargetView(texture, nullptr, &renderTarget);
-		App::GetGraphicsContext().OMSetRenderTargets(1, &renderTarget, nullptr);
-
-		D3D11_VIEWPORT viewPort = {};
-		viewPort.Width = (float)App::GetWindowSize().x;
-		viewPort.Height = (float)App::GetWindowSize().y;
-		viewPort.MinDepth = 0.0f;
-		viewPort.MaxDepth = 1.0f;
-		viewPort.TopLeftX = 0;
-		viewPort.TopLeftY = 0;
-		App::GetGraphicsContext().RSSetViewports(1, &viewPort);
+		CreateRenderTarget();
 
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
@@ -581,7 +573,7 @@ class Camera {
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
-		SetPerspective(60.0f, App::GetWindowSize().x / (float)App::GetWindowSize().y, 0.1f, 2000.0f);
+		SetPerspective(60.0f, 0.1f, 2000.0f);
 
 		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -602,10 +594,31 @@ class Camera {
 			texture = nullptr;
 		}
 	}
-	PUBLIC void SetPerspective(float fieldOfView, float aspectRatio, float nearClip, float farClip) {
-		cbuffer.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip);
+	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip) {
+		this->fieldOfView = fieldOfView;
+		this->nearClip = nearClip;
+		this->farClip = farClip;
+		cbuffer.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
 	}
 	PUBLIC void Refresh() {
+		std::queue<UINT> queue = App::GetWindowMessageQueue();
+		while (!queue.empty()) {
+			if (queue.front() == WM_SIZE) {
+				Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullView = nullptr;
+				App::GetGraphicsContext().OMSetRenderTargets(1, nullView.GetAddressOf(), nullptr);
+				renderTarget->Release();
+				texture->Release();
+				App::GetGraphicsContext().Flush();
+				App::GetGraphicsMemory().ResizeBuffers(2, App::GetWindowSize().x, App::GetWindowSize().y, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+
+				CreateRenderTarget();
+
+				SetPerspective(fieldOfView, nearClip, farClip);
+				break;
+			}
+			queue.pop();
+		}
+
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 		App::GetGraphicsContext().ClearRenderTargetView(renderTarget, color);
 
@@ -614,6 +627,20 @@ class Camera {
 		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
 		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, &constantBuffer);
 		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, &constantBuffer);
+	}
+	PRIVATE void CreateRenderTarget() {
+		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&texture);
+		App::GetGraphicsDevice().CreateRenderTargetView(texture, nullptr, &renderTarget);
+		App::GetGraphicsContext().OMSetRenderTargets(1, &renderTarget, nullptr);
+
+		D3D11_VIEWPORT viewPort = {};
+		viewPort.Width = (float)App::GetWindowSize().x;
+		viewPort.Height = (float)App::GetWindowSize().y;
+		viewPort.MinDepth = 0.0f;
+		viewPort.MaxDepth = 1.0f;
+		viewPort.TopLeftX = 0;
+		viewPort.TopLeftY = 0;
+		App::GetGraphicsContext().RSSetViewports(1, &viewPort);
 	}
 };
 
