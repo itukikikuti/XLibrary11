@@ -459,17 +459,11 @@ class Timer {
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
 		GetWindow().SetFullScreen(isFullscreen);
 	}
-	PUBLIC static ID3D11Device& GetDevice() {
+	PUBLIC static ID3D11Device& GetGraphicDevice() {
 		return GetGraphic().GetDevice();
 	}
-	PUBLIC static IDXGISwapChain& GetSwapChain() {
-		return GetGraphic().GetSwapChain();
-	}
-	PUBLIC static ID3D11DeviceContext& GetContext() {
+	PUBLIC static ID3D11DeviceContext& GetGraphicContext() {
 		return GetGraphic().GetContext();
-	}
-	PUBLIC static ID3D11RenderTargetView& GetRenderTargetView(bool isResize = false) {
-		return GetGraphic().GetRenderTargetView();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
 		return GetInput().GetKey(VK_CODE);
@@ -507,7 +501,7 @@ class Timer {
 	PUBLIC static bool Refresh() {
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		GetSwapChain().Present(1, 0);
+		GetGraphic().GetSwapChain().Present(1, 0);
 
 		static MSG message = {};
 
@@ -517,7 +511,7 @@ class Timer {
 				DispatchMessageW(&message);
 			}
 			else {
-				GetContext().ClearRenderTargetView(&GetRenderTargetView(), color);
+				GetGraphicContext().ClearRenderTargetView(&GetGraphic().GetRenderTargetView(), color);
 
 				GetInput().Update();
 				GetTimer().Update();
@@ -573,7 +567,7 @@ class Camera {
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		App::GetGraphicDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
 		SetPerspective(60.0f, App::GetWindowSize().x / (float)App::GetWindowSize().y, 0.1f, 2000.0f);
 
@@ -586,9 +580,9 @@ class Camera {
 	PUBLIC void Update() {
 		cbuffer.view = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z)) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.view = DirectX::XMMatrixInverse(nullptr, cbuffer.view);
-		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
-		App::GetContext().VSSetConstantBuffers(1, 1, &constantBuffer);
-		App::GetContext().PSSetConstantBuffers(1, 1, &constantBuffer);
+		App::GetGraphicContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
+		App::GetGraphicContext().VSSetConstantBuffers(1, 1, &constantBuffer);
+		App::GetGraphicContext().PSSetConstantBuffers(1, 1, &constantBuffer);
 	}
 };
 
@@ -745,7 +739,7 @@ class Sprite {
 		textureSubresourceData.pSysMem = textureBuffer;
 		textureSubresourceData.SysMemPitch = width * 4;
 		textureSubresourceData.SysMemSlicePitch = width * height * 4;
-		App::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+		App::GetGraphicDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
 
 		delete[] textureBuffer;
 
@@ -788,14 +782,14 @@ class Sprite {
 	PUBLIC void Draw() {
 		cbuffer.world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z))* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.color = color;
-		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
-		App::GetContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-		App::GetContext().PSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetGraphicContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
+		App::GetGraphicContext().VSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetGraphicContext().PSSetConstantBuffers(0, 1, &constantBuffer);
 
-		App::GetContext().PSSetShaderResources(0, 1, &shaderResourceView);
-		App::GetContext().PSSetSamplers(0, 1, &samplerState);
+		App::GetGraphicContext().PSSetShaderResources(0, 1, &shaderResourceView);
+		App::GetGraphicContext().PSSetSamplers(0, 1, &samplerState);
 
-		App::GetContext().DrawIndexed(indexCount, 0, 0);
+		App::GetGraphicContext().DrawIndexed(indexCount, 0, 0);
 	}
 	PROTECTED void Initialize() {
 		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -827,12 +821,12 @@ class Sprite {
 		vertexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 		vertexSubresourceData.pSysMem = quad;
-		App::GetDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+		App::GetGraphicDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
 
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-		App::GetContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		App::GetContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		App::GetGraphicContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		App::GetGraphicContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		D3D11_BUFFER_DESC indexBufferDesc = {};
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -841,22 +835,22 @@ class Sprite {
 		indexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 		indexSubresourceData.pSysMem = index;
-		App::GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+		App::GetGraphicDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
-		App::GetContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		App::GetGraphicContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		App::GetGraphicDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
-		App::GetDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+		App::GetGraphicDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
 
 		D3D11_SAMPLER_DESC samplerDesc;
 		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -872,7 +866,7 @@ class Sprite {
 		samplerDesc.BorderColor[3] = 0;
 		samplerDesc.MinLOD = 0;
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-		App::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
+		App::GetGraphicDevice().CreateSamplerState(&samplerDesc, &samplerState);
 	}
 };
 
@@ -931,10 +925,10 @@ class Text : public Sprite {
 		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		textureDesc.MiscFlags = 0;
 
-		App::GetDevice().CreateTexture2D(&textureDesc, nullptr, &texture);
+		App::GetGraphicDevice().CreateTexture2D(&textureDesc, nullptr, &texture);
 
 		D3D11_MAPPED_SUBRESOURCE mapped;
-		App::GetContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+		App::GetGraphicContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 
 		BYTE* bits = (BYTE*)mapped.pData;
 		DirectX::XMINT2 origin;
@@ -954,7 +948,7 @@ class Text : public Sprite {
 			}
 		}
 
-		App::GetContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
+		App::GetGraphicContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
 		delete[] textureBuffer;
 	}
 };

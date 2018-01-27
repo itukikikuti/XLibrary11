@@ -54,17 +54,11 @@ public:
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
 		GetWindow().SetFullScreen(isFullscreen);
 	}
-	PUBLIC static ID3D11Device& GetDevice() {
+	PUBLIC static ID3D11Device& GetGraphicDevice() {
 		return GetGraphic().GetDevice();
 	}
-	PUBLIC static IDXGISwapChain& GetSwapChain() {
-		return GetGraphic().GetSwapChain();
-	}
-	PUBLIC static ID3D11DeviceContext& GetContext() {
+	PUBLIC static ID3D11DeviceContext& GetGraphicContext() {
 		return GetGraphic().GetContext();
-	}
-	PUBLIC static ID3D11RenderTargetView& GetRenderTargetView(bool isResize = false) {
-		return GetGraphic().GetRenderTargetView();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
 		return GetInput().GetKey(VK_CODE);
@@ -102,7 +96,7 @@ public:
 	PUBLIC static bool Refresh() {
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		GetSwapChain().Present(1, 0);
+		GetGraphic().GetSwapChain().Present(1, 0);
 
 		static MSG message = {};
 
@@ -112,7 +106,7 @@ public:
 				DispatchMessageW(&message);
 			}
 			else {
-				GetContext().ClearRenderTargetView(&GetRenderTargetView(), color);
+				GetGraphicContext().ClearRenderTargetView(&GetGraphic().GetRenderTargetView(), color);
 
 				GetInput().Update();
 				GetTimer().Update();

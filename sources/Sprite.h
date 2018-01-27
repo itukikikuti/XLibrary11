@@ -80,7 +80,7 @@
 		textureSubresourceData.pSysMem = textureBuffer;
 		textureSubresourceData.SysMemPitch = width * 4;
 		textureSubresourceData.SysMemSlicePitch = width * height * 4;
-		App::GetDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+		App::GetGraphicDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
 
 		delete[] textureBuffer;
 
@@ -123,14 +123,14 @@
 	PUBLIC void Draw() {
 		cbuffer.world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z))* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.color = color;
-		App::GetContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
-		App::GetContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-		App::GetContext().PSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetGraphicContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
+		App::GetGraphicContext().VSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetGraphicContext().PSSetConstantBuffers(0, 1, &constantBuffer);
 
-		App::GetContext().PSSetShaderResources(0, 1, &shaderResourceView);
-		App::GetContext().PSSetSamplers(0, 1, &samplerState);
+		App::GetGraphicContext().PSSetShaderResources(0, 1, &shaderResourceView);
+		App::GetGraphicContext().PSSetSamplers(0, 1, &samplerState);
 
-		App::GetContext().DrawIndexed(indexCount, 0, 0);
+		App::GetGraphicContext().DrawIndexed(indexCount, 0, 0);
 	}
 	PROTECTED void Initialize() {
 		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -162,12 +162,12 @@
 		vertexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 		vertexSubresourceData.pSysMem = quad;
-		App::GetDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+		App::GetGraphicDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
 
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-		App::GetContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		App::GetContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		App::GetGraphicContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		App::GetGraphicContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		D3D11_BUFFER_DESC indexBufferDesc = {};
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -176,22 +176,22 @@
 		indexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 		indexSubresourceData.pSysMem = index;
-		App::GetDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+		App::GetGraphicDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 
-		App::GetContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		App::GetGraphicContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		App::GetGraphicDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
-		App::GetDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+		App::GetGraphicDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
 
 		D3D11_SAMPLER_DESC samplerDesc;
 		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -207,6 +207,6 @@
 		samplerDesc.BorderColor[3] = 0;
 		samplerDesc.MinLOD = 0;
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-		App::GetDevice().CreateSamplerState(&samplerDesc, &samplerState);
+		App::GetGraphicDevice().CreateSamplerState(&samplerDesc, &samplerState);
 	}
 };
