@@ -35,7 +35,7 @@ void LinkLibrary() {
 	MargeSourceCode(L"Window.h", library);
 	MargeSourceCode(L"Graphic.h", library);
 	MargeSourceCode(L"Input.h", library);
-	MargeSourceCode(L"Time.h", library);
+	MargeSourceCode(L"Timer.h", library);
 	MargeSourceCode(L"Camera.h", library);
 	MargeSourceCode(L"Mesh.h", library);
 	MargeSourceCode(L"Sprite.h", library);

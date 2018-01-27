@@ -35,13 +35,13 @@
     <ClInclude Include="sources\Input.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Time.h">
-      <Filter>sources</Filter>
-    </ClInclude>
     <ClInclude Include="sources\Camera.h">
       <Filter>sources</Filter>
     </ClInclude>
     <ClInclude Include="sources\Graphic.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Timer.h">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>

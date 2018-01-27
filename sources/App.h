@@ -33,68 +33,68 @@ public:
 #include "Window.h"
 #include "Graphic.h"
 #include "Input.h"
-#include "Time.h"
+#include "Timer.h"
 
 	PUBLIC App() = delete;
 	PUBLIC static HWND GetWindowHandle() {
-		return GetWindowInstance().GetHandle();
+		return GetWindow().GetHandle();
 	}
 	PUBLIC static DirectX::XMINT2 GetWindowSize() {
-		return GetWindowInstance().GetSize();
+		return GetWindow().GetSize();
 	}
 	PUBLIC static void SetWindowSize(int width, int height) {
-		GetWindowInstance().SetSize(width, height);
+		GetWindow().SetSize(width, height);
 	}
 	PUBLIC static wchar_t* GetTitle() {
-		return GetWindowInstance().GetTitle();
+		return GetWindow().GetTitle();
 	}
 	PUBLIC static void SetTitle(const wchar_t* title) {
-		GetWindowInstance().SetTitle(title);
+		GetWindow().SetTitle(title);
 	}
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
-		GetWindowInstance().SetFullScreen(isFullscreen);
+		GetWindow().SetFullScreen(isFullscreen);
 	}
 	PUBLIC static ID3D11Device& GetDevice() {
-		return GetGraphicInstance().GetDevice();
+		return GetGraphic().GetDevice();
 	}
 	PUBLIC static IDXGISwapChain& GetSwapChain() {
-		return GetGraphicInstance().GetSwapChain();
+		return GetGraphic().GetSwapChain();
 	}
 	PUBLIC static ID3D11DeviceContext& GetContext() {
-		return GetGraphicInstance().GetContext();
+		return GetGraphic().GetContext();
 	}
 	PUBLIC static ID3D11RenderTargetView& GetRenderTargetView(bool isResize = false) {
-		return GetGraphicInstance().GetRenderTargetView();
+		return GetGraphic().GetRenderTargetView();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
-		return GetInputInstance().GetKey(VK_CODE);
+		return GetInput().GetKey(VK_CODE);
 	}
 	PUBLIC static bool GetKeyUp(int VK_CODE) {
-		return GetInputInstance().GetKeyUp(VK_CODE);
+		return GetInput().GetKeyUp(VK_CODE);
 	}
 	PUBLIC static bool GetKeyDown(int VK_CODE) {
-		return GetInputInstance().GetKeyDown(VK_CODE);
+		return GetInput().GetKeyDown(VK_CODE);
 	}
 	PUBLIC static DirectX::XMFLOAT2 GetMousePosition() {
-		return GetInputInstance().GetMousePosition();
+		return GetInput().GetMousePosition();
 	}
 	PUBLIC static void SetMousePosition(DirectX::XMFLOAT2 position) {
-		GetInputInstance().SetMousePosition(position.x, position.y);
+		GetInput().SetMousePosition(position.x, position.y);
 	}
 	PUBLIC static void SetMousePosition(float x, float y) {
-		GetInputInstance().SetMousePosition(x, y);
+		GetInput().SetMousePosition(x, y);
 	}
 	PUBLIC static void SetShowCursor(bool isShowCursor) {
-		GetInputInstance().SetShowCursor(isShowCursor);
+		GetInput().SetShowCursor(isShowCursor);
 	}
 	PUBLIC static float GetTime() {
-		return GetTimeInstance().GetTime();
+		return GetTimer().GetTime();
 	}
 	PUBLIC static float GetDeltaTime() {
-		return GetTimeInstance().GetDeltaTime();
+		return GetTimer().GetDeltaTime();
 	}
 	PUBLIC static int GetFrameRate() {
-		return GetTimeInstance().GetFrameRate();
+		return GetTimer().GetFrameRate();
 	}
 	PUBLIC static void AddFont(const wchar_t* filePath) {
 		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
@@ -104,34 +104,6 @@ public:
 
 		GetSwapChain().Present(0, 0);
 
-		if (!ProcessMessage()) {
-			return false;
-		}
-
-		GetInputInstance().Update();
-		GetTimeInstance().Update();
-
-		GetContext().ClearRenderTargetView(&GetRenderTargetView(), color);
-
-		return true;
-	}
-	PRIVATE static Window& GetWindowInstance() {
-		static std::unique_ptr<Window> window(new Window(ProcessWindow));
-		return *window.get();
-	}
-	PRIVATE static Graphic& GetGraphicInstance() {
-		static std::unique_ptr<Graphic> graphic(new Graphic());
-		return *graphic.get();
-	}
-	PRIVATE static Input& GetInputInstance() {
-		static std::unique_ptr<Input> input(new Input());
-		return *input.get();
-	}
-	PRIVATE static Time& GetTimeInstance() {
-		static std::unique_ptr<Time> time(new Time());
-		return *time.get();
-	}
-	PRIVATE static bool ProcessMessage() {
 		static MSG message = {};
 
 		while (message.message != WM_QUIT) {
@@ -140,11 +112,32 @@ public:
 				DispatchMessageW(&message);
 			}
 			else {
+				GetContext().ClearRenderTargetView(&GetRenderTargetView(), color);
+
+				GetInput().Update();
+				GetTimer().Update();
+
 				return true;
 			}
 		}
 
 		return false;
+	}
+	PRIVATE static Window& GetWindow() {
+		static std::unique_ptr<Window> window(new Window(ProcessWindow));
+		return *window.get();
+	}
+	PRIVATE static Graphic& GetGraphic() {
+		static std::unique_ptr<Graphic> graphic(new Graphic());
+		return *graphic.get();
+	}
+	PRIVATE static Input& GetInput() {
+		static std::unique_ptr<Input> input(new Input());
+		return *input.get();
+	}
+	PRIVATE static Timer& GetTimer() {
+		static std::unique_ptr<Timer> timer(new Timer());
+		return *timer.get();
 	}
 	PRIVATE static LRESULT WINAPI ProcessWindow(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
 		switch (message) {

@@ -1,4 +1,4 @@
-class Time {
+class Timer {
 	PRIVATE float time = 0.0f;
 	PRIVATE float deltaTime = 0.0f;
 	PRIVATE int frameRate = 0;
@@ -7,11 +7,11 @@ class Time {
 	LARGE_INTEGER preCount;
 	LARGE_INTEGER frequency;
 
-	PUBLIC Time() {
+	PUBLIC Timer() {
 		preCount = GetCounter();
 		frequency = GetCountFrequency();
 	}
-	PUBLIC ~Time() {
+	PUBLIC ~Timer() {
 
 	}
 	PUBLIC float GetTime() {
