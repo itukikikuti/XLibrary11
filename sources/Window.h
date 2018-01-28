@@ -1,7 +1,7 @@
 ﻿class Window {
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
-	PRIVATE std::queue<UINT> messageQueue;
+	PRIVATE std::vector<UINT> messages;
 
 	PUBLIC Window() {
 		HINSTANCE instance = GetModuleHandleW(nullptr);
@@ -35,8 +35,8 @@
 	PUBLIC HWND GetHandle() {
 		return handle;
 	}
-	PUBLIC std::queue<UINT> GetMessageQueue() {
-		return messageQueue;
+	PUBLIC std::vector<UINT> GetMessages() {
+		return messages;
 	}
 	PUBLIC DirectX::XMINT2 GetSize() {
 		RECT clientRect = {};
@@ -85,7 +85,7 @@
 	PUBLIC bool Update() {
 		static MSG message = {};
 
-		while (!messageQueue.empty()) messageQueue.pop();
+		messages.clear();
 
 		while (message.message != WM_QUIT) {
 			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
@@ -100,7 +100,7 @@
 		return false;
 	}
 	PRIVATE LRESULT Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
-		messageQueue.push(message);
+		messages.push_back(message);
 
 		switch (message) {
 		case WM_DESTROY:

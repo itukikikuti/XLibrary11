@@ -52,9 +52,8 @@ class Camera {
 		cbuffer.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
 	}
 	PUBLIC void Refresh() {
-		std::queue<UINT> queue = App::GetWindowMessageQueue();
-		while (!queue.empty()) {
-			if (queue.front() == WM_SIZE) {
+		for (UINT message : App::GetWindowMessages()) {
+			if (message == WM_SIZE) {
 				Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullView = nullptr;
 				App::GetGraphicsContext().OMSetRenderTargets(1, nullView.GetAddressOf(), nullptr);
 				renderTarget->Release();
@@ -67,7 +66,6 @@ class Camera {
 				SetPerspective(fieldOfView, nearClip, farClip);
 				break;
 			}
-			queue.pop();
 		}
 
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };

@@ -1,6 +1,5 @@
 ﻿// © 2017 Naoki Nakagawa
-#ifndef _GAME_LIBRARY_
-#define _GAME_LIBRARY_
+#ifndef GAME_LIBRARY_BEGIN
 
 #define OEMRESOURCE
 #include <d3d11.h>
@@ -9,10 +8,10 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <queue>
 #include <regex>
 #include <string>
 #include <strsafe.h>
+#include <vector>
 #include <wincodec.h>
 #include <windows.h>
 #include <wrl.h>
@@ -33,7 +32,7 @@ public:
 class Window {
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
-	PRIVATE std::queue<UINT> messageQueue;
+	PRIVATE std::vector<UINT> messages;
 
 	PUBLIC Window() {
 		HINSTANCE instance = GetModuleHandleW(nullptr);
@@ -67,8 +66,8 @@ class Window {
 	PUBLIC HWND GetHandle() {
 		return handle;
 	}
-	PUBLIC std::queue<UINT> GetMessageQueue() {
-		return messageQueue;
+	PUBLIC std::vector<UINT> GetMessages() {
+		return messages;
 	}
 	PUBLIC DirectX::XMINT2 GetSize() {
 		RECT clientRect = {};
@@ -117,7 +116,7 @@ class Window {
 	PUBLIC bool Update() {
 		static MSG message = {};
 
-		while (!messageQueue.empty()) messageQueue.pop();
+		messages.clear();
 
 		while (message.message != WM_QUIT) {
 			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
@@ -132,7 +131,7 @@ class Window {
 		return false;
 	}
 	PRIVATE LRESULT Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
-		messageQueue.push(message);
+		messages.push_back(message);
 
 		switch (message) {
 		case WM_DESTROY:
@@ -453,13 +452,12 @@ class Timer {
 	}
 };
 
-
 	PUBLIC App() = delete;
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindow().GetHandle();
 	}
-	PUBLIC static std::queue<UINT> GetWindowMessageQueue() {
-		return GetWindow().GetMessageQueue();
+	PUBLIC static std::vector<UINT> GetWindowMessages() {
+		return GetWindow().GetMessages();
 	}
 	PUBLIC static DirectX::XMINT2 GetWindowSize() {
 		return GetWindow().GetSize();
@@ -601,9 +599,8 @@ class Camera {
 		cbuffer.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
 	}
 	PUBLIC void Refresh() {
-		std::queue<UINT> queue = App::GetWindowMessageQueue();
-		while (!queue.empty()) {
-			if (queue.front() == WM_SIZE) {
+		for (UINT message : App::GetWindowMessages()) {
+			if (message == WM_SIZE) {
 				Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullView = nullptr;
 				App::GetGraphicsContext().OMSetRenderTargets(1, nullView.GetAddressOf(), nullptr);
 				renderTarget->Release();
@@ -616,7 +613,6 @@ class Camera {
 				SetPerspective(fieldOfView, nearClip, farClip);
 				break;
 			}
-			queue.pop();
 		}
 
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };

@@ -1,6 +1,5 @@
 ﻿// © 2017 Naoki Nakagawa
-#ifndef _GAME_LIBRARY_
-#define _GAME_LIBRARY_
+#ifndef GAME_LIBRARY_BEGIN
 
 #define OEMRESOURCE
 #include <d3d11.h>
@@ -9,10 +8,10 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <queue>
 #include <regex>
 #include <string>
 #include <strsafe.h>
+#include <vector>
 #include <wincodec.h>
 #include <windows.h>
 #include <wrl.h>
@@ -34,13 +33,12 @@ public:
 #include "Graphics.h"
 #include "Input.h"
 #include "Timer.h"
-
 	PUBLIC App() = delete;
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindow().GetHandle();
 	}
-	PUBLIC static std::queue<UINT> GetWindowMessageQueue() {
-		return GetWindow().GetMessageQueue();
+	PUBLIC static std::vector<UINT> GetWindowMessages() {
+		return GetWindow().GetMessages();
 	}
 	PUBLIC static DirectX::XMINT2 GetWindowSize() {
 		return GetWindow().GetSize();
