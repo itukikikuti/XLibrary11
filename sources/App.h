@@ -1,5 +1,5 @@
-﻿// © 2017 Naoki Nakagawa
-#ifndef GAME_LIBRARY_BEGIN
+﻿// © 2017 itukikikuti
+#pragma once
 
 #define OEMRESOURCE
 #include <d3d11.h>
@@ -8,8 +8,6 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <regex>
-#include <string>
 #include <strsafe.h>
 #include <vector>
 #include <wincodec.h>
@@ -18,14 +16,14 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
-#define GAME_LIBRARY_BEGIN namespace GameLibrary {
-#define GAME_LIBRARY_END }
+#define GAMELIBRARY_BEGIN namespace GameLibrary {
+#define GAMELIBRARY_END }
 #define Main() WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 #define PUBLIC public:
 #define PRIVATE private:
 #define PROTECTED protected:
 
-GAME_LIBRARY_BEGIN
+GAMELIBRARY_BEGIN
 
 #include "Math.h"
 
@@ -134,6 +132,4 @@ public:
 #include "Sprite.h"
 #include "Text.h"
 
-GAME_LIBRARY_END
-
-#endif
+GAMELIBRARY_END
