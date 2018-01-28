@@ -44,5 +44,8 @@
     <ClInclude Include="sources\Graphics.h">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\Math.h">
+      <Filter>sources</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

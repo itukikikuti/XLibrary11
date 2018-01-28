@@ -51,18 +51,21 @@ int Main() {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	LinkLibrary();
+
 	Camera camera;
 	Sprite sprite(L"assets/4.JPG");
+	Mesh mesh = Mesh::CreateQuad();
 
+	sprite.Draw();
 	camera.position.z = -1.0f;
 
 	while (App::Refresh()) {
 		camera.Refresh();
 
 		if (!App::GetKey(VK_RETURN)) {
-			sprite.angles.y += App::GetDeltaTime() * 50.0f;
+			mesh.angles.y += App::GetDeltaTime() * 50.0f;
 		}
-		sprite.Draw();
+		mesh.Draw();
 	}
 
 	return 0;

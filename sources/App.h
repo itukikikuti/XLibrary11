@@ -27,17 +27,20 @@
 
 GAME_LIBRARY_BEGIN
 
+#include "Math.h"
+
 class App {
 public:
 #include "Window.h"
 #include "Graphics.h"
 #include "Input.h"
 #include "Timer.h"
+
 	PUBLIC App() = delete;
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindow().GetHandle();
 	}
-	PUBLIC static std::vector<UINT> GetWindowMessages() {
+	PUBLIC static std::vector<UINT>& GetWindowMessages() {
 		return GetWindow().GetMessages();
 	}
 	PUBLIC static DirectX::XMINT2 GetWindowSize() {

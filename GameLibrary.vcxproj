@@ -118,6 +118,7 @@
     <ClInclude Include="sources\Camera.h" />
     <ClInclude Include="sources\Input.h" />
     <ClInclude Include="sources\Material.h" />
+    <ClInclude Include="sources\Math.h" />
     <ClInclude Include="sources\Mesh.h" />
     <ClInclude Include="sources\Graphics.h" />
     <ClInclude Include="sources\Sprite.h" />

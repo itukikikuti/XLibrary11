@@ -35,7 +35,7 @@
 	PUBLIC HWND GetHandle() {
 		return handle;
 	}
-	PUBLIC std::vector<UINT> GetMessages() {
+	PUBLIC std::vector<UINT>& GetMessages() {
 		return messages;
 	}
 	PUBLIC DirectX::XMINT2 GetSize() {

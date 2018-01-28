@@ -1,70 +1,85 @@
-﻿struct Vertex {
-	DirectX::XMFLOAT3 position;
-	DirectX::XMFLOAT2 texcoord;
-	DirectX::XMFLOAT3 normal;
-};
+﻿class Mesh {
+	PRIVATE struct ConstantBuffer {
+		DirectX::XMMATRIX world;
+		DirectX::XMFLOAT4 color;
+	};
 
-class Mesh {
-	PUBLIC Mesh(const wchar_t* filePath) {
-		std::wifstream meshFile(filePath);
-		std::wstring meshSource;
+	PUBLIC DirectX::XMFLOAT3 position;
+	PUBLIC DirectX::XMFLOAT3 angles;
+	PUBLIC DirectX::XMFLOAT3 scale;
+	PUBLIC DirectX::XMFLOAT4 color;
+	PUBLIC std::vector<Vertex> vertexes;
+	PUBLIC std::vector<int> indexes;
+	PRIVATE ConstantBuffer cbuffer;
+	PRIVATE ID3D11Buffer* vertexBuffer;
+	PRIVATE ID3D11Buffer* indexBuffer;
+	PRIVATE ID3D11Buffer* constantBuffer;
 
-		std::vector<DirectX::XMFLOAT3> positions;
-		std::vector<DirectX::XMFLOAT2> texcoords;
-		std::vector<DirectX::XMFLOAT3> normals;
-		std::vector<Vertex> vertices;
+	PUBLIC Mesh() {
+		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+		color = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 
-		while (getline(meshFile, meshSource)) {
-			if (meshSource.substr(0, 2) == L"v ") {
-				std::vector<std::wstring> results = SplitString(meshSource.substr(2));
-				if (results.size() >= 3) {
-					positions.push_back(DirectX::XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
-				}
-			}
-			if (meshSource.substr(0, 3) == L"vt ") {
-				std::vector<std::wstring> results = SplitString(meshSource.substr(3));
-				if (results.size() >= 2) {
-					texcoords.push_back(DirectX::XMFLOAT2(std::stof(results[0]), std::stof(results[1])));
-				}
-			}
-			if (meshSource.substr(0, 3) == L"vn ") {
-				std::vector<std::wstring> results = SplitString(meshSource.substr(3));
-				if (results.size() >= 3) {
-					normals.push_back(DirectX::XMFLOAT3(std::stof(results[0]), std::stof(results[1]), std::stof(results[2])));
-				}
-			}
-			if (meshSource.substr(0, 2) == L"f ") {
-				std::vector<std::wstring> results = SplitString(std::regex_replace(meshSource.substr(2), std::wregex(LR"([a-z]|[A-Z])"), L""));
-				if (results.size() >= 3) {
-					for (int i = 0; i < results.size(); i++) {
-						std::vector<std::wstring> tokens = SplitString(results[i], u'/');
-						Vertex vertex;
-						vertex.position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-						vertex.texcoord = DirectX::XMFLOAT2(0.0f, 0.0f);
-						vertex.normal = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-
-						int index = 0;
-						vertices.push_back(vertex);
-					}
-				}
-			}
-		}
-
-		std::cout << "" << std::endl;
+		D3D11_BUFFER_DESC constantBufferDesc = {};
+		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
+		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags = 0;
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	}
-	PRIVATE std::vector<std::wstring> SplitString(const std::wstring &str, wchar_t delimiter = u' ') {
-		std::vector<std::wstring> results;
-		std::wstring temp;
-		for (wchar_t character : str) {
-			if (character == delimiter) {
-				results.push_back(temp);
-				temp.clear();
-			}
-			else {
-				temp += character;
-			}
-		}
-		results.push_back(temp);
-		return results;
+	PUBLIC ~Mesh() {
+	}
+	PUBLIC void Apply() {
+		D3D11_BUFFER_DESC vertexBufferDesc = {};
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertexes.size();
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.CPUAccessFlags = 0;
+		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
+		vertexSubresourceData.pSysMem = &vertexes[0];
+		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		App::GetGraphicsContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		App::GetGraphicsContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		D3D11_BUFFER_DESC indexBufferDesc = {};
+		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		indexBufferDesc.ByteWidth = sizeof(int) * indexes.size();
+		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		indexBufferDesc.CPUAccessFlags = 0;
+		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
+		indexSubresourceData.pSysMem = &indexes[0];
+		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+
+		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	}
+	PUBLIC void Draw() {
+		cbuffer.world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z))* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		cbuffer.color = color;
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer);
+
+		App::GetGraphicsContext().DrawIndexed(indexes.size(), 0, 0);
+	}
+	PUBLIC static Mesh CreateQuad() {
+		Mesh mesh;
+		mesh.vertexes.push_back({ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f) });
+		mesh.vertexes.push_back({ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f) });
+		mesh.vertexes.push_back({ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f) });
+		mesh.vertexes.push_back({ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f) });
+
+		mesh.indexes.push_back(0);
+		mesh.indexes.push_back(1);
+		mesh.indexes.push_back(2);
+		mesh.indexes.push_back(3);
+		mesh.indexes.push_back(2);
+		mesh.indexes.push_back(1);
+
+		mesh.Apply();
+		return mesh;
 	}
 };
