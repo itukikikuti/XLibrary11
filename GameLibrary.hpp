@@ -27,7 +27,18 @@
 
 GAME_LIBRARY_BEGIN
 
-#include "Math.h"
+struct Vertex {
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT2 texcoord;
+	DirectX::XMFLOAT3 normal;
+
+	//Vertex(DirectX::XMFLOAT3 position, DirectX::XMFLOAT2 texcoord, DirectX::XMFLOAT3 normal) {
+	//	this->position = position;
+	//	this->texcoord = texcoord;
+	//	this->normal = normal;
+	//}
+};
+
 
 class App {
 public:
@@ -678,7 +689,7 @@ class Mesh {
 	PUBLIC void Apply() {
 		D3D11_BUFFER_DESC vertexBufferDesc = {};
 		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertexes.size();
+		vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertexes.size());
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		vertexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
@@ -692,7 +703,7 @@ class Mesh {
 
 		D3D11_BUFFER_DESC indexBufferDesc = {};
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = sizeof(int) * indexes.size();
+		indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indexes.size());
 		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		indexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
@@ -708,7 +719,7 @@ class Mesh {
 		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, &constantBuffer);
 		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer);
 
-		App::GetGraphicsContext().DrawIndexed(indexes.size(), 0, 0);
+		App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indexes.size()), 0, 0);
 	}
 	PUBLIC static Mesh CreateQuad() {
 		Mesh mesh;

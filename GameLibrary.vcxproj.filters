@@ -9,6 +9,9 @@
     <ClCompile Include="sources\Main.cpp">
       <Filter>sources</Filter>
     </ClCompile>
+    <ClCompile Include="sources\Library.h">
+      <Filter>sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sources\Sprite.h">
