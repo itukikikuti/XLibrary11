@@ -1,3 +1,4 @@
 # GameLibrary
 
-Download <a href='https://raw.githubusercontent.com/Naoki-Nakagawa/GameLibrary/master/GameLibrary.h' download='GameLibrary.h'>GameLibrary.h</a>
+ダウンロード [GameLibrary.hpp](https://raw.githubusercontent.com/itukikikuti/GameLibrary/master/GameLibrary.hpp)  
+リファレンス [Wiki](https://github.com/itukikikuti/GameLibrary/wiki)
