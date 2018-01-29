@@ -11,9 +11,9 @@
 	PUBLIC std::vector<Vertex> vertexes;
 	PUBLIC std::vector<int> indexes;
 	PRIVATE ConstantBuffer cbuffer;
-	PRIVATE ID3D11Buffer* vertexBuffer;
-	PRIVATE ID3D11Buffer* indexBuffer;
-	PRIVATE ID3D11Buffer* constantBuffer;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
 	PUBLIC Mesh() {
 		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -26,7 +26,7 @@
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
 	PUBLIC ~Mesh() {
 	}
@@ -38,12 +38,7 @@
 		vertexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 		vertexSubresourceData.pSysMem = &vertexes[0];
-		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
-
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-		App::GetGraphicsContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		App::GetGraphicsContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
 
 		D3D11_BUFFER_DESC indexBufferDesc = {};
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -52,16 +47,24 @@
 		indexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 		indexSubresourceData.pSysMem = &indexes[0];
-		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
-
-		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
 	}
 	PUBLIC void Draw() {
-		cbuffer.world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z))* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		cbuffer.world =
+			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
+			DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.color = color;
-		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer);
+
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		App::GetGraphicsContext().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+
+		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &cbuffer, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
 		App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indexes.size()), 0, 0);
 	}

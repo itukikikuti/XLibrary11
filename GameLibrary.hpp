@@ -229,11 +229,14 @@ class Graphics {
 		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 		int inputElementDescCount = sizeof(inputElementDesc) / sizeof(inputElementDesc[0]);
 
 		device->CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
 		context->IASetInputLayout(inputLayout);
+
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		Microsoft::WRL::ComPtr<ID3D11BlendState> blendState = nullptr;
 		D3D11_BLEND_DESC blendDesc = {};
@@ -531,8 +534,6 @@ class Timer {
 	PUBLIC static bool Refresh() {
 		GetGraphicsMemory().Present(1, 0);
 
-		static MSG message = {};
-
 		if (!GetWindow().Update()) return false;
 		GetInput().Update();
 		GetTimer().Update();
@@ -557,6 +558,26 @@ class Timer {
 	}
 };
 
+class Texture {
+	PRIVATE ID3D11Texture2D* texture;
+	PRIVATE ID3D11ShaderResourceView* shaderResourceView;
+	PRIVATE ID3D11SamplerState* samplerState;
+
+	PUBLIC Texture() {
+	}
+	PUBLIC ~Texture() {
+	}
+};
+
+class Material {
+	PUBLIC Material() {
+
+	}
+	PUBLIC ~Material() {
+
+	}
+};
+
 class Camera {
 	PRIVATE struct ConstantBuffer {
 		DirectX::XMMATRIX view;
@@ -569,9 +590,9 @@ class Camera {
 	PRIVATE float nearClip;
 	PRIVATE float farClip;
 	PRIVATE ConstantBuffer cbuffer;
-	PRIVATE ID3D11Buffer* constantBuffer;
-	PRIVATE ID3D11RenderTargetView* renderTarget = nullptr;
-	PRIVATE ID3D11Texture2D* texture = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTarget = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Texture2D> texture = nullptr;
 
 	PUBLIC Camera() {
 		CreateRenderTarget();
@@ -581,7 +602,7 @@ class Camera {
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 
 		SetPerspective(60.0f, 0.1f, 2000.0f);
 
@@ -589,20 +610,6 @@ class Camera {
 		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 	}
 	PUBLIC ~Camera() {
-		if (constantBuffer) {
-			constantBuffer->Release();
-			constantBuffer = nullptr;
-		}
-
-		if (renderTarget) {
-			renderTarget->Release();
-			renderTarget = nullptr;
-		}
-
-		if (texture) {
-			texture->Release();
-			texture = nullptr;
-		}
 	}
 	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip) {
 		this->fieldOfView = fieldOfView;
@@ -615,8 +622,8 @@ class Camera {
 			if (message == WM_SIZE) {
 				Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullView = nullptr;
 				App::GetGraphicsContext().OMSetRenderTargets(1, nullView.GetAddressOf(), nullptr);
-				renderTarget->Release();
-				texture->Release();
+				renderTarget.Reset();
+				texture.Reset();
 				App::GetGraphicsContext().Flush();
 				App::GetGraphicsMemory().ResizeBuffers(2, App::GetWindowSize().x, App::GetWindowSize().y, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 
@@ -628,18 +635,20 @@ class Camera {
 		}
 
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		App::GetGraphicsContext().ClearRenderTargetView(renderTarget, color);
+		App::GetGraphicsContext().ClearRenderTargetView(renderTarget.Get(), color);
 
-		cbuffer.view = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z)) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		cbuffer.view =
+			DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.view = DirectX::XMMatrixInverse(nullptr, cbuffer.view);
-		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, &constantBuffer);
-		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, &constantBuffer);
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &cbuffer, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
 	}
 	PRIVATE void CreateRenderTarget() {
-		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&texture);
-		App::GetGraphicsDevice().CreateRenderTargetView(texture, nullptr, &renderTarget);
-		App::GetGraphicsContext().OMSetRenderTargets(1, &renderTarget, nullptr);
+		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(texture.GetAddressOf()));
+		App::GetGraphicsDevice().CreateRenderTargetView(texture.Get(), nullptr, renderTarget.GetAddressOf());
+		App::GetGraphicsContext().OMSetRenderTargets(1, renderTarget.GetAddressOf(), nullptr);
 
 		D3D11_VIEWPORT viewPort = {};
 		viewPort.Width = (float)App::GetWindowSize().x;
@@ -665,9 +674,9 @@ class Mesh {
 	PUBLIC std::vector<Vertex> vertexes;
 	PUBLIC std::vector<int> indexes;
 	PRIVATE ConstantBuffer cbuffer;
-	PRIVATE ID3D11Buffer* vertexBuffer;
-	PRIVATE ID3D11Buffer* indexBuffer;
-	PRIVATE ID3D11Buffer* constantBuffer;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
 	PUBLIC Mesh() {
 		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -680,7 +689,7 @@ class Mesh {
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
 	PUBLIC ~Mesh() {
 	}
@@ -692,12 +701,7 @@ class Mesh {
 		vertexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 		vertexSubresourceData.pSysMem = &vertexes[0];
-		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
-
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-		App::GetGraphicsContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		App::GetGraphicsContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
 
 		D3D11_BUFFER_DESC indexBufferDesc = {};
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -706,16 +710,24 @@ class Mesh {
 		indexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 		indexSubresourceData.pSysMem = &indexes[0];
-		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
-
-		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
 	}
 	PUBLIC void Draw() {
-		cbuffer.world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z))* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		cbuffer.world =
+			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
+			DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.color = color;
-		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer);
+
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		App::GetGraphicsContext().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+
+		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &cbuffer, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
 		App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indexes.size()), 0, 0);
 	}
@@ -941,10 +953,10 @@ class Sprite {
 		samplerDesc.MipLODBias = 0.0f;
 		samplerDesc.MaxAnisotropy = 1;
 		samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-		samplerDesc.BorderColor[0] = 0;
-		samplerDesc.BorderColor[1] = 0;
-		samplerDesc.BorderColor[2] = 0;
-		samplerDesc.BorderColor[3] = 0;
+		samplerDesc.BorderColor[0] = 0.0f;
+		samplerDesc.BorderColor[1] = 0.0f;
+		samplerDesc.BorderColor[2] = 0.0f;
+		samplerDesc.BorderColor[3] = 0.0f;
 		samplerDesc.MinLOD = 0;
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, &samplerState);

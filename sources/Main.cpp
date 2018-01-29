@@ -11,10 +11,9 @@ int Main() {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	Camera camera;
-	Sprite sprite(L"assets/4.JPG");
+	Sprite sprite(L"assets/clock.png");
 	Mesh mesh = Mesh::CreateQuad();
 
-	sprite.Draw();
 	camera.position.z = -1.0f;
 
 	while (App::Refresh()) {
@@ -23,6 +22,7 @@ int Main() {
 		if (!App::GetKey(VK_RETURN)) {
 			mesh.angles.y += App::GetDeltaTime() * 50.0f;
 		}
+		sprite.Draw();
 		mesh.Draw();
 	}
 

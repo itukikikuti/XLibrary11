@@ -101,8 +101,6 @@ public:
 	PUBLIC static bool Refresh() {
 		GetGraphicsMemory().Present(1, 0);
 
-		static MSG message = {};
-
 		if (!GetWindow().Update()) return false;
 		GetInput().Update();
 		GetTimer().Update();
@@ -127,6 +125,8 @@ public:
 	}
 };
 
+#include "Texture.h"
+#include "Material.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "Sprite.h"
