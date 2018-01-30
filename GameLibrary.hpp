@@ -72,7 +72,6 @@ class Window {
 		SetWindowLongPtrW(handle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 	}
 	PUBLIC ~Window() {
-
 	}
 	PUBLIC HWND GetHandle() {
 		return handle;
@@ -168,12 +167,12 @@ class Graphics {
 	PRIVATE const int MULTI_SAMPLE_COUNT = 1;
 	PRIVATE const int MULTI_SAMPLE_QUALITY = 0;
 
-	PRIVATE ID3D11Device* device = nullptr;
-	PRIVATE IDXGISwapChain* swapChain = nullptr;
-	PRIVATE ID3D11DeviceContext* context = nullptr;
-	PRIVATE ID3D11VertexShader* vertexShader = nullptr;
-	PRIVATE ID3D11PixelShader* pixelShader = nullptr;
-	PRIVATE ID3D11InputLayout* inputLayout = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout = nullptr;
 
 	PUBLIC Graphics() {
 		int createDeviceFlag = 0;
@@ -209,7 +208,7 @@ class Graphics {
 		swapChainDesc.Windowed = true;
 
 		for (int i = 0; i < driverTypeCount; i++) {
-			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device, nullptr, &context);
+			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, swapChain.GetAddressOf(), device.GetAddressOf(), nullptr, context.GetAddressOf());
 
 			if (SUCCEEDED(result)) {
 				break;
@@ -218,13 +217,13 @@ class Graphics {
 
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(nullptr, "VS", "vs_4_0", vertexShaderBlob.GetAddressOf());
-		device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
-		context->VSSetShader(vertexShader, nullptr, 0);
+		device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
+		context->VSSetShader(vertexShader.Get(), nullptr, 0);
 
 		Microsoft::WRL::ComPtr<ID3DBlob> pixelShaderBlob = nullptr;
 		CompileShader(nullptr, "PS", "ps_4_0", pixelShaderBlob.GetAddressOf());
-		device->CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
-		context->PSSetShader(pixelShader, nullptr, 0);
+		device->CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, pixelShader.GetAddressOf());
+		context->PSSetShader(pixelShader.Get(), nullptr, 0);
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -233,8 +232,8 @@ class Graphics {
 		};
 		int inputElementDescCount = sizeof(inputElementDesc) / sizeof(inputElementDesc[0]);
 
-		device->CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
-		context->IASetInputLayout(inputLayout);
+		device->CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
+		context->IASetInputLayout(inputLayout.Get());
 
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -263,45 +262,15 @@ class Graphics {
 		context->RSSetState(rasterizerState.Get());
 	}
 	PUBLIC ~Graphics() {
-		if (vertexShader) {
-			vertexShader->Release();
-			vertexShader = nullptr;
-		}
-
-		if (pixelShader) {
-			pixelShader->Release();
-			pixelShader = nullptr;
-		}
-
-		if (inputLayout) {
-			inputLayout->Release();
-			inputLayout = nullptr;
-		}
-
-		if (swapChain) {
-			swapChain->Release();
-			swapChain = nullptr;
-		}
-
-		if (context) {
-			context->Flush();
-			context->Release();
-			context = nullptr;
-		}
-
-		if (device) {
-			device->Release();
-			device = nullptr;
-		}
 	}
 	PUBLIC ID3D11Device& GetDevice() {
-		return *device;
+		return *device.Get();
 	}
 	PUBLIC IDXGISwapChain& GetMemory() {
-		return *swapChain;
+		return *swapChain.Get();
 	}
 	PUBLIC ID3D11DeviceContext& GetContext() {
-		return *context;
+		return *context.Get();
 	}
 	PRIVATE void CompileShader(const wchar_t* filePath, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -364,7 +333,6 @@ class Input {
 		Update();
 	}
 	PUBLIC ~Input() {
-
 	}
 	PUBLIC bool GetKey(int keyCode) {
 		return keyState[keyCode] & 0x80;
@@ -426,7 +394,6 @@ class Timer {
 		frequency = GetCountFrequency();
 	}
 	PUBLIC ~Timer() {
-
 	}
 	PUBLIC float GetTime() {
 		return time;
@@ -559,9 +526,9 @@ class Timer {
 };
 
 class Texture {
-	PRIVATE ID3D11Texture2D* texture;
-	PRIVATE ID3D11ShaderResourceView* shaderResourceView;
-	PRIVATE ID3D11SamplerState* samplerState;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
 	PUBLIC Texture() {
 	}
@@ -571,10 +538,8 @@ class Texture {
 
 class Material {
 	PUBLIC Material() {
-
 	}
 	PUBLIC ~Material() {
-
 	}
 };
 
@@ -762,14 +727,14 @@ class Sprite {
 	PUBLIC DirectX::XMFLOAT4 color;
 	PROTECTED UINT width;
 	PROTECTED UINT height;
-	PROTECTED ID3D11Texture2D* texture;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
 	PROTECTED ConstantBuffer cbuffer;
 	PRIVATE int indexCount;
-	PRIVATE ID3D11Buffer* vertexBuffer;
-	PRIVATE ID3D11Buffer* indexBuffer;
-	PRIVATE ID3D11Buffer* constantBuffer;
-	PRIVATE ID3D11ShaderResourceView* shaderResourceView;
-	PRIVATE ID3D11SamplerState* samplerState;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
 	PUBLIC Sprite() {
 		Initialize();
@@ -832,42 +797,13 @@ class Sprite {
 		textureSubresourceData.pSysMem = textureBuffer;
 		textureSubresourceData.SysMemPitch = width * 4;
 		textureSubresourceData.SysMemSlicePitch = width * height * 4;
-		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, texture.GetAddressOf());
 
 		delete[] textureBuffer;
 
 		Initialize();
 	}
 	PUBLIC virtual ~Sprite() {
-		if (texture) {
-			texture->Release();
-			texture = nullptr;
-		}
-
-		if (shaderResourceView) {
-			shaderResourceView->Release();
-			shaderResourceView = nullptr;
-		}
-
-		if (samplerState) {
-			samplerState->Release();
-			samplerState = nullptr;
-		}
-
-		if (vertexBuffer) {
-			vertexBuffer->Release();
-			vertexBuffer = nullptr;
-		}
-
-		if (indexBuffer) {
-			indexBuffer->Release();
-			indexBuffer = nullptr;
-		}
-
-		if (constantBuffer) {
-			constantBuffer->Release();
-			constantBuffer = nullptr;
-		}
 	}
 	PUBLIC DirectX::XMINT2 GetSize() {
 		return DirectX::XMINT2(width, height);
@@ -875,12 +811,12 @@ class Sprite {
 	PUBLIC void Draw() {
 		cbuffer.world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z))* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.color = color;
-		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &cbuffer, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
-		App::GetGraphicsContext().PSSetShaderResources(0, 1, &shaderResourceView);
-		App::GetGraphicsContext().PSSetSamplers(0, 1, &samplerState);
+		App::GetGraphicsContext().PSSetShaderResources(0, 1, shaderResourceView.GetAddressOf());
+		App::GetGraphicsContext().PSSetSamplers(0, 1, samplerState.GetAddressOf());
 
 		App::GetGraphicsContext().DrawIndexed(indexCount, 0, 0);
 	}
@@ -914,11 +850,11 @@ class Sprite {
 		vertexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 		vertexSubresourceData.pSysMem = quad;
-		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
 
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-		App::GetGraphicsContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		App::GetGraphicsContext().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 		App::GetGraphicsContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		D3D11_BUFFER_DESC indexBufferDesc = {};
@@ -928,22 +864,22 @@ class Sprite {
 		indexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 		indexSubresourceData.pSysMem = index;
-		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
 
-		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
-		App::GetGraphicsDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+		App::GetGraphicsDevice().CreateShaderResourceView(texture.Get(), &shaderResourceViewDesc, shaderResourceView.GetAddressOf());
 
 		D3D11_SAMPLER_DESC samplerDesc;
 		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -959,7 +895,7 @@ class Sprite {
 		samplerDesc.BorderColor[3] = 0.0f;
 		samplerDesc.MinLOD = 0;
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, &samplerState);
+		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
 	}
 };
 
@@ -1018,10 +954,10 @@ class Text : public Sprite {
 		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		textureDesc.MiscFlags = 0;
 
-		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, nullptr, &texture);
+		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, nullptr, texture.GetAddressOf());
 
 		D3D11_MAPPED_SUBRESOURCE mapped;
-		App::GetGraphicsContext().Map(texture, D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+		App::GetGraphicsContext().Map(texture.Get(), D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 
 		BYTE* bits = (BYTE*)mapped.pData;
 		DirectX::XMINT2 origin;
@@ -1041,7 +977,7 @@ class Text : public Sprite {
 			}
 		}
 
-		App::GetGraphicsContext().Unmap(texture, D3D11CalcSubresource(0, 0, 1));
+		App::GetGraphicsContext().Unmap(texture.Get(), D3D11CalcSubresource(0, 0, 1));
 		delete[] textureBuffer;
 	}
 };

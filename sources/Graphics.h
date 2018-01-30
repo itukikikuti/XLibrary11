@@ -4,12 +4,12 @@
 	PRIVATE const int MULTI_SAMPLE_COUNT = 1;
 	PRIVATE const int MULTI_SAMPLE_QUALITY = 0;
 
-	PRIVATE ID3D11Device* device = nullptr;
-	PRIVATE IDXGISwapChain* swapChain = nullptr;
-	PRIVATE ID3D11DeviceContext* context = nullptr;
-	PRIVATE ID3D11VertexShader* vertexShader = nullptr;
-	PRIVATE ID3D11PixelShader* pixelShader = nullptr;
-	PRIVATE ID3D11InputLayout* inputLayout = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout = nullptr;
 
 	PUBLIC Graphics() {
 		int createDeviceFlag = 0;
@@ -45,7 +45,7 @@
 		swapChainDesc.Windowed = true;
 
 		for (int i = 0; i < driverTypeCount; i++) {
-			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device, nullptr, &context);
+			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, swapChain.GetAddressOf(), device.GetAddressOf(), nullptr, context.GetAddressOf());
 
 			if (SUCCEEDED(result)) {
 				break;
@@ -54,13 +54,13 @@
 
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(nullptr, "VS", "vs_4_0", vertexShaderBlob.GetAddressOf());
-		device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
-		context->VSSetShader(vertexShader, nullptr, 0);
+		device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
+		context->VSSetShader(vertexShader.Get(), nullptr, 0);
 
 		Microsoft::WRL::ComPtr<ID3DBlob> pixelShaderBlob = nullptr;
 		CompileShader(nullptr, "PS", "ps_4_0", pixelShaderBlob.GetAddressOf());
-		device->CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
-		context->PSSetShader(pixelShader, nullptr, 0);
+		device->CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, pixelShader.GetAddressOf());
+		context->PSSetShader(pixelShader.Get(), nullptr, 0);
 
 		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -69,8 +69,8 @@
 		};
 		int inputElementDescCount = sizeof(inputElementDesc) / sizeof(inputElementDesc[0]);
 
-		device->CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
-		context->IASetInputLayout(inputLayout);
+		device->CreateInputLayout(inputElementDesc, inputElementDescCount, vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
+		context->IASetInputLayout(inputLayout.Get());
 
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -99,45 +99,15 @@
 		context->RSSetState(rasterizerState.Get());
 	}
 	PUBLIC ~Graphics() {
-		if (vertexShader) {
-			vertexShader->Release();
-			vertexShader = nullptr;
-		}
-
-		if (pixelShader) {
-			pixelShader->Release();
-			pixelShader = nullptr;
-		}
-
-		if (inputLayout) {
-			inputLayout->Release();
-			inputLayout = nullptr;
-		}
-
-		if (swapChain) {
-			swapChain->Release();
-			swapChain = nullptr;
-		}
-
-		if (context) {
-			context->Flush();
-			context->Release();
-			context = nullptr;
-		}
-
-		if (device) {
-			device->Release();
-			device = nullptr;
-		}
 	}
 	PUBLIC ID3D11Device& GetDevice() {
-		return *device;
+		return *device.Get();
 	}
 	PUBLIC IDXGISwapChain& GetMemory() {
-		return *swapChain;
+		return *swapChain.Get();
 	}
 	PUBLIC ID3D11DeviceContext& GetContext() {
-		return *context;
+		return *context.Get();
 	}
 	PRIVATE void CompileShader(const wchar_t* filePath, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;

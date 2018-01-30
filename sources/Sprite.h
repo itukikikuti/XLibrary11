@@ -10,14 +10,14 @@
 	PUBLIC DirectX::XMFLOAT4 color;
 	PROTECTED UINT width;
 	PROTECTED UINT height;
-	PROTECTED ID3D11Texture2D* texture;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
 	PROTECTED ConstantBuffer cbuffer;
 	PRIVATE int indexCount;
-	PRIVATE ID3D11Buffer* vertexBuffer;
-	PRIVATE ID3D11Buffer* indexBuffer;
-	PRIVATE ID3D11Buffer* constantBuffer;
-	PRIVATE ID3D11ShaderResourceView* shaderResourceView;
-	PRIVATE ID3D11SamplerState* samplerState;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
 	PUBLIC Sprite() {
 		Initialize();
@@ -80,42 +80,13 @@
 		textureSubresourceData.pSysMem = textureBuffer;
 		textureSubresourceData.SysMemPitch = width * 4;
 		textureSubresourceData.SysMemSlicePitch = width * height * 4;
-		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, texture.GetAddressOf());
 
 		delete[] textureBuffer;
 
 		Initialize();
 	}
 	PUBLIC virtual ~Sprite() {
-		if (texture) {
-			texture->Release();
-			texture = nullptr;
-		}
-
-		if (shaderResourceView) {
-			shaderResourceView->Release();
-			shaderResourceView = nullptr;
-		}
-
-		if (samplerState) {
-			samplerState->Release();
-			samplerState = nullptr;
-		}
-
-		if (vertexBuffer) {
-			vertexBuffer->Release();
-			vertexBuffer = nullptr;
-		}
-
-		if (indexBuffer) {
-			indexBuffer->Release();
-			indexBuffer = nullptr;
-		}
-
-		if (constantBuffer) {
-			constantBuffer->Release();
-			constantBuffer = nullptr;
-		}
 	}
 	PUBLIC DirectX::XMINT2 GetSize() {
 		return DirectX::XMINT2(width, height);
@@ -123,12 +94,12 @@
 	PUBLIC void Draw() {
 		cbuffer.world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z))* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.color = color;
-		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &cbuffer, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, &constantBuffer);
-		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer);
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &cbuffer, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
-		App::GetGraphicsContext().PSSetShaderResources(0, 1, &shaderResourceView);
-		App::GetGraphicsContext().PSSetSamplers(0, 1, &samplerState);
+		App::GetGraphicsContext().PSSetShaderResources(0, 1, shaderResourceView.GetAddressOf());
+		App::GetGraphicsContext().PSSetSamplers(0, 1, samplerState.GetAddressOf());
 
 		App::GetGraphicsContext().DrawIndexed(indexCount, 0, 0);
 	}
@@ -162,11 +133,11 @@
 		vertexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 		vertexSubresourceData.pSysMem = quad;
-		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
 
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-		App::GetGraphicsContext().IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		App::GetGraphicsContext().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 		App::GetGraphicsContext().IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		D3D11_BUFFER_DESC indexBufferDesc = {};
@@ -176,22 +147,22 @@
 		indexBufferDesc.CPUAccessFlags = 0;
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 		indexSubresourceData.pSysMem = index;
-		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
 
-		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
-		App::GetGraphicsDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+		App::GetGraphicsDevice().CreateShaderResourceView(texture.Get(), &shaderResourceViewDesc, shaderResourceView.GetAddressOf());
 
 		D3D11_SAMPLER_DESC samplerDesc;
 		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -207,6 +178,6 @@
 		samplerDesc.BorderColor[3] = 0.0f;
 		samplerDesc.MinLOD = 0;
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, &samplerState);
+		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
 	}
 };

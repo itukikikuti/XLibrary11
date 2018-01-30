@@ -12,7 +12,6 @@ class Timer {
 		frequency = GetCountFrequency();
 	}
 	PUBLIC ~Timer() {
-
 	}
 	PUBLIC float GetTime() {
 		return time;
