@@ -11,18 +11,14 @@ int Main() {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	Camera camera;
-	Sprite sprite(L"assets/clock.png");
-	Mesh mesh = Mesh::CreateQuad();
+	camera.position.z = -2.0f;
 
-	camera.position.z = -1.0f;
+	Mesh mesh;
 
 	while (App::Refresh()) {
-		camera.Refresh();
+		camera.Update();
 
-		if (!App::GetKey(VK_RETURN)) {
-			mesh.angles.y += App::GetDeltaTime() * 50.0f;
-		}
-		sprite.Draw();
+		mesh.angles.y += App::GetDeltaTime() * 50.0f;
 		mesh.Draw();
 	}
 

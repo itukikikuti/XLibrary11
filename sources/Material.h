@@ -5,16 +5,16 @@
 
 	PUBLIC Material() {
 		char* source =
-			"cbuffer Object : register(b0) {"
-			"    matrix _world;"
-			"};"
-			"cbuffer Camera : register(b1) {"
+			"cbuffer Camera : register(b0) {"
 			"    matrix _view;"
 			"    matrix _projection;"
 			"};"
+			"cbuffer Object : register(b1) {"
+			"    matrix _world;"
+			"};"
 			"float4 VS(float4 vertex : POSITION) : SV_POSITION {"
-			"    float4 output;"
-			"    output = mul(_world, vertex);"
+			"    float4 output = vertex;"
+			"    output = mul(_world, output);"
 			"    output = mul(_view, output);"
 			"    output = mul(_projection, output);"
 			"    return output;"
@@ -23,10 +23,10 @@
 			"    return float4(1, 0, 1, 1);"
 			"}";
 
-		Create(source);
+		Setup(source);
 	}
 	PUBLIC Material(char* source) {
-		Create(source);
+		Setup(source);
 	}
 	PUBLIC Material(wchar_t* filePath) {
 		std::ifstream sourceFile(filePath);
@@ -35,11 +35,16 @@
 		std::string source(iterator, last);
 		sourceFile.close();
 
-		Create(source.c_str());
+		Setup(source.c_str());
 	}
 	PUBLIC ~Material() {
 	}
-	PUBLIC void Create(const char* source) {
+	PUBLIC void Attach() {
+		App::GetGraphicsContext().VSSetShader(vertexShader.Get(), nullptr, 0);
+		App::GetGraphicsContext().PSSetShader(pixelShader.Get(), nullptr, 0);
+		App::GetGraphicsContext().IASetInputLayout(inputLayout.Get());
+	}
+	PRIVATE void Setup(const char* source) {
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
 		App::GetGraphicsDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
@@ -53,14 +58,9 @@
 		inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 		inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
-		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
+		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
 	}
-	PUBLIC void Attach() {
-		App::GetGraphicsContext().VSSetShader(vertexShader.Get(), nullptr, 0);
-		App::GetGraphicsContext().PSSetShader(pixelShader.Get(), nullptr, 0);
-		App::GetGraphicsContext().IASetInputLayout(inputLayout.Get());
-	}
-	PRIVATE void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
+	PRIVATE static void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(DEBUG) || defined(_DEBUG)
 		shaderFlags |= D3DCOMPILE_DEBUG;
