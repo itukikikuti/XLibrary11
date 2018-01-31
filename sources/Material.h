@@ -29,6 +29,11 @@
 		Setup(source);
 	}
 	PUBLIC Material(wchar_t* filePath) {
+		Load(filePath);
+	}
+	PUBLIC ~Material() {
+	}
+	PUBLIC void Load(wchar_t* filePath) {
 		std::ifstream sourceFile(filePath);
 		std::istreambuf_iterator<char> iterator(sourceFile);
 		std::istreambuf_iterator<char> last;
@@ -36,8 +41,6 @@
 		sourceFile.close();
 
 		Setup(source.c_str());
-	}
-	PUBLIC ~Material() {
 	}
 	PUBLIC void Attach() {
 		App::GetGraphicsContext().VSSetShader(vertexShader.Get(), nullptr, 0);

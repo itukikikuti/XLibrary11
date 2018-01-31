@@ -3,11 +3,13 @@
 		DirectX::XMMATRIX world;
 	};
 
-	PUBLIC Transform transform;
+	PUBLIC DirectX::XMFLOAT3 position;
+	PUBLIC DirectX::XMFLOAT3 angles;
+	PUBLIC DirectX::XMFLOAT3 scale;
 	PUBLIC std::vector<Vertex> vertices;
 	PUBLIC std::vector<int> indices;
+	PUBLIC Material material;
 	PRIVATE ConstantBuffer cbuffer;
-	PRIVATE Material material;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
@@ -43,11 +45,11 @@
 		material.Attach();
 
 		cbuffer.world =
-			DirectX::XMMatrixScaling(transform.scale.x, transform.scale.y, transform.scale.z) *
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(transform.angles.z)) *
-			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(transform.angles.y)) *
-			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(transform.angles.x)) *
-			DirectX::XMMatrixTranslation(transform.position.x, transform.position.y, transform.position.z);
+			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
+			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
+			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 
 		UINT stride = static_cast<UINT>(sizeof(Vertex));
 		UINT offset = 0;
@@ -62,9 +64,9 @@
 		App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
 	}
 	PRIVATE void Initialize() {
-		transform.position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-		transform.angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-		transform.scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
 	}
 	PRIVATE void Setup() {
 		D3D11_BUFFER_DESC vertexBufferDesc = {};

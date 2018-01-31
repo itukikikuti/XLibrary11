@@ -4,9 +4,8 @@ class Camera {
 		DirectX::XMMATRIX projection;
 	};
 
-	PUBLIC Transform transform;
+	PUBLIC DirectX::XMFLOAT3 position;
 	PUBLIC DirectX::XMFLOAT3 angles;
-	PUBLIC DirectX::XMFLOAT3 scale;
 	PRIVATE float fieldOfView;
 	PRIVATE float nearClip;
 	PRIVATE float farClip;
@@ -31,11 +30,10 @@ class Camera {
 		TryResize();
 
 		cbuffer.view =
-			DirectX::XMMatrixScaling(transform.scale.x, transform.scale.y, transform.scale.z) *
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(transform.angles.z)) *
-			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(transform.angles.y)) *
-			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(transform.angles.x)) *
-			DirectX::XMMatrixTranslation(transform.position.x, transform.position.y, transform.position.z);
+			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
+			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.view = DirectX::XMMatrixInverse(nullptr, cbuffer.view);
 
 		App::GetGraphicsContext().OMSetRenderTargets(1, renderTarget.GetAddressOf(), nullptr);
@@ -48,9 +46,8 @@ class Camera {
 		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 	}
 	PRIVATE void Initialize() {
-		transform.position = DirectX::XMFLOAT3(0.0f, 0.0f, -5.0f);
-		transform.angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-		transform.scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+		position = DirectX::XMFLOAT3(0.0f, 0.0f, -5.0f);
+		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 
 		SetPerspective(60.0f, 0.1f, 1000.0f);
 	}

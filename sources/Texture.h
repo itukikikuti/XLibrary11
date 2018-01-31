@@ -5,7 +5,13 @@
 
 	PUBLIC Texture() {
 	}
+	PUBLIC Texture(wchar_t* filePath) {
+		Load(filePath);
+	}
 	PUBLIC ~Texture() {
+	}
+	PUBLIC void Load(wchar_t* filePath) {
+		Setup();
 	}
 	PUBLIC void Attach() {
 	}

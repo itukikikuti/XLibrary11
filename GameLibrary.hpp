@@ -460,7 +460,13 @@ class Texture {
 
 	PUBLIC Texture() {
 	}
+	PUBLIC Texture(wchar_t* filePath) {
+		Load(filePath);
+	}
 	PUBLIC ~Texture() {
+	}
+	PUBLIC void Load(wchar_t* filePath) {
+		Setup();
 	}
 	PUBLIC void Attach() {
 	}
@@ -499,6 +505,11 @@ class Material {
 		Setup(source);
 	}
 	PUBLIC Material(wchar_t* filePath) {
+		Load(filePath);
+	}
+	PUBLIC ~Material() {
+	}
+	PUBLIC void Load(wchar_t* filePath) {
 		std::ifstream sourceFile(filePath);
 		std::istreambuf_iterator<char> iterator(sourceFile);
 		std::istreambuf_iterator<char> last;
@@ -506,8 +517,6 @@ class Material {
 		sourceFile.close();
 
 		Setup(source.c_str());
-	}
-	PUBLIC ~Material() {
 	}
 	PUBLIC void Attach() {
 		App::GetGraphicsContext().VSSetShader(vertexShader.Get(), nullptr, 0);
@@ -554,7 +563,6 @@ class Camera {
 
 	PUBLIC DirectX::XMFLOAT3 position;
 	PUBLIC DirectX::XMFLOAT3 angles;
-	PUBLIC DirectX::XMFLOAT3 scale;
 	PRIVATE float fieldOfView;
 	PRIVATE float nearClip;
 	PRIVATE float farClip;
@@ -579,7 +587,6 @@ class Camera {
 		TryResize();
 
 		cbuffer.view =
-			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
@@ -598,7 +605,6 @@ class Camera {
 	PRIVATE void Initialize() {
 		position = DirectX::XMFLOAT3(0.0f, 0.0f, -5.0f);
 		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-		scale = DirectX::XMFLOAT3(10.0f, 10.0f, 1.0f);
 
 		SetPerspective(60.0f, 0.1f, 1000.0f);
 	}
@@ -649,8 +655,8 @@ class Mesh {
 	PUBLIC DirectX::XMFLOAT3 scale;
 	PUBLIC std::vector<Vertex> vertices;
 	PUBLIC std::vector<int> indices;
+	PUBLIC Material material;
 	PRIVATE ConstantBuffer cbuffer;
-	PRIVATE Material material;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
