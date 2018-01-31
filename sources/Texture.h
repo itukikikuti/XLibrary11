@@ -7,4 +7,8 @@
 	}
 	PUBLIC ~Texture() {
 	}
+	PUBLIC void Attach() {
+	}
+	PRIVATE void Setup() {
+	}
 };

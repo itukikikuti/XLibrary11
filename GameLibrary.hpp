@@ -462,6 +462,10 @@ class Texture {
 	}
 	PUBLIC ~Texture() {
 	}
+	PUBLIC void Attach() {
+	}
+	PRIVATE void Setup() {
+	}
 };
 
 class Material {
@@ -550,6 +554,7 @@ class Camera {
 
 	PUBLIC DirectX::XMFLOAT3 position;
 	PUBLIC DirectX::XMFLOAT3 angles;
+	PUBLIC DirectX::XMFLOAT3 scale;
 	PRIVATE float fieldOfView;
 	PRIVATE float nearClip;
 	PRIVATE float farClip;
@@ -564,9 +569,36 @@ class Camera {
 	}
 	PUBLIC ~Camera() {
 	}
+	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip) {
+		this->fieldOfView = fieldOfView;
+		this->nearClip = nearClip;
+		this->farClip = farClip;
+		cbuffer.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
+	}
+	PUBLIC void Update() {
+		TryResize();
+
+		cbuffer.view =
+			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
+			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
+			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		cbuffer.view = DirectX::XMMatrixInverse(nullptr, cbuffer.view);
+
+		App::GetGraphicsContext().OMSetRenderTargets(1, renderTarget.GetAddressOf(), nullptr);
+
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		App::GetGraphicsContext().ClearRenderTargetView(renderTarget.Get(), color);
+
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &cbuffer, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+	}
 	PRIVATE void Initialize() {
-		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		position = DirectX::XMFLOAT3(0.0f, 0.0f, -5.0f);
 		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		scale = DirectX::XMFLOAT3(10.0f, 10.0f, 1.0f);
 
 		SetPerspective(60.0f, 0.1f, 1000.0f);
 	}
@@ -589,29 +621,6 @@ class Camera {
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
-	}
-	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip) {
-		this->fieldOfView = fieldOfView;
-		this->nearClip = nearClip;
-		this->farClip = farClip;
-		cbuffer.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
-	}
-	PUBLIC void Update() {
-		cbuffer.view =
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
-			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
-			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
-			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		cbuffer.view = DirectX::XMMatrixInverse(nullptr, cbuffer.view);
-
-		App::GetGraphicsContext().OMSetRenderTargets(1, renderTarget.GetAddressOf(), nullptr);
-
-		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		App::GetGraphicsContext().ClearRenderTargetView(renderTarget.Get(), color);
-
-		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &cbuffer, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 	}
 	PRIVATE void TryResize() {
 		for (UINT message : App::GetWindowMessages()) {
@@ -652,37 +661,6 @@ class Mesh {
 		Setup();
 	}
 	PUBLIC ~Mesh() {
-	}
-	PRIVATE void Initialize() {
-		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-		scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
-	}
-	PRIVATE void Setup() {
-		D3D11_BUFFER_DESC vertexBufferDesc = {};
-		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vertexBufferDesc.CPUAccessFlags = 0;
-		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
-		vertexSubresourceData.pSysMem = &vertices[0];
-		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
-
-		D3D11_BUFFER_DESC indexBufferDesc = {};
-		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indices.size());
-		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		indexBufferDesc.CPUAccessFlags = 0;
-		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
-		indexSubresourceData.pSysMem = &indices[0];
-		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
-
-		D3D11_BUFFER_DESC constantBufferDesc = {};
-		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
-		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
 	PUBLIC void CreateQuad() {
 		vertices.clear();
@@ -725,6 +703,37 @@ class Mesh {
 		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
 
 		App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
+	}
+	PRIVATE void Initialize() {
+		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+	}
+	PRIVATE void Setup() {
+		D3D11_BUFFER_DESC vertexBufferDesc = {};
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.CPUAccessFlags = 0;
+		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
+		vertexSubresourceData.pSysMem = &vertices[0];
+		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
+
+		D3D11_BUFFER_DESC indexBufferDesc = {};
+		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indices.size());
+		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		indexBufferDesc.CPUAccessFlags = 0;
+		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
+		indexSubresourceData.pSysMem = &indices[0];
+		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
+
+		D3D11_BUFFER_DESC constantBufferDesc = {};
+		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
+		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags = 0;
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
 };
 
