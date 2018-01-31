@@ -58,7 +58,9 @@ class Camera {
 		App::GetGraphicsContext().ClearRenderTargetView(renderTarget.Get(), color);
 
 		cbuffer.view =
-			DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
+			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.view = DirectX::XMMatrixInverse(nullptr, cbuffer.view);
 		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &cbuffer, 0, 0);

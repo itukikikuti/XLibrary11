@@ -11,11 +11,12 @@
 	PUBLIC std::vector<Vertex> vertexes;
 	PUBLIC std::vector<int> indexes;
 	PRIVATE ConstantBuffer cbuffer;
+	PRIVATE Material material;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-	PUBLIC Mesh() {
+	PUBLIC Mesh() : material(L"assets/test.hlsl") {
 		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 		scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
@@ -50,9 +51,13 @@
 		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
 	}
 	PUBLIC void Draw() {
+		material.Attach();
+
 		cbuffer.world =
 			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
-			DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(angles.x), DirectX::XMConvertToRadians(angles.y), DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
+			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		cbuffer.color = color;
 
