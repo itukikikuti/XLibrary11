@@ -20,6 +20,7 @@ int Main() {
 	while (App::Refresh()) {
 		camera.Update();
 
+		tex.Attach(0);
 		mesh.angles.y += App::GetDeltaTime() * 50.0f;
 		mesh.Draw();
 	}
