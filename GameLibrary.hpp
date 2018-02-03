@@ -27,8 +27,8 @@ GAMELIBRARY_BEGIN
 
 struct Vertex {
 	DirectX::XMFLOAT3 position;
-	DirectX::XMFLOAT2 texcoord;
 	DirectX::XMFLOAT3 normal;
+	DirectX::XMFLOAT2 texcoord;
 
 	//Vertex(DirectX::XMFLOAT3 position, DirectX::XMFLOAT2 texcoord, DirectX::XMFLOAT3 normal) {
 	//	this->position = position;
@@ -231,12 +231,12 @@ class Graphics {
 		device->CreateBlendState(&blendDesc, &blendState);
 		context->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
 
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
-		D3D11_RASTERIZER_DESC rasterizerDesc = {};
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerDesc.CullMode = D3D11_CULL_NONE;
-		device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
-		context->RSSetState(rasterizerState.Get());
+		//Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
+		//D3D11_RASTERIZER_DESC rasterizerDesc = {};
+		//rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		//rasterizerDesc.CullMode = D3D11_CULL_NONE;
+		//device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+		//context->RSSetState(rasterizerState.Get());
 	}
 	PUBLIC ~Graphics() {
 	}
@@ -614,8 +614,8 @@ class Material {
 
 		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc;
 		inputElementDesc.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-		inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-		inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
 		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
 	}
@@ -730,8 +730,7 @@ class Camera {
 
 class Mesh {
 	PRIVATE struct ConstantBuffer {
-		DirectX::XMMATRIX objectToWorld;
-		DirectX::XMMATRIX worldToObject;
+		DirectX::XMMATRIX world;
 		DirectX::XMFLOAT3 lightDirection;
 	};
 
@@ -748,8 +747,7 @@ class Mesh {
 
 	PUBLIC Mesh() : material(
 		"cbuffer Object : register(b0) {"
-		"    matrix _objectToWorld;"
-		"    matrix _worldToObject;"
+		"    matrix _world;"
 		"    float3 _lightDirection;"
 		"};"
 		"cbuffer Camera : register(b1) {"
@@ -758,32 +756,34 @@ class Mesh {
 		"};"
 		"struct VSOutput {"
 		"    float4 position : SV_POSITION;"
-		"    float3 normal : NORMAL;"
+		"    float4 normal : NORMAL;"
 		"};"
 		"VSOutput VS(float3 vertex : POSITION, float3 normal : NORMAL) {"
 		"    VSOutput output = (VSOutput)0;"
-		"    matrix vp = mul(_projection, _view);"
-		"    output.position = mul(vp, mul(_objectToWorld, float4(vertex, 1.0)));"
-		"    output.normal = normalize(mul(normal, (float3x3)_worldToObject));"
+		"    output.position = mul(_world, float4(vertex, 1.0));"
+		"    output.position = mul(_view, output.position);"
+		"    output.position = mul(_projection, output.position);"
+		"    output.normal = normalize(mul(_world, float4(normal, 1)));"
 		"    return output;"
 		"}"
-		"float4 PS(VSOutput vsout) : SV_TARGET {"
-		"    float lightIntensity = dot(normalize(vsout.normal), normalize(_lightDirection));"
-		"    return max(float4(1, 1, 1, 1) * lightIntensity, 0);"
+		"float4 PS(VSOutput pixel) : SV_TARGET {"
+		"    float diffuse = dot(-_lightDirection, pixel.normal.xyz);"
+		"    float ambient = 0.25;"
+		"    return max(0, float4(float3(1, 1, 1) * diffuse + ambient, 1));"
 		"}"
 	){
 		Initialize();
-		CreateQuad();
+		CreateCube();
 		Setup();
 	}
 	PUBLIC ~Mesh() {
 	}
 	PUBLIC void CreateQuad() {
 		vertices.clear();
-		vertices.push_back({ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
 
 		indices.clear();
 		indices.push_back(0);
@@ -793,20 +793,95 @@ class Mesh {
 		indices.push_back(2);
 		indices.push_back(1);
 	}
+	PUBLIC void CreateCube() {
+		vertices.clear();
+		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(1.0f, -1.0f, 1.0f), DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(1.0f, -1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, -1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, -1.0f, 1.0f), DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, -1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
+		vertices.push_back({ DirectX::XMFLOAT3(1.0f, -1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
+
+		indices.clear();
+		indices.push_back(0);
+		indices.push_back(1);
+		indices.push_back(2);
+
+		indices.push_back(3);
+		indices.push_back(2);
+		indices.push_back(1);
+
+		indices.push_back(4);
+		indices.push_back(5);
+		indices.push_back(6);
+
+		indices.push_back(7);
+		indices.push_back(6);
+		indices.push_back(5);
+
+		indices.push_back(8);
+		indices.push_back(9);
+		indices.push_back(10);
+
+		indices.push_back(11);
+		indices.push_back(10);
+		indices.push_back(9);
+
+		indices.push_back(12);
+		indices.push_back(13);
+		indices.push_back(14);
+
+		indices.push_back(15);
+		indices.push_back(14);
+		indices.push_back(13);
+
+		indices.push_back(16);
+		indices.push_back(17);
+		indices.push_back(18);
+
+		indices.push_back(19);
+		indices.push_back(18);
+		indices.push_back(17);
+
+		indices.push_back(20);
+		indices.push_back(21);
+		indices.push_back(22);
+
+		indices.push_back(23);
+		indices.push_back(22);
+		indices.push_back(21);
+	}
 	PUBLIC void Apply() {
 		Setup();
 	}
 	PUBLIC void Draw() {
 		material.Attach();
 
-		cbuffer.objectToWorld =
+		cbuffer.world =
 			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		cbuffer.worldToObject = DirectX::XMMatrixInverse(nullptr, cbuffer.objectToWorld);
-		DirectX::XMStoreFloat3(&cbuffer.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(1.0, -1.0, 0.0f, 1.0f)));
+		DirectX::XMStoreFloat3(&cbuffer.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
 
 		UINT stride = static_cast<UINT>(sizeof(Vertex));
 		UINT offset = 0;
@@ -968,10 +1043,10 @@ class Sprite {
 		color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 		Vertex quad[] = {
-			{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) },
-			{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
-			{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) },
-			{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) },
+			{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 0.0f) },
+			{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
+			{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 1.0f) },
+			{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 1.0f) },
 		};
 		int vertexCount = sizeof(quad) / sizeof(quad[0]);
 

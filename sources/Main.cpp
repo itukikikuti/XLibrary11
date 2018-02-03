@@ -14,6 +14,9 @@ int Main() {
 	Mesh mesh;
 	Texture tex(L"assets/box.jpg");
 
+	camera.position = XMFLOAT3(0.0f, 2.0f, -5.0f);
+	camera.angles.x = 20.0f;
+
 	while (App::Refresh()) {
 		camera.Update();
 
