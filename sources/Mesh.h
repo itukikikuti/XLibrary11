@@ -1,6 +1,8 @@
 ﻿class Mesh {
 	PRIVATE struct ConstantBuffer {
-		DirectX::XMMATRIX world;
+		DirectX::XMMATRIX objectToWorld;
+		DirectX::XMMATRIX worldToObject;
+		DirectX::XMFLOAT3 lightDirection;
 	};
 
 	PUBLIC DirectX::XMFLOAT3 position;
@@ -14,7 +16,31 @@
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-	PUBLIC Mesh() {
+	PUBLIC Mesh() : material(
+		"cbuffer Object : register(b0) {"
+		"    matrix _objectToWorld;"
+		"    matrix _worldToObject;"
+		"    float3 _lightDirection;"
+		"};"
+		"cbuffer Camera : register(b1) {"
+		"    matrix _view;"
+		"    matrix _projection;"
+		"};"
+		"struct VSOutput {"
+		"    float4 position : SV_POSITION;"
+		"    float3 normal : NORMAL;"
+		"};"
+		"VSOutput VS(float3 vertex : POSITION, float3 normal : NORMAL) {"
+		"    VSOutput output = (VSOutput)0;"
+		"    matrix vp = mul(_projection, _view);"
+		"    output.position = mul(vp, mul(_objectToWorld, float4(vertex, 1.0)));"
+		"    output.normal = normalize(mul(normal, (float3x3)_worldToObject));"
+		"    return output;"
+		"}"
+		"float4 PS(VSOutput vsout) : SV_TARGET {"
+		"    return float4(vsout.normal, 1);"
+		"}"
+	){
 		Initialize();
 		CreateQuad();
 		Setup();
@@ -35,8 +61,6 @@
 		indices.push_back(3);
 		indices.push_back(2);
 		indices.push_back(1);
-
-		Apply();
 	}
 	PUBLIC void Apply() {
 		Setup();
@@ -44,12 +68,14 @@
 	PUBLIC void Draw() {
 		material.Attach();
 
-		cbuffer.world =
+		cbuffer.objectToWorld =
 			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		cbuffer.worldToObject = DirectX::XMMatrixInverse(nullptr, cbuffer.objectToWorld);
+		DirectX::XMStoreFloat3(&cbuffer.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(1.0, -1.0, 0.0f, 1.0f)));
 
 		UINT stride = static_cast<UINT>(sizeof(Vertex));
 		UINT offset = 0;
@@ -58,8 +84,11 @@
 		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &cbuffer, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().HSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().DSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().GSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
 		App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
 	}

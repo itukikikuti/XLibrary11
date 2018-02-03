@@ -5,12 +5,12 @@
 
 	PUBLIC Material() {
 		char* source =
-			"cbuffer Camera : register(b0) {"
+			"cbuffer Object : register(b0) {"
+			"    matrix _world;"
+			"};"
+			"cbuffer Camera : register(b1) {"
 			"    matrix _view;"
 			"    matrix _projection;"
-			"};"
-			"cbuffer Object : register(b1) {"
-			"    matrix _world;"
 			"};"
 			"float4 VS(float4 vertex : POSITION) : SV_POSITION {"
 			"    float4 output = vertex;"

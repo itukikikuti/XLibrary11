@@ -12,6 +12,7 @@ int Main() {
 
 	Camera camera;
 	Mesh mesh;
+	Texture tex(L"assets/box.jpg");
 
 	while (App::Refresh()) {
 		camera.Update();
