@@ -38,7 +38,8 @@
 		"    return output;"
 		"}"
 		"float4 PS(VSOutput vsout) : SV_TARGET {"
-		"    return float4(vsout.normal, 1);"
+		"    float lightIntensity = dot(normalize(vsout.normal), normalize(_lightDirection));"
+		"    return max(float4(1, 1, 1, 1) * lightIntensity, 0);"
 		"}"
 	){
 		Initialize();

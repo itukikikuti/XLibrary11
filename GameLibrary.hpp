@@ -762,13 +762,14 @@ class Mesh {
 		"};"
 		"VSOutput VS(float3 vertex : POSITION, float3 normal : NORMAL) {"
 		"    VSOutput output = (VSOutput)0;"
-		"    matrix vp = mul(_view, _projection);"
+		"    matrix vp = mul(_projection, _view);"
 		"    output.position = mul(vp, mul(_objectToWorld, float4(vertex, 1.0)));"
 		"    output.normal = normalize(mul(normal, (float3x3)_worldToObject));"
 		"    return output;"
 		"}"
 		"float4 PS(VSOutput vsout) : SV_TARGET {"
-		"    return float4(vsout.normal, 1);"
+		"    float lightIntensity = dot(normalize(vsout.normal), normalize(_lightDirection));"
+		"    return max(float4(1, 1, 1, 1) * lightIntensity, 0);"
 		"}"
 	){
 		Initialize();
