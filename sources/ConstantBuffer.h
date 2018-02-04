@@ -6,7 +6,7 @@ class ConstantBuffer {
 	}
 	PUBLIC virtual ~ConstantBuffer() {
 	}
-	PUBLIC void Attach(int slot, void* constantData) {
+	PUBLIC virtual void Attach(int slot, void* constantData) {
 		if (constantData == nullptr) return;
 		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, constantData, 0, 0);
 		App::GetGraphicsContext().VSSetConstantBuffers(slot, 1, constantBuffer.GetAddressOf());

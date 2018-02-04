@@ -1,7 +1,17 @@
 class Camera {
-	PROTECTED struct ConstantData {
-		DirectX::XMMATRIX view;
-		DirectX::XMMATRIX projection;
+	PROTECTED class CameraConstantBuffer : public ConstantBuffer {
+		PUBLIC struct Data {
+			PUBLIC DirectX::XMMATRIX view;
+			PUBLIC DirectX::XMMATRIX projection;
+		};
+
+		Data data;
+
+		PUBLIC CameraConstantBuffer() : ConstantBuffer(sizeof(Data)) {
+		}
+		PUBLIC void Attach(int slot) {
+			ConstantBuffer::Attach(slot, &data);
+		}
 	};
 
 	PUBLIC DirectX::XMFLOAT3 position;
@@ -9,12 +19,11 @@ class Camera {
 	PROTECTED float fieldOfView;
 	PROTECTED float nearClip;
 	PROTECTED float farClip;
-	PROTECTED ConstantData constantData;
-	PROTECTED ConstantBuffer cbuffer;
+	PROTECTED CameraConstantBuffer cbuffer;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTarget = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture = nullptr;
 
-	PUBLIC Camera() : cbuffer(sizeof(ConstantData)) {
+	PUBLIC Camera() : cbuffer() {
 		Initialize();
 		Setup();
 	}
@@ -24,18 +33,18 @@ class Camera {
 		this->fieldOfView = fieldOfView;
 		this->nearClip = nearClip;
 		this->farClip = farClip;
-		constantData.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
+		cbuffer.data.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
 	}
-	PUBLIC void Update() {
+	PUBLIC virtual void Update() {
 		TryResize();
 
-		constantData.view =
+		cbuffer.data.view =
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		constantData.view = DirectX::XMMatrixInverse(nullptr, constantData.view);
-		cbuffer.Attach(1, &constantData);
+		cbuffer.data.view = DirectX::XMMatrixInverse(nullptr, cbuffer.data.view);
+		cbuffer.Attach(1);
 
 		App::GetGraphicsContext().OMSetRenderTargets(1, renderTarget.GetAddressOf(), nullptr);
 

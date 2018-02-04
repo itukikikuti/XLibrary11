@@ -51,7 +51,7 @@
 
 		delete[] buffer;
 	}
-	PUBLIC void Attach(int slot) {
+	PUBLIC virtual void Attach(int slot) {
 		App::GetGraphicsContext().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
 		App::GetGraphicsContext().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
 	}

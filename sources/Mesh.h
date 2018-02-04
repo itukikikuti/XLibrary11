@@ -1,7 +1,17 @@
 ﻿class Mesh {
-	PROTECTED struct ConstantData {
-		DirectX::XMMATRIX world;
-		DirectX::XMFLOAT3 lightDirection;
+	PROTECTED class MeshConstantBuffer : public ConstantBuffer {
+		PUBLIC struct Data {
+			PUBLIC DirectX::XMMATRIX world;
+			PUBLIC DirectX::XMFLOAT3 lightDirection;
+		};
+
+		Data data;
+
+		PUBLIC MeshConstantBuffer() : ConstantBuffer(sizeof(Data)) {
+		}
+		PUBLIC void Attach(int slot) {
+			ConstantBuffer::Attach(slot, &data);
+		}
 	};
 
 	PUBLIC DirectX::XMFLOAT3 position;
@@ -10,42 +20,42 @@
 	PUBLIC std::vector<Vertex> vertices;
 	PUBLIC std::vector<int> indices;
 	PUBLIC Material material;
-	PROTECTED ConstantData constantData;
-	PROTECTED ConstantBuffer cbuffer;
+	PROTECTED MeshConstantBuffer cbuffer;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
 
 	PUBLIC Mesh() :
-		cbuffer(sizeof(ConstantData)),
+		cbuffer(),
 		material(
-		"cbuffer Object : register(b0) {"
-		"    matrix _world;"
-		"    float3 _lightDirection;"
-		"};"
-		"cbuffer Camera : register(b1) {"
-		"    matrix _view;"
-		"    matrix _projection;"
-		"};"
-		"Texture2D tex : register(t0);"
-		"SamplerState samp: register(s0);"
-		"struct VSOutput {"
-		"    float4 position : SV_POSITION;"
-		"    float4 normal : NORMAL;"
-		"    float2 uv : TEXCOORD;"
-		"};"
-		"VSOutput VS(float3 vertex : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD) {"
-		"    VSOutput output = (VSOutput)0;"
-		"    output.position = mul(_world, float4(vertex, 1.0));"
-		"    output.position = mul(_view, output.position);"
-		"    output.position = mul(_projection, output.position);"
-		"    output.normal = normalize(mul(_world, float4(normal, 1)));"
-		"    output.uv = uv;"
-		"    return output;"
-		"}"
-		"float4 PS(VSOutput pixel) : SV_TARGET {"
-		"    float diffuse = dot(-_lightDirection, pixel.normal.xyz);"
-		"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
-		"}") {
+			"cbuffer Object : register(b0) {"
+			"    matrix _world;"
+			"    float3 _lightDirection;"
+			"};"
+			"cbuffer Camera : register(b1) {"
+			"    matrix _view;"
+			"    matrix _projection;"
+			"};"
+			"Texture2D tex : register(t0);"
+			"SamplerState samp: register(s0);"
+			"struct VSOutput {"
+			"    float4 position : SV_POSITION;"
+			"    float4 normal : NORMAL;"
+			"    float2 uv : TEXCOORD;"
+			"};"
+			"VSOutput VS(float3 vertex : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD) {"
+			"    VSOutput output = (VSOutput)0;"
+			"    output.position = mul(_world, float4(vertex, 1.0));"
+			"    output.position = mul(_view, output.position);"
+			"    output.position = mul(_projection, output.position);"
+			"    output.normal = normalize(mul(_world, float4(normal, 1)));"
+			"    output.uv = uv;"
+			"    return output;"
+			"}"
+			"float4 PS(VSOutput pixel) : SV_TARGET {"
+			"    float diffuse = dot(-_lightDirection, pixel.normal.xyz);"
+			"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
+			"}"
+		) {
 		Initialize();
 		CreateCube();
 		Setup();
@@ -146,17 +156,17 @@
 	PUBLIC void Apply() {
 		Setup();
 	}
-	PUBLIC void Draw() {
+	PUBLIC virtual void Draw() {
 		material.Attach();
 
-		constantData.world =
+		cbuffer.data.world =
 			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		DirectX::XMStoreFloat3(&constantData.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
-		cbuffer.Attach(0, &constantData);
+		DirectX::XMStoreFloat3(&cbuffer.data.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
+		cbuffer.Attach(0);
 
 		UINT stride = static_cast<UINT>(sizeof(Vertex));
 		UINT offset = 0;
