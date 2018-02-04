@@ -1,7 +1,7 @@
 ﻿class Material {
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout = nullptr;
 
 	PUBLIC Material() {
 		char* source =
@@ -31,7 +31,7 @@
 	PUBLIC Material(wchar_t* filePath) {
 		Load(filePath);
 	}
-	PUBLIC ~Material() {
+	PUBLIC virtual ~Material() {
 	}
 	PUBLIC void Load(wchar_t* filePath) {
 		std::ifstream sourceFile(filePath);
@@ -42,12 +42,12 @@
 
 		Setup(source.c_str());
 	}
-	PUBLIC void Attach() {
+	PUBLIC virtual void Attach() {
 		App::GetGraphicsContext().VSSetShader(vertexShader.Get(), nullptr, 0);
 		App::GetGraphicsContext().PSSetShader(pixelShader.Get(), nullptr, 0);
 		App::GetGraphicsContext().IASetInputLayout(inputLayout.Get());
 	}
-	PRIVATE void Setup(const char* source) {
+	PROTECTED void Setup(const char* source) {
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
 		App::GetGraphicsDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
@@ -63,7 +63,7 @@
 
 		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
 	}
-	PRIVATE static void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
+	PROTECTED static void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(DEBUG) || defined(_DEBUG)
 		shaderFlags |= D3DCOMPILE_DEBUG;

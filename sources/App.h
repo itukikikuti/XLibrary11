@@ -126,6 +126,7 @@ public:
 };
 
 #include "Texture.h"
+#include "ConstantBuffer.h"
 #include "Material.h"
 #include "Camera.h"
 #include "Mesh.h"

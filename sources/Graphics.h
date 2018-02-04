@@ -1,7 +1,7 @@
 ﻿class Graphics {
 	PRIVATE const int SWAP_CHAIN_COUNT = 2;
 	PRIVATE const DXGI_FORMAT SWAP_CHAIN_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
-	PRIVATE const int MULTI_SAMPLE_COUNT = 1;
+	PRIVATE const int MULTI_SAMPLE_COUNT = 4;
 	PRIVATE const int MULTI_SAMPLE_QUALITY = 0;
 
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;

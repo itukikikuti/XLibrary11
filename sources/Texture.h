@@ -1,9 +1,9 @@
 ﻿class Texture {
 	PUBLIC int width;
 	PUBLIC int height;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
 	PUBLIC Texture(wchar_t* filePath) {
 		Load(filePath);
@@ -13,7 +13,7 @@
 		this->height = height;
 		Setup(buffer);
 	}
-	PUBLIC ~Texture() {
+	PUBLIC virtual ~Texture() {
 	}
 	PUBLIC void Load(wchar_t* filePath) {
 		CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
@@ -55,7 +55,7 @@
 		App::GetGraphicsContext().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
 		App::GetGraphicsContext().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
 	}
-	PRIVATE void Setup(BYTE* buffer) {
+	PROTECTED void Setup(BYTE* buffer) {
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = width;
 		textureDesc.Height = height;

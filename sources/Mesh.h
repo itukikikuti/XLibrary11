@@ -1,5 +1,5 @@
 ﻿class Mesh {
-	PRIVATE struct ConstantBuffer {
+	PROTECTED struct ConstantData {
 		DirectX::XMMATRIX world;
 		DirectX::XMFLOAT3 lightDirection;
 	};
@@ -10,12 +10,14 @@
 	PUBLIC std::vector<Vertex> vertices;
 	PUBLIC std::vector<int> indices;
 	PUBLIC Material material;
-	PRIVATE ConstantBuffer cbuffer;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
+	PROTECTED ConstantData constantData;
+	PROTECTED ConstantBuffer cbuffer;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
 
-	PUBLIC Mesh() : material(
+	PUBLIC Mesh() :
+		cbuffer(sizeof(ConstantData)),
+		material(
 		"cbuffer Object : register(b0) {"
 		"    matrix _world;"
 		"    float3 _lightDirection;"
@@ -43,13 +45,12 @@
 		"float4 PS(VSOutput pixel) : SV_TARGET {"
 		"    float diffuse = dot(-_lightDirection, pixel.normal.xyz);"
 		"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
-		"}"
-	){
+		"}") {
 		Initialize();
 		CreateCube();
 		Setup();
 	}
-	PUBLIC ~Mesh() {
+	PUBLIC virtual ~Mesh() {
 	}
 	PUBLIC void CreateQuad() {
 		vertices.clear();
@@ -148,13 +149,14 @@
 	PUBLIC void Draw() {
 		material.Attach();
 
-		cbuffer.world =
+		constantData.world =
 			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		DirectX::XMStoreFloat3(&cbuffer.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
+		DirectX::XMStoreFloat3(&constantData.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
+		cbuffer.Attach(0, &constantData);
 
 		UINT stride = static_cast<UINT>(sizeof(Vertex));
 		UINT offset = 0;
@@ -162,21 +164,14 @@
 
 		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &cbuffer, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().HSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().DSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().GSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
-
 		App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
 	}
-	PRIVATE void Initialize() {
+	PROTECTED void Initialize() {
 		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 		scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
 	}
-	PRIVATE void Setup() {
+	PROTECTED void Setup() {
 		D3D11_BUFFER_DESC vertexBufferDesc = {};
 		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
@@ -194,12 +189,5 @@
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 		indexSubresourceData.pSysMem = &indices[0];
 		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
-
-		D3D11_BUFFER_DESC constantBufferDesc = {};
-		constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
-		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
 };
