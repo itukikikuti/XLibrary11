@@ -188,6 +188,6 @@
 		indexSubresourceData.pSysMem = &indices[0];
 		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
 
-		material.SetConstantBuffer(&constant);
+		material.PushCBuffer(1, &constant);
 	}
 };

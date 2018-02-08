@@ -16,11 +16,11 @@ int Main() {
 
 	camera.position = XMFLOAT3(0.0f, 2.0f, -5.0f);
 	camera.angles.x = 20.0f;
+	mesh.material.PushTexture(0, &tex);
 
 	while (App::Refresh()) {
 		camera.Update();
 
-		tex.Attach(0);
 		mesh.angles.y += App::GetDeltaTime() * 50.0f;
 		mesh.Draw();
 	}

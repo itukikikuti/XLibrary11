@@ -7,9 +7,9 @@
 #include <DirectXMath.h>
 #include <fstream>
 #include <iostream>
-#include <list>
 #include <memory>
 #include <strsafe.h>
+#include <utility>
 #include <vector>
 #include <wincodec.h>
 #include <windows.h>

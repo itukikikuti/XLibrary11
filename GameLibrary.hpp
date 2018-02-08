@@ -7,9 +7,9 @@
 #include <DirectXMath.h>
 #include <fstream>
 #include <iostream>
-#include <list>
 #include <memory>
 #include <strsafe.h>
+#include <utility>
 #include <vector>
 #include <wincodec.h>
 #include <windows.h>
@@ -554,11 +554,12 @@ class Texture {
 };
 
 class Material {
+	PUBLIC std::vector<std::pair<int, void*>> cbuffers;
+	PUBLIC std::vector<std::pair<int, Texture*>> textures;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
-	PROTECTED void* constant;
 
 	PUBLIC Material() {
 		char* source =
@@ -599,22 +600,35 @@ class Material {
 
 		Setup(source.c_str(), size);
 	}
-	PUBLIC void SetConstantBuffer(void* constant) {
-		this->constant = constant;
-	}
 	PUBLIC virtual void Attach() {
 		App::GetGraphicsContext().VSSetShader(vertexShader.Get(), nullptr, 0);
 		App::GetGraphicsContext().PSSetShader(pixelShader.Get(), nullptr, 0);
 		App::GetGraphicsContext().IASetInputLayout(inputLayout.Get());
 
-		if (constant != nullptr) {
-			App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, constant, 0, 0);
-			App::GetGraphicsContext().VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-			App::GetGraphicsContext().HSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-			App::GetGraphicsContext().DSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-			App::GetGraphicsContext().GSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-			App::GetGraphicsContext().PSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		for (std::pair<int, void*> cbuffer : cbuffers) {
+			if (cbuffer.second == nullptr) {
+				continue;
+			}
+			App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, cbuffer.second, 0, 0);
+			App::GetGraphicsContext().VSSetConstantBuffers(cbuffer.first, 1, constantBuffer.GetAddressOf());
+			App::GetGraphicsContext().HSSetConstantBuffers(cbuffer.first, 1, constantBuffer.GetAddressOf());
+			App::GetGraphicsContext().DSSetConstantBuffers(cbuffer.first, 1, constantBuffer.GetAddressOf());
+			App::GetGraphicsContext().GSSetConstantBuffers(cbuffer.first, 1, constantBuffer.GetAddressOf());
+			App::GetGraphicsContext().PSSetConstantBuffers(cbuffer.first, 1, constantBuffer.GetAddressOf());
 		}
+
+		for (std::pair<int, Texture*> texture : textures) {
+			if (texture.second == nullptr) {
+				continue;
+			}
+			texture.second->Attach(texture.first);
+		}
+	}
+	PUBLIC void PushCBuffer(int slot, void* cbuffer) {
+		cbuffers.push_back(std::pair<int, void*>(slot, cbuffer));
+	}
+	PUBLIC void PushTexture(int slot, Texture* texture) {
+		textures.push_back(std::pair<int, Texture*>(slot, texture));
 	}
 	PROTECTED void Setup(const char* source, size_t size) {
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
@@ -938,7 +952,7 @@ class Mesh {
 		indexSubresourceData.pSysMem = &indices[0];
 		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
 
-		material.SetConstantBuffer(&constant);
+		material.PushCBuffer(1, &constant);
 	}
 };
 
