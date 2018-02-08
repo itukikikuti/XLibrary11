@@ -50,8 +50,5 @@
     <ClInclude Include="sources\Math.h">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\ConstantBuffer.h">
-      <Filter>sources</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

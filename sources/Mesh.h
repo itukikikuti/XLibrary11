@@ -1,17 +1,7 @@
 ﻿class Mesh {
-	PROTECTED class MeshConstantBuffer : public ConstantBuffer {
-		PUBLIC struct Data {
-			PUBLIC DirectX::XMMATRIX world;
-			PUBLIC DirectX::XMFLOAT3 lightDirection;
-		};
-
-		Data data;
-
-		PUBLIC MeshConstantBuffer() : ConstantBuffer(sizeof(Data)) {
-		}
-		PUBLIC void Attach(int slot) {
-			ConstantBuffer::Attach(slot, &data);
-		}
+	PROTECTED struct Constant {
+		DirectX::XMMATRIX world;
+		DirectX::XMFLOAT3 lightDirection;
 	};
 
 	PUBLIC DirectX::XMFLOAT3 position;
@@ -20,20 +10,19 @@
 	PUBLIC std::vector<Vertex> vertices;
 	PUBLIC std::vector<int> indices;
 	PUBLIC Material material;
-	PROTECTED MeshConstantBuffer cbuffer;
+	PROTECTED Constant constant;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
 
 	PUBLIC Mesh() :
-		cbuffer(),
 		material(
-			"cbuffer Object : register(b0) {"
-			"    matrix _world;"
-			"    float3 _lightDirection;"
-			"};"
-			"cbuffer Camera : register(b1) {"
+			"cbuffer Camera : register(b0) {"
 			"    matrix _view;"
 			"    matrix _projection;"
+			"};"
+			"cbuffer Object : register(b1) {"
+			"    matrix _world;"
+			"    float3 _lightDirection;"
 			"};"
 			"Texture2D tex : register(t0);"
 			"SamplerState samp: register(s0);"
@@ -52,10 +41,10 @@
 			"    return output;"
 			"}"
 			"float4 PS(VSOutput pixel) : SV_TARGET {"
-			"    float diffuse = dot(-_lightDirection, pixel.normal.xyz);"
+			"    float diffuse = dot(-_lightDirection, pixel.normal.xyz) * 2;"
 			"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
 			"}"
-		) {
+		, sizeof(Constant)) {
 		Initialize();
 		CreateCube();
 		Setup();
@@ -159,14 +148,13 @@
 	PUBLIC virtual void Draw() {
 		material.Attach();
 
-		cbuffer.data.world =
+		constant.world =
 			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		DirectX::XMStoreFloat3(&cbuffer.data.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
-		cbuffer.Attach(0);
+		DirectX::XMStoreFloat3(&constant.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
 
 		UINT stride = static_cast<UINT>(sizeof(Vertex));
 		UINT offset = 0;
@@ -199,5 +187,7 @@
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 		indexSubresourceData.pSysMem = &indices[0];
 		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
+
+		material.SetConstantBuffer(&constant);
 	}
 };

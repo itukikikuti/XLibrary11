@@ -7,6 +7,7 @@
 #include <DirectXMath.h>
 #include <fstream>
 #include <iostream>
+#include <list>
 #include <memory>
 #include <strsafe.h>
 #include <vector>
@@ -16,14 +17,12 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
-#define GAMELIBRARY_BEGIN namespace GameLibrary {
-#define GAMELIBRARY_END }
 #define Main() WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 #define PUBLIC public:
 #define PRIVATE private:
 #define PROTECTED protected:
 
-GAMELIBRARY_BEGIN
+namespace GameLibrary {
 
 struct Vertex {
 	DirectX::XMFLOAT3 position;
@@ -38,9 +37,9 @@ struct Vertex {
 };
 
 
-class App {
-public:
-class Window {
+	class App {
+
+	class Window {
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
 	PRIVATE std::vector<UINT> messages;
@@ -161,7 +160,7 @@ class Window {
 	}
 };
 
-class Graphics {
+	class Graphics {
 	PRIVATE const int SWAP_CHAIN_COUNT = 2;
 	PRIVATE const DXGI_FORMAT SWAP_CHAIN_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 	PRIVATE const int MULTI_SAMPLE_COUNT = 4;
@@ -251,7 +250,7 @@ class Graphics {
 	}
 };
 
-class Input {
+	class Input {
 	PRIVATE DirectX::XMFLOAT2 mousePosition;
 	PRIVATE BYTE preKeyState[256];
 	PRIVATE BYTE keyState[256];
@@ -308,7 +307,7 @@ class Input {
 	}
 };
 
-class Timer {
+	class Timer {
 	PRIVATE float time = 0.0f;
 	PRIVATE float deltaTime = 0.0f;
 	PRIVATE int frameRate = 0;
@@ -362,96 +361,96 @@ class Timer {
 };
 
 
-	PUBLIC App() = delete;
-	PUBLIC static HWND GetWindowHandle() {
-		return GetWindow().GetHandle();
-	}
-	PUBLIC static std::vector<UINT>& GetWindowMessages() {
-		return GetWindow().GetMessages();
-	}
-	PUBLIC static DirectX::XMINT2 GetWindowSize() {
-		return GetWindow().GetSize();
-	}
-	PUBLIC static void SetWindowSize(int width, int height) {
-		GetWindow().SetSize(width, height);
-	}
-	PUBLIC static wchar_t* GetTitle() {
-		return GetWindow().GetTitle();
-	}
-	PUBLIC static void SetTitle(const wchar_t* title) {
-		GetWindow().SetTitle(title);
-	}
-	PUBLIC static void SetFullScreen(bool isFullscreen) {
-		GetWindow().SetFullScreen(isFullscreen);
-	}
-	PUBLIC static ID3D11Device& GetGraphicsDevice() {
-		return GetGraphics().GetDevice();
-	}
-	PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
-		return GetGraphics().GetContext();
-	}
-	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
-		return GetGraphics().GetMemory();
-	}
-	PUBLIC static bool GetKey(int VK_CODE) {
-		return GetInput().GetKey(VK_CODE);
-	}
-	PUBLIC static bool GetKeyUp(int VK_CODE) {
-		return GetInput().GetKeyUp(VK_CODE);
-	}
-	PUBLIC static bool GetKeyDown(int VK_CODE) {
-		return GetInput().GetKeyDown(VK_CODE);
-	}
-	PUBLIC static DirectX::XMFLOAT2 GetMousePosition() {
-		return GetInput().GetMousePosition();
-	}
-	PUBLIC static void SetMousePosition(DirectX::XMFLOAT2 position) {
-		GetInput().SetMousePosition(position.x, position.y);
-	}
-	PUBLIC static void SetMousePosition(float x, float y) {
-		GetInput().SetMousePosition(x, y);
-	}
-	PUBLIC static void SetShowCursor(bool isShowCursor) {
-		GetInput().SetShowCursor(isShowCursor);
-	}
-	PUBLIC static float GetTime() {
-		return GetTimer().GetTime();
-	}
-	PUBLIC static float GetDeltaTime() {
-		return GetTimer().GetDeltaTime();
-	}
-	PUBLIC static int GetFrameRate() {
-		return GetTimer().GetFrameRate();
-	}
-	PUBLIC static void AddFont(const wchar_t* filePath) {
-		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
-	}
-	PUBLIC static bool Refresh() {
-		GetGraphicsMemory().Present(1, 0);
+		PUBLIC App() = delete;
+		PUBLIC static HWND GetWindowHandle() {
+			return GetWindow().GetHandle();
+		}
+		PUBLIC static std::vector<UINT>& GetWindowMessages() {
+			return GetWindow().GetMessages();
+		}
+		PUBLIC static DirectX::XMINT2 GetWindowSize() {
+			return GetWindow().GetSize();
+		}
+		PUBLIC static void SetWindowSize(int width, int height) {
+			GetWindow().SetSize(width, height);
+		}
+		PUBLIC static wchar_t* GetTitle() {
+			return GetWindow().GetTitle();
+		}
+		PUBLIC static void SetTitle(const wchar_t* title) {
+			GetWindow().SetTitle(title);
+		}
+		PUBLIC static void SetFullScreen(bool isFullscreen) {
+			GetWindow().SetFullScreen(isFullscreen);
+		}
+		PUBLIC static ID3D11Device& GetGraphicsDevice() {
+			return GetGraphics().GetDevice();
+		}
+		PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
+			return GetGraphics().GetContext();
+		}
+		PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
+			return GetGraphics().GetMemory();
+		}
+		PUBLIC static bool GetKey(int VK_CODE) {
+			return GetInput().GetKey(VK_CODE);
+		}
+		PUBLIC static bool GetKeyUp(int VK_CODE) {
+			return GetInput().GetKeyUp(VK_CODE);
+		}
+		PUBLIC static bool GetKeyDown(int VK_CODE) {
+			return GetInput().GetKeyDown(VK_CODE);
+		}
+		PUBLIC static DirectX::XMFLOAT2 GetMousePosition() {
+			return GetInput().GetMousePosition();
+		}
+		PUBLIC static void SetMousePosition(DirectX::XMFLOAT2 position) {
+			GetInput().SetMousePosition(position.x, position.y);
+		}
+		PUBLIC static void SetMousePosition(float x, float y) {
+			GetInput().SetMousePosition(x, y);
+		}
+		PUBLIC static void SetShowCursor(bool isShowCursor) {
+			GetInput().SetShowCursor(isShowCursor);
+		}
+		PUBLIC static float GetTime() {
+			return GetTimer().GetTime();
+		}
+		PUBLIC static float GetDeltaTime() {
+			return GetTimer().GetDeltaTime();
+		}
+		PUBLIC static int GetFrameRate() {
+			return GetTimer().GetFrameRate();
+		}
+		PUBLIC static void AddFont(const wchar_t* filePath) {
+			AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
+		}
+		PUBLIC static bool Refresh() {
+			GetGraphicsMemory().Present(1, 0);
 
-		if (!GetWindow().Update()) return false;
-		GetInput().Update();
-		GetTimer().Update();
+			if (!GetWindow().Update()) return false;
+			GetInput().Update();
+			GetTimer().Update();
 
-		return true;
-	}
-	PRIVATE static Window& GetWindow() {
-		static std::unique_ptr<Window> window(new Window());
-		return *window.get();
-	}
-	PRIVATE static Graphics& GetGraphics() {
-		static std::unique_ptr<Graphics> graphics(new Graphics());
-		return *graphics.get();
-	}
-	PRIVATE static Input& GetInput() {
-		static std::unique_ptr<Input> input(new Input());
-		return *input.get();
-	}
-	PRIVATE static Timer& GetTimer() {
-		static std::unique_ptr<Timer> timer(new Timer());
-		return *timer.get();
-	}
-};
+			return true;
+		}
+		PRIVATE static Window& GetWindow() {
+			static std::unique_ptr<Window> window(new Window());
+			return *window.get();
+		}
+		PRIVATE static Graphics& GetGraphics() {
+			static std::unique_ptr<Graphics> graphics(new Graphics());
+			return *graphics.get();
+		}
+		PRIVATE static Input& GetInput() {
+			static std::unique_ptr<Input> input(new Input());
+			return *input.get();
+		}
+		PRIVATE static Timer& GetTimer() {
+			static std::unique_ptr<Timer> timer(new Timer());
+			return *timer.get();
+		}
+	};
 
 class Texture {
 	PUBLIC int width;
@@ -554,46 +553,21 @@ class Texture {
 	}
 };
 
-class ConstantBuffer {
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
-
-	PUBLIC ConstantBuffer(size_t size) {
-		Setup(size);
-	}
-	PUBLIC virtual ~ConstantBuffer() {
-	}
-	PUBLIC virtual void Attach(int slot, void* constantData) {
-		if (constantData == nullptr) return;
-		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, constantData, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(slot, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().HSSetConstantBuffers(slot, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().DSSetConstantBuffers(slot, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().GSSetConstantBuffers(slot, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().PSSetConstantBuffers(slot, 1, constantBuffer.GetAddressOf());
-	}
-	PROTECTED void Setup(size_t size) {
-		D3D11_BUFFER_DESC constantBufferDesc = {};
-		constantBufferDesc.ByteWidth = static_cast<UINT>(size);
-		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
-	}
-};
-
 class Material {
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
+	PROTECTED void* constant;
 
 	PUBLIC Material() {
 		char* source =
-			"cbuffer Object : register(b0) {"
-			"    matrix _world;"
-			"};"
-			"cbuffer Camera : register(b1) {"
+			"cbuffer Camera : register(b0) {"
 			"    matrix _view;"
 			"    matrix _projection;"
+			"};"
+			"cbuffer Object : register(b1) {"
+			"    matrix _world;"
 			"};"
 			"float4 VS(float4 vertex : POSITION) : SV_POSITION {"
 			"    float4 output = vertex;"
@@ -606,31 +580,43 @@ class Material {
 			"    return float4(1, 0, 1, 1);"
 			"}";
 
-		Setup(source);
+		Setup(source, sizeof(DirectX::XMMATRIX));
 	}
-	PUBLIC Material(char* source) {
-		Setup(source);
+	PUBLIC Material(char* source, size_t size) {
+		Setup(source, size);
 	}
-	PUBLIC Material(wchar_t* filePath) {
-		Load(filePath);
+	PUBLIC Material(wchar_t* filePath, size_t size) {
+		Load(filePath, size);
 	}
 	PUBLIC virtual ~Material() {
 	}
-	PUBLIC void Load(wchar_t* filePath) {
+	PUBLIC void Load(wchar_t* filePath, size_t size) {
 		std::ifstream sourceFile(filePath);
 		std::istreambuf_iterator<char> iterator(sourceFile);
 		std::istreambuf_iterator<char> last;
 		std::string source(iterator, last);
 		sourceFile.close();
 
-		Setup(source.c_str());
+		Setup(source.c_str(), size);
+	}
+	PUBLIC void SetConstantBuffer(void* constant) {
+		this->constant = constant;
 	}
 	PUBLIC virtual void Attach() {
 		App::GetGraphicsContext().VSSetShader(vertexShader.Get(), nullptr, 0);
 		App::GetGraphicsContext().PSSetShader(pixelShader.Get(), nullptr, 0);
 		App::GetGraphicsContext().IASetInputLayout(inputLayout.Get());
+
+		if (constant != nullptr) {
+			App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, constant, 0, 0);
+			App::GetGraphicsContext().VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+			App::GetGraphicsContext().HSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+			App::GetGraphicsContext().DSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+			App::GetGraphicsContext().GSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+			App::GetGraphicsContext().PSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		}
 	}
-	PROTECTED void Setup(const char* source) {
+	PROTECTED void Setup(const char* source, size_t size) {
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
 		App::GetGraphicsDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
@@ -645,6 +631,13 @@ class Material {
 		inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
 		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
+
+		D3D11_BUFFER_DESC constantBufferDesc = {};
+		constantBufferDesc.ByteWidth = static_cast<UINT>(size);
+		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags = 0;
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
 	PROTECTED static void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -663,19 +656,9 @@ class Material {
 };
 
 class Camera {
-	PROTECTED class CameraConstantBuffer : public ConstantBuffer {
-		PUBLIC struct Data {
-			PUBLIC DirectX::XMMATRIX view;
-			PUBLIC DirectX::XMMATRIX projection;
-		};
-
-		Data data;
-
-		PUBLIC CameraConstantBuffer() : ConstantBuffer(sizeof(Data)) {
-		}
-		PUBLIC void Attach(int slot) {
-			ConstantBuffer::Attach(slot, &data);
-		}
+	PROTECTED struct Constant {
+		DirectX::XMMATRIX view;
+		DirectX::XMMATRIX projection;
 	};
 
 	PUBLIC DirectX::XMFLOAT3 position;
@@ -683,11 +666,12 @@ class Camera {
 	PROTECTED float fieldOfView;
 	PROTECTED float nearClip;
 	PROTECTED float farClip;
-	PROTECTED CameraConstantBuffer cbuffer;
+	PROTECTED Constant constant;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTarget = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-	PUBLIC Camera() : cbuffer() {
+	PUBLIC Camera() {
 		Initialize();
 		Setup();
 	}
@@ -697,18 +681,24 @@ class Camera {
 		this->fieldOfView = fieldOfView;
 		this->nearClip = nearClip;
 		this->farClip = farClip;
-		cbuffer.data.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
+		constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
 	}
 	PUBLIC virtual void Update() {
 		TryResize();
 
-		cbuffer.data.view =
+		constant.view =
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		cbuffer.data.view = DirectX::XMMatrixInverse(nullptr, cbuffer.data.view);
-		cbuffer.Attach(1);
+		constant.view = DirectX::XMMatrixInverse(nullptr, constant.view);
+
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().HSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().DSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().GSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
 		App::GetGraphicsContext().OMSetRenderTargets(1, renderTarget.GetAddressOf(), nullptr);
 
@@ -733,6 +723,13 @@ class Camera {
 		viewPort.TopLeftX = 0;
 		viewPort.TopLeftY = 0;
 		App::GetGraphicsContext().RSSetViewports(1, &viewPort);
+
+		D3D11_BUFFER_DESC constantBufferDesc = {};
+		constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
+		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags = 0;
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
 	PROTECTED void TryResize() {
 		for (UINT message : App::GetWindowMessages()) {
@@ -752,19 +749,9 @@ class Camera {
 };
 
 class Mesh {
-	PROTECTED class MeshConstantBuffer : public ConstantBuffer {
-		PUBLIC struct Data {
-			PUBLIC DirectX::XMMATRIX world;
-			PUBLIC DirectX::XMFLOAT3 lightDirection;
-		};
-
-		Data data;
-
-		PUBLIC MeshConstantBuffer() : ConstantBuffer(sizeof(Data)) {
-		}
-		PUBLIC void Attach(int slot) {
-			ConstantBuffer::Attach(slot, &data);
-		}
+	PROTECTED struct Constant {
+		DirectX::XMMATRIX world;
+		DirectX::XMFLOAT3 lightDirection;
 	};
 
 	PUBLIC DirectX::XMFLOAT3 position;
@@ -773,20 +760,19 @@ class Mesh {
 	PUBLIC std::vector<Vertex> vertices;
 	PUBLIC std::vector<int> indices;
 	PUBLIC Material material;
-	PROTECTED MeshConstantBuffer cbuffer;
+	PROTECTED Constant constant;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
 
 	PUBLIC Mesh() :
-		cbuffer(),
 		material(
-			"cbuffer Object : register(b0) {"
-			"    matrix _world;"
-			"    float3 _lightDirection;"
-			"};"
-			"cbuffer Camera : register(b1) {"
+			"cbuffer Camera : register(b0) {"
 			"    matrix _view;"
 			"    matrix _projection;"
+			"};"
+			"cbuffer Object : register(b1) {"
+			"    matrix _world;"
+			"    float3 _lightDirection;"
 			"};"
 			"Texture2D tex : register(t0);"
 			"SamplerState samp: register(s0);"
@@ -805,10 +791,10 @@ class Mesh {
 			"    return output;"
 			"}"
 			"float4 PS(VSOutput pixel) : SV_TARGET {"
-			"    float diffuse = dot(-_lightDirection, pixel.normal.xyz);"
+			"    float diffuse = dot(-_lightDirection, pixel.normal.xyz) * 2;"
 			"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
 			"}"
-		) {
+		, sizeof(Constant)) {
 		Initialize();
 		CreateCube();
 		Setup();
@@ -912,14 +898,13 @@ class Mesh {
 	PUBLIC virtual void Draw() {
 		material.Attach();
 
-		cbuffer.data.world =
+		constant.world =
 			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		DirectX::XMStoreFloat3(&cbuffer.data.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
-		cbuffer.Attach(0);
+		DirectX::XMStoreFloat3(&constant.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
 
 		UINT stride = static_cast<UINT>(sizeof(Vertex));
 		UINT offset = 0;
@@ -952,6 +937,8 @@ class Mesh {
 		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 		indexSubresourceData.pSysMem = &indices[0];
 		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
+
+		material.SetConstantBuffer(&constant);
 	}
 };
 
@@ -1222,5 +1209,4 @@ class Text : public Sprite {
 	}
 };
 
-
-GAMELIBRARY_END
+}

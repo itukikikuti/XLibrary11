@@ -1,17 +1,7 @@
 class Camera {
-	PROTECTED class CameraConstantBuffer : public ConstantBuffer {
-		PUBLIC struct Data {
-			PUBLIC DirectX::XMMATRIX view;
-			PUBLIC DirectX::XMMATRIX projection;
-		};
-
-		Data data;
-
-		PUBLIC CameraConstantBuffer() : ConstantBuffer(sizeof(Data)) {
-		}
-		PUBLIC void Attach(int slot) {
-			ConstantBuffer::Attach(slot, &data);
-		}
+	PROTECTED struct Constant {
+		DirectX::XMMATRIX view;
+		DirectX::XMMATRIX projection;
 	};
 
 	PUBLIC DirectX::XMFLOAT3 position;
@@ -19,11 +9,12 @@ class Camera {
 	PROTECTED float fieldOfView;
 	PROTECTED float nearClip;
 	PROTECTED float farClip;
-	PROTECTED CameraConstantBuffer cbuffer;
+	PROTECTED Constant constant;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTarget = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-	PUBLIC Camera() : cbuffer() {
+	PUBLIC Camera() {
 		Initialize();
 		Setup();
 	}
@@ -33,18 +24,24 @@ class Camera {
 		this->fieldOfView = fieldOfView;
 		this->nearClip = nearClip;
 		this->farClip = farClip;
-		cbuffer.data.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
+		constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
 	}
 	PUBLIC virtual void Update() {
 		TryResize();
 
-		cbuffer.data.view =
+		constant.view =
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		cbuffer.data.view = DirectX::XMMatrixInverse(nullptr, cbuffer.data.view);
-		cbuffer.Attach(1);
+		constant.view = DirectX::XMMatrixInverse(nullptr, constant.view);
+
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().HSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().DSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().GSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
 		App::GetGraphicsContext().OMSetRenderTargets(1, renderTarget.GetAddressOf(), nullptr);
 
@@ -69,6 +66,13 @@ class Camera {
 		viewPort.TopLeftX = 0;
 		viewPort.TopLeftY = 0;
 		App::GetGraphicsContext().RSSetViewports(1, &viewPort);
+
+		D3D11_BUFFER_DESC constantBufferDesc = {};
+		constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
+		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags = 0;
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
 	PROTECTED void TryResize() {
 		for (UINT message : App::GetWindowMessages()) {
