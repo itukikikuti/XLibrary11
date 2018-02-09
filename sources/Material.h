@@ -1,6 +1,6 @@
 ﻿class Material {
-	PUBLIC std::vector<std::pair<int, void*>> cbuffers;
-	PUBLIC std::vector<std::pair<int, Texture*>> textures;
+	PUBLIC void* cbuffer = nullptr;
+	PUBLIC Texture* textures[10];
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout = nullptr;
@@ -8,12 +8,12 @@
 
 	PUBLIC Material() {
 		char* source =
-			"cbuffer Camera : register(b0) {"
+			"cbuffer Object : register(b0) {"
+			"    matrix _world;"
+			"};"
+			"cbuffer Camera : register(b1) {"
 			"    matrix _view;"
 			"    matrix _projection;"
-			"};"
-			"cbuffer Object : register(b1) {"
-			"    matrix _world;"
 			"};"
 			"float4 VS(float4 vertex : POSITION) : SV_POSITION {"
 			"    float4 output = vertex;"
@@ -26,56 +26,61 @@
 			"    return float4(1, 0, 1, 1);"
 			"}";
 
-		Setup(source, sizeof(DirectX::XMMATRIX));
+		Setup(source);
 	}
-	PUBLIC Material(char* source, size_t size) {
-		Setup(source, size);
+	PUBLIC Material(char* source) {
+		Setup(source);
 	}
-	PUBLIC Material(wchar_t* filePath, size_t size) {
-		Load(filePath, size);
+	PUBLIC Material(wchar_t* filePath) {
+		Load(filePath);
 	}
 	PUBLIC virtual ~Material() {
 	}
-	PUBLIC void Load(wchar_t* filePath, size_t size) {
+	PUBLIC void Load(wchar_t* filePath) {
 		std::ifstream sourceFile(filePath);
 		std::istreambuf_iterator<char> iterator(sourceFile);
 		std::istreambuf_iterator<char> last;
 		std::string source(iterator, last);
 		sourceFile.close();
 
-		Setup(source.c_str(), size);
+		Setup(source.c_str());
 	}
 	PUBLIC virtual void Attach() {
 		App::GetGraphicsContext().VSSetShader(vertexShader.Get(), nullptr, 0);
 		App::GetGraphicsContext().PSSetShader(pixelShader.Get(), nullptr, 0);
 		App::GetGraphicsContext().IASetInputLayout(inputLayout.Get());
 
-		for (std::pair<int, void*> cbuffer : cbuffers) {
-			if (cbuffer.second == nullptr) {
-				continue;
-			}
-			App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, cbuffer.second, 0, 0);
-			App::GetGraphicsContext().VSSetConstantBuffers(cbuffer.first, 1, constantBuffer.GetAddressOf());
-			App::GetGraphicsContext().HSSetConstantBuffers(cbuffer.first, 1, constantBuffer.GetAddressOf());
-			App::GetGraphicsContext().DSSetConstantBuffers(cbuffer.first, 1, constantBuffer.GetAddressOf());
-			App::GetGraphicsContext().GSSetConstantBuffers(cbuffer.first, 1, constantBuffer.GetAddressOf());
-			App::GetGraphicsContext().PSSetConstantBuffers(cbuffer.first, 1, constantBuffer.GetAddressOf());
+		if (cbuffer != nullptr) {
+			App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, cbuffer, 0, 0);
+			App::GetGraphicsContext().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+			App::GetGraphicsContext().HSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+			App::GetGraphicsContext().DSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+			App::GetGraphicsContext().GSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+			App::GetGraphicsContext().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 		}
 
-		for (std::pair<int, Texture*> texture : textures) {
-			if (texture.second == nullptr) {
-				continue;
+		int i = 0;
+		for (Texture* texture : textures) {
+			if (texture != nullptr) {
+				texture->Attach(i);
 			}
-			texture.second->Attach(texture.first);
+			i++;
 		}
 	}
-	PUBLIC void PushCBuffer(int slot, void* cbuffer) {
-		cbuffers.push_back(std::pair<int, void*>(slot, cbuffer));
+	PUBLIC void SetCBuffer(void* cbuffer, size_t size) {
+		this->cbuffer = cbuffer;
+
+		D3D11_BUFFER_DESC constantBufferDesc = {};
+		constantBufferDesc.ByteWidth = static_cast<UINT>(size);
+		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags = 0;
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
-	PUBLIC void PushTexture(int slot, Texture* texture) {
-		textures.push_back(std::pair<int, Texture*>(slot, texture));
+	PUBLIC void SetTexture(int slot, Texture* texture) {
+		textures[slot] = texture;
 	}
-	PROTECTED void Setup(const char* source, size_t size) {
+	PROTECTED void Setup(const char* source) {
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
 		App::GetGraphicsDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
@@ -90,13 +95,6 @@
 		inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
 		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
-
-		D3D11_BUFFER_DESC constantBufferDesc = {};
-		constantBufferDesc.ByteWidth = static_cast<UINT>(size);
-		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
 	PROTECTED static void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;

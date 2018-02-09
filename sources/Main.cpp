@@ -16,7 +16,7 @@ int Main() {
 
 	camera.position = XMFLOAT3(0.0f, 2.0f, -5.0f);
 	camera.angles.x = 20.0f;
-	mesh.material.PushTexture(0, &tex);
+	mesh.material.SetTexture(0, &tex);
 
 	while (App::Refresh()) {
 		camera.Update();

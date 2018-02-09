@@ -16,13 +16,13 @@
 
 	PUBLIC Mesh() :
 		material(
-			"cbuffer Camera : register(b0) {"
-			"    matrix _view;"
-			"    matrix _projection;"
-			"};"
-			"cbuffer Object : register(b1) {"
+			"cbuffer Object : register(b0) {"
 			"    matrix _world;"
 			"    float3 _lightDirection;"
+			"};"
+			"cbuffer Camera : register(b1) {"
+			"    matrix _view;"
+			"    matrix _projection;"
 			"};"
 			"Texture2D tex : register(t0);"
 			"SamplerState samp: register(s0);"
@@ -41,10 +41,9 @@
 			"    return output;"
 			"}"
 			"float4 PS(VSOutput pixel) : SV_TARGET {"
-			"    float diffuse = dot(-_lightDirection, pixel.normal.xyz) * 2;"
+			"    float diffuse = dot(-_lightDirection, pixel.normal.xyz);"
 			"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
-			"}"
-		, sizeof(Constant)) {
+			"}") {
 		Initialize();
 		CreateCube();
 		Setup();
@@ -188,6 +187,6 @@
 		indexSubresourceData.pSysMem = &indices[0];
 		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
 
-		material.PushCBuffer(1, &constant);
+		material.SetCBuffer(&constant, sizeof(Constant));
 	}
 };
