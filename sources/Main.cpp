@@ -13,7 +13,7 @@ int Main() {
 	Mesh mesh;
 	Texture tex(L"assets/box.jpg");
 
-	camera.position = Float3(0.0f, 2.0f, -5.0f);
+	camera.position = Float3(0.0f, 1.0f, -2.0f);
 	camera.angles.x = 20.0f;
 	mesh.material.SetTexture(0, &tex);
 
