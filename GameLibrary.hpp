@@ -1,4 +1,5 @@
-﻿// © 2017 itukikikuti
+﻿namespace GameLibrary {
+// © 2017 itukikikuti
 #pragma once
 
 #define OEMRESOURCE
@@ -22,24 +23,328 @@
 #define PRIVATE private:
 #define PROTECTED protected:
 
-namespace GameLibrary {
+class Float2 {
+	PUBLIC float x;
+	PUBLIC float y;
+
+	PUBLIC Float2() : x(0.0f), y(0.0f) {
+	}
+	PUBLIC Float2(float x, float y) : x(x), y(y) {
+	}
+	PUBLIC Float2& operator=(const DirectX::XMFLOAT2& value) {
+		x = value.x;
+		y = value.y;
+		return *this;
+	}
+	PUBLIC Float2& operator=(const Float2& value) {
+		x = value.x;
+		y = value.y;
+		return *this;
+	}
+	PUBLIC Float2& operator=(const float& value) {
+		x = value;
+		y = value;
+		return *this;
+	}
+	PUBLIC Float2& operator+=(const Float2& value) {
+		x += value.x;
+		y += value.y;
+		return *this;
+	}
+	PUBLIC Float2& operator+=(const float& value) {
+		x += value;
+		y += value;
+		return *this;
+	}
+	PUBLIC Float2& operator-=(const Float2& value) {
+		x -= value.x;
+		y -= value.y;
+		return *this;
+	}
+	PUBLIC Float2& operator-=(const float& value) {
+		x -= value;
+		y -= value;
+		return *this;
+	}
+	PUBLIC Float2& operator*=(const Float2& value) {
+		x *= value.x;
+		y *= value.y;
+		return *this;
+	}
+	PUBLIC Float2& operator*=(const float& value) {
+		x *= value;
+		y *= value;
+		return *this;
+	}
+	PUBLIC Float2& operator/=(const Float2& value) {
+		x /= value.x;
+		y /= value.y;
+		return *this;
+	}
+	PUBLIC Float2& operator/=(const float& value) {
+		x /= value;
+		y /= value;
+		return *this;
+	}
+};
+
+Float2 operator+(const Float2& t1, const Float2& t2) {
+	return Float2(t1) += t2;
+}
+Float2 operator+(const Float2& t1, const float& t2) {
+	return Float2(t1) += t2;
+}
+Float2 operator-(const Float2& t1, const Float2& t2) {
+	return Float2(t1) -= t2;
+}
+Float2 operator-(const Float2& t1, const float& t2) {
+	return Float2(t1) -= t2;
+}
+Float2 operator*(const Float2& t1, const Float2& t2) {
+	return Float2(t1) *= t2;
+}
+Float2 operator*(const Float2& t1, const float& t2) {
+	return Float2(t1) *= t2;
+}
+Float2 operator/(const Float2& t1, const Float2& t2) {
+	return Float2(t1) /= t2;
+}
+Float2 operator/(const Float2& t1, const float& t2) {
+	return Float2(t1) /= t2;
+}
+
+class Float3 {
+	PUBLIC float x;
+	PUBLIC float y;
+	PUBLIC float z;
+
+	PUBLIC Float3() : x(0.0f), y(0.0f), z(0.0f) {
+	}
+	PUBLIC Float3(float x, float y, float z) : x(x), y(y), z(z) {
+	}
+	PUBLIC Float3& operator=(const DirectX::XMFLOAT3& value) {
+		x = value.x;
+		y = value.y;
+		z = value.z;
+		return *this;
+	}
+	PUBLIC Float3& operator=(const Float3& value) {
+		x = value.x;
+		y = value.y;
+		z = value.z;
+		return *this;
+	}
+	PUBLIC Float3& operator=(const float& value) {
+		x = value;
+		y = value;
+		z = value;
+		return *this;
+	}
+	PUBLIC Float3& operator+=(const Float3& value) {
+		x += value.x;
+		y += value.y;
+		z += value.z;
+		return *this;
+	}
+	PUBLIC Float3& operator+=(const float& value) {
+		x += value;
+		y += value;
+		z += value;
+		return *this;
+	}
+	PUBLIC Float3& operator-=(const Float3& value) {
+		x -= value.x;
+		y -= value.y;
+		z -= value.z;
+		return *this;
+	}
+	PUBLIC Float3& operator-=(const float& value) {
+		x -= value;
+		y -= value;
+		z -= value;
+		return *this;
+	}
+	PUBLIC Float3& operator*=(const Float3& value) {
+		x *= value.x;
+		y *= value.y;
+		z *= value.z;
+		return *this;
+	}
+	PUBLIC Float3& operator*=(const float& value) {
+		x *= value;
+		y *= value;
+		z *= value;
+		return *this;
+	}
+	PUBLIC Float3& operator/=(const Float3& value) {
+		x /= value.x;
+		y /= value.y;
+		z /= value.z;
+		return *this;
+	}
+	PUBLIC Float3& operator/=(const float& value) {
+		x /= value;
+		y /= value;
+		z /= value;
+		return *this;
+	}
+};
+
+Float3 operator+(const Float3& t1, const Float3& t2) {
+	return Float3(t1) += t2;
+}
+Float3 operator+(const Float3& t1, const float& t2) {
+	return Float3(t1) += t2;
+}
+Float3 operator-(const Float3& t1, const Float3& t2) {
+	return Float3(t1) -= t2;
+}
+Float3 operator-(const Float3& t1, const float& t2) {
+	return Float3(t1) -= t2;
+}
+Float3 operator*(const Float3& t1, const Float3& t2) {
+	return Float3(t1) *= t2;
+}
+Float3 operator*(const Float3& t1, const float& t2) {
+	return Float3(t1) *= t2;
+}
+Float3 operator/(const Float3& t1, const Float3& t2) {
+	return Float3(t1) /= t2;
+}
+Float3 operator/(const Float3& t1, const float& t2) {
+	return Float3(t1) /= t2;
+}
+
+class Float4 {
+	PUBLIC float x;
+	PUBLIC float y;
+	PUBLIC float z;
+	PUBLIC float w;
+
+	PUBLIC Float4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {
+	}
+	PUBLIC Float4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {
+	}
+	PUBLIC Float4& operator=(const DirectX::XMFLOAT4& value) {
+		x = value.x;
+		y = value.y;
+		z = value.z;
+		w = value.w;
+		return *this;
+	}
+	PUBLIC Float4& operator=(const Float4& value) {
+		x = value.x;
+		y = value.y;
+		z = value.z;
+		w = value.w;
+		return *this;
+	}
+	PUBLIC Float4& operator=(const float& value) {
+		x = value;
+		y = value;
+		z = value;
+		w = value;
+		return *this;
+	}
+	PUBLIC Float4& operator+=(const Float4& value) {
+		x += value.x;
+		y += value.y;
+		z += value.z;
+		w += value.w;
+		return *this;
+	}
+	PUBLIC Float4& operator+=(const float& value) {
+		x += value;
+		y += value;
+		z += value;
+		w += value;
+		return *this;
+	}
+	PUBLIC Float4& operator-=(const Float4& value) {
+		x -= value.x;
+		y -= value.y;
+		z -= value.z;
+		w -= value.w;
+		return *this;
+	}
+	PUBLIC Float4& operator-=(const float& value) {
+		x -= value;
+		y -= value;
+		z -= value;
+		w -= value;
+		return *this;
+	}
+	PUBLIC Float4& operator*=(const Float4& value) {
+		x *= value.x;
+		y *= value.y;
+		z *= value.z;
+		w *= value.w;
+		return *this;
+	}
+	PUBLIC Float4& operator*=(const float& value) {
+		x *= value;
+		y *= value;
+		z *= value;
+		w *= value;
+		return *this;
+	}
+	PUBLIC Float4& operator/=(const Float4& value) {
+		x /= value.x;
+		y /= value.y;
+		z /= value.z;
+		w /= value.w;
+		return *this;
+	}
+	PUBLIC Float4& operator/=(const float& value) {
+		x /= value;
+		y /= value;
+		z /= value;
+		w /= value;
+		return *this;
+	}
+};
+
+Float4 operator+(const Float4& t1, const Float4& t2) {
+	return Float4(t1) += t2;
+}
+Float4 operator+(const Float4& t1, const float& t2) {
+	return Float4(t1) += t2;
+}
+Float4 operator-(const Float4& t1, const Float4& t2) {
+	return Float4(t1) -= t2;
+}
+Float4 operator-(const Float4& t1, const float& t2) {
+	return Float4(t1) -= t2;
+}
+Float4 operator*(const Float4& t1, const Float4& t2) {
+	return Float4(t1) *= t2;
+}
+Float4 operator*(const Float4& t1, const float& t2) {
+	return Float4(t1) *= t2;
+}
+Float4 operator/(const Float4& t1, const Float4& t2) {
+	return Float4(t1) /= t2;
+}
+Float4 operator/(const Float4& t1, const float& t2) {
+	return Float4(t1) /= t2;
+}
 
 struct Vertex {
-	DirectX::XMFLOAT3 position;
-	DirectX::XMFLOAT3 normal;
-	DirectX::XMFLOAT2 texcoord;
+	Float3 position;
+	Float3 normal;
+	Float2 uv;
 
-	//Vertex(DirectX::XMFLOAT3 position, DirectX::XMFLOAT2 texcoord, DirectX::XMFLOAT3 normal) {
-	//	this->position = position;
-	//	this->texcoord = texcoord;
-	//	this->normal = normal;
-	//}
+	Vertex(Float3 position, Float3 normal, Float2 uv) {
+		this->position = position;
+		this->normal = normal;
+		this->uv = uv;
+	}
 };
 
 
-	class App {
+class App {
 
-	class Window {
+class Window {
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPEDWINDOW;
 	PRIVATE std::vector<UINT> messages;
@@ -78,11 +383,11 @@ struct Vertex {
 	PUBLIC std::vector<UINT>& GetMessages() {
 		return messages;
 	}
-	PUBLIC DirectX::XMFLOAT2 GetSize() {
+	PUBLIC Float2 GetSize() {
 		RECT clientRect = {};
 		GetClientRect(handle, &clientRect);
 
-		return DirectX::XMFLOAT2(static_cast<float>(clientRect.right - clientRect.left), static_cast<float>(clientRect.bottom - clientRect.top));
+		return Float2(static_cast<float>(clientRect.right - clientRect.left), static_cast<float>(clientRect.bottom - clientRect.top));
 	}
 	PUBLIC void SetSize(float width, float height) {
 		RECT windowRect = {};
@@ -107,7 +412,7 @@ struct Vertex {
 		SetWindowTextW(handle, title);
 	}
 	PUBLIC void SetFullScreen(bool isFullscreen) {
-		static DirectX::XMFLOAT2 size = GetSize();
+		static Float2 size = GetSize();
 
 		if (isFullscreen) {
 			size = GetSize();
@@ -160,7 +465,7 @@ struct Vertex {
 	}
 };
 
-	class Graphics {
+class Graphics {
 	PRIVATE const int SWAP_CHAIN_COUNT = 2;
 	PRIVATE const DXGI_FORMAT SWAP_CHAIN_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 	PRIVATE const int MULTI_SAMPLE_COUNT = 4;
@@ -250,8 +555,8 @@ struct Vertex {
 	}
 };
 
-	class Input {
-	PRIVATE DirectX::XMFLOAT2 mousePosition;
+class Input {
+	PRIVATE Float2 mousePosition;
 	PRIVATE BYTE preKeyState[256];
 	PRIVATE BYTE keyState[256];
 	PRIVATE bool isShowCursor = true;
@@ -270,7 +575,7 @@ struct Vertex {
 	PUBLIC bool GetKeyDown(int keyCode) {
 		return (keyState[keyCode] & 0x80) && !(preKeyState[keyCode] & 0x80);
 	}
-	PUBLIC DirectX::XMFLOAT2 GetMousePosition() {
+	PUBLIC Float2 GetMousePosition() {
 		return mousePosition;
 	}
 	PUBLIC void SetMousePosition(float x, float y) {
@@ -297,7 +602,7 @@ struct Vertex {
 		GetCursorPos(&point);
 
 		ScreenToClient(App::GetWindowHandle(), &point);
-		mousePosition = DirectX::XMFLOAT2(static_cast<float>(point.x), static_cast<float>(point.y));
+		mousePosition = Float2(static_cast<float>(point.x), static_cast<float>(point.y));
 
 		for (int i = 0; i < 256; i++) {
 			preKeyState[i] = keyState[i];
@@ -307,7 +612,7 @@ struct Vertex {
 	}
 };
 
-	class Timer {
+class Timer {
 	PRIVATE float time = 0.0f;
 	PRIVATE float deltaTime = 0.0f;
 	PRIVATE int frameRate = 0;
@@ -361,96 +666,96 @@ struct Vertex {
 };
 
 
-		PUBLIC App() = delete;
-		PUBLIC static HWND GetWindowHandle() {
-			return GetWindow().GetHandle();
-		}
-		PUBLIC static std::vector<UINT>& GetWindowMessages() {
-			return GetWindow().GetMessages();
-		}
-		PUBLIC static DirectX::XMFLOAT2 GetWindowSize() {
-			return GetWindow().GetSize();
-		}
-		PUBLIC static void SetWindowSize(float width, float height) {
-			GetWindow().SetSize(width, height);
-		}
-		PUBLIC static wchar_t* GetTitle() {
-			return GetWindow().GetTitle();
-		}
-		PUBLIC static void SetTitle(const wchar_t* title) {
-			GetWindow().SetTitle(title);
-		}
-		PUBLIC static void SetFullScreen(bool isFullscreen) {
-			GetWindow().SetFullScreen(isFullscreen);
-		}
-		PUBLIC static ID3D11Device& GetGraphicsDevice() {
-			return GetGraphics().GetDevice();
-		}
-		PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
-			return GetGraphics().GetContext();
-		}
-		PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
-			return GetGraphics().GetMemory();
-		}
-		PUBLIC static bool GetKey(int VK_CODE) {
-			return GetInput().GetKey(VK_CODE);
-		}
-		PUBLIC static bool GetKeyUp(int VK_CODE) {
-			return GetInput().GetKeyUp(VK_CODE);
-		}
-		PUBLIC static bool GetKeyDown(int VK_CODE) {
-			return GetInput().GetKeyDown(VK_CODE);
-		}
-		PUBLIC static DirectX::XMFLOAT2 GetMousePosition() {
-			return GetInput().GetMousePosition();
-		}
-		PUBLIC static void SetMousePosition(DirectX::XMFLOAT2 position) {
-			GetInput().SetMousePosition(position.x, position.y);
-		}
-		PUBLIC static void SetMousePosition(float x, float y) {
-			GetInput().SetMousePosition(x, y);
-		}
-		PUBLIC static void SetShowCursor(bool isShowCursor) {
-			GetInput().SetShowCursor(isShowCursor);
-		}
-		PUBLIC static float GetTime() {
-			return GetTimer().GetTime();
-		}
-		PUBLIC static float GetDeltaTime() {
-			return GetTimer().GetDeltaTime();
-		}
-		PUBLIC static int GetFrameRate() {
-			return GetTimer().GetFrameRate();
-		}
-		PUBLIC static void AddFont(const wchar_t* filePath) {
-			AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
-		}
-		PUBLIC static bool Refresh() {
-			GetGraphicsMemory().Present(1, 0);
+	PUBLIC App() = delete;
+	PUBLIC static HWND GetWindowHandle() {
+		return GetWindow().GetHandle();
+	}
+	PUBLIC static std::vector<UINT>& GetWindowMessages() {
+		return GetWindow().GetMessages();
+	}
+	PUBLIC static Float2 GetWindowSize() {
+		return GetWindow().GetSize();
+	}
+	PUBLIC static void SetWindowSize(float width, float height) {
+		GetWindow().SetSize(width, height);
+	}
+	PUBLIC static wchar_t* GetTitle() {
+		return GetWindow().GetTitle();
+	}
+	PUBLIC static void SetTitle(const wchar_t* title) {
+		GetWindow().SetTitle(title);
+	}
+	PUBLIC static void SetFullScreen(bool isFullscreen) {
+		GetWindow().SetFullScreen(isFullscreen);
+	}
+	PUBLIC static ID3D11Device& GetGraphicsDevice() {
+		return GetGraphics().GetDevice();
+	}
+	PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
+		return GetGraphics().GetContext();
+	}
+	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
+		return GetGraphics().GetMemory();
+	}
+	PUBLIC static bool GetKey(int VK_CODE) {
+		return GetInput().GetKey(VK_CODE);
+	}
+	PUBLIC static bool GetKeyUp(int VK_CODE) {
+		return GetInput().GetKeyUp(VK_CODE);
+	}
+	PUBLIC static bool GetKeyDown(int VK_CODE) {
+		return GetInput().GetKeyDown(VK_CODE);
+	}
+	PUBLIC static Float2 GetMousePosition() {
+		return GetInput().GetMousePosition();
+	}
+	PUBLIC static void SetMousePosition(Float2 position) {
+		GetInput().SetMousePosition(position.x, position.y);
+	}
+	PUBLIC static void SetMousePosition(float x, float y) {
+		GetInput().SetMousePosition(x, y);
+	}
+	PUBLIC static void SetShowCursor(bool isShowCursor) {
+		GetInput().SetShowCursor(isShowCursor);
+	}
+	PUBLIC static float GetTime() {
+		return GetTimer().GetTime();
+	}
+	PUBLIC static float GetDeltaTime() {
+		return GetTimer().GetDeltaTime();
+	}
+	PUBLIC static int GetFrameRate() {
+		return GetTimer().GetFrameRate();
+	}
+	PUBLIC static void AddFont(const wchar_t* filePath) {
+		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
+	}
+	PUBLIC static bool Refresh() {
+		GetGraphicsMemory().Present(1, 0);
 
-			if (!GetWindow().Update()) return false;
-			GetInput().Update();
-			GetTimer().Update();
+		if (!GetWindow().Update()) return false;
+		GetInput().Update();
+		GetTimer().Update();
 
-			return true;
-		}
-		PRIVATE static Window& GetWindow() {
-			static std::unique_ptr<Window> window(new Window());
-			return *window.get();
-		}
-		PRIVATE static Graphics& GetGraphics() {
-			static std::unique_ptr<Graphics> graphics(new Graphics());
-			return *graphics.get();
-		}
-		PRIVATE static Input& GetInput() {
-			static std::unique_ptr<Input> input(new Input());
-			return *input.get();
-		}
-		PRIVATE static Timer& GetTimer() {
-			static std::unique_ptr<Timer> timer(new Timer());
-			return *timer.get();
-		}
-	};
+		return true;
+	}
+	PRIVATE static Window& GetWindow() {
+		static std::unique_ptr<Window> window(new Window());
+		return *window.get();
+	}
+	PRIVATE static Graphics& GetGraphics() {
+		static std::unique_ptr<Graphics> graphics(new Graphics());
+		return *graphics.get();
+	}
+	PRIVATE static Input& GetInput() {
+		static std::unique_ptr<Input> input(new Input());
+		return *input.get();
+	}
+	PRIVATE static Timer& GetTimer() {
+		static std::unique_ptr<Timer> timer(new Timer());
+		return *timer.get();
+	}
+};
 
 class Texture {
 	PROTECTED int width;
@@ -505,8 +810,8 @@ class Texture {
 
 		delete[] buffer;
 	}
-	PUBLIC DirectX::XMFLOAT2 GetSize() {
-		return DirectX::XMFLOAT2(static_cast<float>(width), static_cast<float>(height));
+	PUBLIC Float2 GetSize() {
+		return Float2(static_cast<float>(width), static_cast<float>(height));
 	}
 	PUBLIC virtual void Attach(int slot) {
 		App::GetGraphicsContext().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
@@ -676,8 +981,8 @@ class Camera {
 		DirectX::XMMATRIX projection;
 	};
 
-	PUBLIC DirectX::XMFLOAT3 position;
-	PUBLIC DirectX::XMFLOAT3 angles;
+	PUBLIC Float3 position;
+	PUBLIC Float3 angles;
 	PROTECTED float fieldOfView;
 	PROTECTED float nearClip;
 	PROTECTED float farClip;
@@ -721,8 +1026,8 @@ class Camera {
 		App::GetGraphicsContext().ClearRenderTargetView(renderTarget.Get(), color);
 	}
 	PROTECTED void Initialize() {
-		position = DirectX::XMFLOAT3(0.0f, 0.0f, -5.0f);
-		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		position = Float3(0.0f, 0.0f, -5.0f);
+		angles = Float3(0.0f, 0.0f, 0.0f);
 
 		SetPerspective(60.0f, 0.1f, 1000.0f);
 	}
@@ -772,12 +1077,12 @@ class Camera {
 class Mesh {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX world;
-		DirectX::XMFLOAT3 lightDirection;
+		Float3 lightDirection;
 	};
 
-	PUBLIC DirectX::XMFLOAT3 position;
-	PUBLIC DirectX::XMFLOAT3 angles;
-	PUBLIC DirectX::XMFLOAT3 scale;
+	PUBLIC Float3 position;
+	PUBLIC Float3 angles;
+	PUBLIC Float3 scale;
 	PUBLIC std::vector<Vertex> vertices;
 	PUBLIC std::vector<int> indices;
 	PUBLIC Material material;
@@ -821,53 +1126,63 @@ class Mesh {
 	}
 	PUBLIC virtual ~Mesh() {
 	}
-	PUBLIC void CreateQuad() {
-		vertices.clear();
-		vertices.push_back({ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
+	PUBLIC void CreateQuad(int indexOffset = 0, bool shouldClear = true) {
+		if (shouldClear) {
+			vertices.clear();
+			indices.clear();
+		}
 
-		indices.clear();
-		indices.push_back(0);
-		indices.push_back(1);
-		indices.push_back(2);
-		indices.push_back(3);
-		indices.push_back(2);
-		indices.push_back(1);
+		vertices.push_back({ Float3(-0.5f, 0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(0.0f, 0.0f) });
+		vertices.push_back({ Float3(0.5f, 0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(1.0f, 0.0f) });
+		vertices.push_back({ Float3(-0.5f, -0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(0.0f, 1.0f) });
+		vertices.push_back({ Float3(0.5f, -0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(1.0f, 1.0f) });
+
+		indices.push_back(indexOffset + 0);
+		indices.push_back(indexOffset + 1);
+		indices.push_back(indexOffset + 2);
+		indices.push_back(indexOffset + 3);
+		indices.push_back(indexOffset + 2);
+		indices.push_back(indexOffset + 1);
 	}
-	PUBLIC void CreateCube() {
-		vertices.clear();
-		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(1.0f, -1.0f, 1.0f), DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(1.0f, -1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, -1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, -1.0f, 1.0f), DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 0.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(-1.0f, -1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) });
-		vertices.push_back({ DirectX::XMFLOAT3(1.0f, -1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f) });
+	PUBLIC void CreateCube(bool shouldClear = true) {
+		if (shouldClear) {
+			vertices.clear();
+			indices.clear();
+		}
 
-		indices.clear();
+		vertices.push_back({ Float3(-1.0f, 1.0f, -1.0f), Float3(0.0f, 0.0f, -1.0f), Float2(0.0f, 0.0f) });
+		vertices.push_back({ Float3(1.0f, 1.0f, -1.0f), Float3(0.0f, 0.0f, -1.0f), Float2(1.0f, 0.0f) });
+		vertices.push_back({ Float3(-1.0f, -1.0f, -1.0f), Float3(0.0f, 0.0f, -1.0f), Float2(0.0f, 1.0f) });
+		vertices.push_back({ Float3(1.0f, -1.0f, -1.0f), Float3(0.0f, 0.0f, -1.0f), Float2(1.0f, 1.0f) });
+
+		vertices.push_back({ Float3(1.0f, 1.0f, -1.0f), Float3(1.0f, 0.0f, 0.0f), Float2(0.0f, 0.0f) });
+		vertices.push_back({ Float3(1.0f, 1.0f, 1.0f), Float3(1.0f, 0.0f, 0.0f), Float2(1.0f, 0.0f) });
+		vertices.push_back({ Float3(1.0f, -1.0f, -1.0f), Float3(1.0f, 0.0f, 0.0f), Float2(0.0f, 1.0f) });
+		vertices.push_back({ Float3(1.0f, -1.0f, 1.0f), Float3(1.0f, 0.0f, 0.0f), Float2(1.0f, 1.0f) });
+		
+		vertices.push_back({ Float3(1.0f, 1.0f, 1.0f), Float3(0.0f, 0.0f, 1.0f), Float2(0.0f, 0.0f) });
+		vertices.push_back({ Float3(-1.0f, 1.0f, 1.0f), Float3(0.0f, 0.0f, 1.0f), Float2(1.0f, 0.0f) });
+		vertices.push_back({ Float3(1.0f, -1.0f, 1.0f), Float3(0.0f, 0.0f, 1.0f), Float2(0.0f, 1.0f) });
+		vertices.push_back({ Float3(-1.0f, -1.0f, 1.0f), Float3(0.0f, 0.0f, 1.0f), Float2(1.0f, 1.0f) });
+		
+		vertices.push_back({ Float3(-1.0f, 1.0f, 1.0f), Float3(-1.0f, 0.0f, 0.0f), Float2(0.0f, 0.0f) });
+		vertices.push_back({ Float3(-1.0f, 1.0f, -1.0f), Float3(-1.0f, 0.0f, 0.0f), Float2(1.0f, 0.0f) });
+		vertices.push_back({ Float3(-1.0f, -1.0f, 1.0f), Float3(-1.0f, 0.0f, 0.0f), Float2(0.0f, 1.0f) });
+		vertices.push_back({ Float3(-1.0f, -1.0f, -1.0f), Float3(-1.0f, 0.0f, 0.0f), Float2(1.0f, 1.0f) });
+		
+		vertices.push_back({ Float3(-1.0f, 1.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float2(0.0f, 0.0f) });
+		vertices.push_back({ Float3(1.0f, 1.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float2(1.0f, 0.0f) });
+		vertices.push_back({ Float3(-1.0f, 1.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float2(0.0f, 1.0f) });
+		vertices.push_back({ Float3(1.0f, 1.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float2(1.0f, 1.0f) });
+		
+		vertices.push_back({ Float3(-1.0f, -1.0f, -1.0f), Float3(0.0f, -1.0f, 0.0f), Float2(0.0f, 0.0f) });
+		vertices.push_back({ Float3(1.0f, -1.0f, -1.0f), Float3(0.0f, -1.0f, 0.0f), Float2(1.0f, 0.0f) });
+		vertices.push_back({ Float3(-1.0f, -1.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f), Float2(0.0f, 1.0f) });
+		vertices.push_back({ Float3(1.0f, -1.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f), Float2(1.0f, 1.0f) });
+
 		indices.push_back(0);
 		indices.push_back(1);
 		indices.push_back(2);
-
 		indices.push_back(3);
 		indices.push_back(2);
 		indices.push_back(1);
@@ -875,7 +1190,6 @@ class Mesh {
 		indices.push_back(4);
 		indices.push_back(5);
 		indices.push_back(6);
-
 		indices.push_back(7);
 		indices.push_back(6);
 		indices.push_back(5);
@@ -883,7 +1197,6 @@ class Mesh {
 		indices.push_back(8);
 		indices.push_back(9);
 		indices.push_back(10);
-
 		indices.push_back(11);
 		indices.push_back(10);
 		indices.push_back(9);
@@ -891,7 +1204,6 @@ class Mesh {
 		indices.push_back(12);
 		indices.push_back(13);
 		indices.push_back(14);
-
 		indices.push_back(15);
 		indices.push_back(14);
 		indices.push_back(13);
@@ -899,7 +1211,6 @@ class Mesh {
 		indices.push_back(16);
 		indices.push_back(17);
 		indices.push_back(18);
-
 		indices.push_back(19);
 		indices.push_back(18);
 		indices.push_back(17);
@@ -907,7 +1218,6 @@ class Mesh {
 		indices.push_back(20);
 		indices.push_back(21);
 		indices.push_back(22);
-
 		indices.push_back(23);
 		indices.push_back(22);
 		indices.push_back(21);
@@ -924,7 +1234,9 @@ class Mesh {
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		DirectX::XMStoreFloat3(&constant.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
+		DirectX::XMFLOAT3 lightDirection;
+		DirectX::XMStoreFloat3(&lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
+		constant.lightDirection = lightDirection;
 
 		UINT stride = static_cast<UINT>(sizeof(Vertex));
 		UINT offset = 0;
@@ -935,9 +1247,9 @@ class Mesh {
 		App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
 	}
 	PROTECTED void Initialize() {
-		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-		scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+		position = Float3(0.0f, 0.0f, 0.0f);
+		angles = Float3(0.0f, 0.0f, 0.0f);
+		scale = Float3(1.0f, 1.0f, 1.0f);
 	}
 	PROTECTED void Setup() {
 		D3D11_BUFFER_DESC vertexBufferDesc = {};
@@ -965,13 +1277,13 @@ class Mesh {
 class Sprite {
 	PROTECTED struct ConstantBuffer {
 		DirectX::XMMATRIX world;
-		DirectX::XMFLOAT4 color;
+		Float4 color;
 	};
 
-	PUBLIC DirectX::XMFLOAT3 position;
-	PUBLIC DirectX::XMFLOAT3 angles;
-	PUBLIC DirectX::XMFLOAT3 scale;
-	PUBLIC DirectX::XMFLOAT4 color;
+	PUBLIC Float3 position;
+	PUBLIC Float3 angles;
+	PUBLIC Float3 scale;
+	PUBLIC Float4 color;
 	PROTECTED UINT width;
 	PROTECTED UINT height;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
@@ -1068,16 +1380,16 @@ class Sprite {
 		App::GetGraphicsContext().DrawIndexed(indexCount, 0, 0);
 	}
 	PROTECTED void Initialize() {
-		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-		scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
-		color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		position = Float3(0.0f, 0.0f, 0.0f);
+		angles = Float3(0.0f, 0.0f, 0.0f);
+		scale = Float3(1.0f, 1.0f, 1.0f);
+		color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
 		Vertex quad[] = {
-			{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 0.0f) },
-			{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
-			{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 1.0f) },
-			{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 1.0f) },
+			{ Float3(-0.5f, 0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(0.0f, 0.0f) },
+			{ Float3(0.5f, 0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(1.0f, 0.0f) },
+			{ Float3(-0.5f, -0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(0.0f, 1.0f) },
+			{ Float3(0.5f, -0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(1.0f, 1.0f) },
 		};
 		int vertexCount = sizeof(quad) / sizeof(quad[0]);
 
@@ -1228,5 +1540,6 @@ class Text : public Sprite {
 		delete[] textureBuffer;
 	}
 };
+
 
 }

@@ -37,11 +37,11 @@
 	PUBLIC std::vector<UINT>& GetMessages() {
 		return messages;
 	}
-	PUBLIC DirectX::XMFLOAT2 GetSize() {
+	PUBLIC Float2 GetSize() {
 		RECT clientRect = {};
 		GetClientRect(handle, &clientRect);
 
-		return DirectX::XMFLOAT2(static_cast<float>(clientRect.right - clientRect.left), static_cast<float>(clientRect.bottom - clientRect.top));
+		return Float2(static_cast<float>(clientRect.right - clientRect.left), static_cast<float>(clientRect.bottom - clientRect.top));
 	}
 	PUBLIC void SetSize(float width, float height) {
 		RECT windowRect = {};
@@ -66,7 +66,7 @@
 		SetWindowTextW(handle, title);
 	}
 	PUBLIC void SetFullScreen(bool isFullscreen) {
-		static DirectX::XMFLOAT2 size = GetSize();
+		static Float2 size = GetSize();
 
 		if (isFullscreen) {
 			size = GetSize();

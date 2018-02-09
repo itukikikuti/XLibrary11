@@ -6,8 +6,10 @@ class Float2 {
 	}
 	PUBLIC Float2(float x, float y) : x(x), y(y) {
 	}
-	PUBLIC operator DirectX::XMFLOAT2() const noexcept {
-		return DirectX::XMFLOAT2(x, y);
+	PUBLIC Float2& operator=(const DirectX::XMFLOAT2& value) {
+		x = value.x;
+		y = value.y;
+		return *this;
 	}
 	PUBLIC Float2& operator=(const Float2& value) {
 		x = value.x;
@@ -95,8 +97,11 @@ class Float3 {
 	}
 	PUBLIC Float3(float x, float y, float z) : x(x), y(y), z(z) {
 	}
-	PUBLIC operator DirectX::XMFLOAT3() const noexcept {
-		return DirectX::XMFLOAT3(x, y, z);
+	PUBLIC Float3& operator=(const DirectX::XMFLOAT3& value) {
+		x = value.x;
+		y = value.y;
+		z = value.z;
+		return *this;
 	}
 	PUBLIC Float3& operator=(const Float3& value) {
 		x = value.x;
@@ -195,8 +200,12 @@ class Float4 {
 	}
 	PUBLIC Float4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {
 	}
-	PUBLIC operator DirectX::XMFLOAT4() const noexcept {
-		return DirectX::XMFLOAT4(x, y, z, w);
+	PUBLIC Float4& operator=(const DirectX::XMFLOAT4& value) {
+		x = value.x;
+		y = value.y;
+		z = value.z;
+		w = value.w;
+		return *this;
 	}
 	PUBLIC Float4& operator=(const Float4& value) {
 		x = value.x;
@@ -296,13 +305,13 @@ Float4 operator/(const Float4& t1, const float& t2) {
 }
 
 struct Vertex {
-	DirectX::XMFLOAT3 position;
-	DirectX::XMFLOAT3 normal;
-	DirectX::XMFLOAT2 texcoord;
+	Float3 position;
+	Float3 normal;
+	Float2 uv;
 
-	//Vertex(DirectX::XMFLOAT3 position, DirectX::XMFLOAT2 texcoord, DirectX::XMFLOAT3 normal) {
-	//	this->position = position;
-	//	this->texcoord = texcoord;
-	//	this->normal = normal;
-	//}
+	Vertex(Float3 position, Float3 normal, Float2 uv) {
+		this->position = position;
+		this->normal = normal;
+		this->uv = uv;
+	}
 };

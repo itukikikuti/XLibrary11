@@ -51,8 +51,8 @@
 
 		delete[] buffer;
 	}
-	PUBLIC DirectX::XMFLOAT2 GetSize() {
-		return DirectX::XMFLOAT2(static_cast<float>(width), static_cast<float>(height));
+	PUBLIC Float2 GetSize() {
+		return Float2(static_cast<float>(width), static_cast<float>(height));
 	}
 	PUBLIC virtual void Attach(int slot) {
 		App::GetGraphicsContext().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());

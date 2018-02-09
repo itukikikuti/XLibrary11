@@ -38,7 +38,7 @@ class App {
 	PUBLIC static std::vector<UINT>& GetWindowMessages() {
 		return GetWindow().GetMessages();
 	}
-	PUBLIC static DirectX::XMFLOAT2 GetWindowSize() {
+	PUBLIC static Float2 GetWindowSize() {
 		return GetWindow().GetSize();
 	}
 	PUBLIC static void SetWindowSize(float width, float height) {
@@ -71,10 +71,10 @@ class App {
 	PUBLIC static bool GetKeyDown(int VK_CODE) {
 		return GetInput().GetKeyDown(VK_CODE);
 	}
-	PUBLIC static DirectX::XMFLOAT2 GetMousePosition() {
+	PUBLIC static Float2 GetMousePosition() {
 		return GetInput().GetMousePosition();
 	}
-	PUBLIC static void SetMousePosition(DirectX::XMFLOAT2 position) {
+	PUBLIC static void SetMousePosition(Float2 position) {
 		GetInput().SetMousePosition(position.x, position.y);
 	}
 	PUBLIC static void SetMousePosition(float x, float y) {

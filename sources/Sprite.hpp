@@ -1,13 +1,13 @@
 ﻿class Sprite {
 	PROTECTED struct ConstantBuffer {
 		DirectX::XMMATRIX world;
-		DirectX::XMFLOAT4 color;
+		Float4 color;
 	};
 
-	PUBLIC DirectX::XMFLOAT3 position;
-	PUBLIC DirectX::XMFLOAT3 angles;
-	PUBLIC DirectX::XMFLOAT3 scale;
-	PUBLIC DirectX::XMFLOAT4 color;
+	PUBLIC Float3 position;
+	PUBLIC Float3 angles;
+	PUBLIC Float3 scale;
+	PUBLIC Float4 color;
 	PROTECTED UINT width;
 	PROTECTED UINT height;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
@@ -104,16 +104,16 @@
 		App::GetGraphicsContext().DrawIndexed(indexCount, 0, 0);
 	}
 	PROTECTED void Initialize() {
-		position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-		scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
-		color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		position = Float3(0.0f, 0.0f, 0.0f);
+		angles = Float3(0.0f, 0.0f, 0.0f);
+		scale = Float3(1.0f, 1.0f, 1.0f);
+		color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
 		Vertex quad[] = {
-			{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 0.0f) },
-			{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
-			{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(0.0f, 1.0f) },
-			{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), DirectX::XMFLOAT2(1.0f, 1.0f) },
+			{ Float3(-0.5f, 0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(0.0f, 0.0f) },
+			{ Float3(0.5f, 0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(1.0f, 0.0f) },
+			{ Float3(-0.5f, -0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(0.0f, 1.0f) },
+			{ Float3(0.5f, -0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(1.0f, 1.0f) },
 		};
 		int vertexCount = sizeof(quad) / sizeof(quad[0]);
 

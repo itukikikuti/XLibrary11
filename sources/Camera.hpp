@@ -4,8 +4,8 @@ class Camera {
 		DirectX::XMMATRIX projection;
 	};
 
-	PUBLIC DirectX::XMFLOAT3 position;
-	PUBLIC DirectX::XMFLOAT3 angles;
+	PUBLIC Float3 position;
+	PUBLIC Float3 angles;
 	PROTECTED float fieldOfView;
 	PROTECTED float nearClip;
 	PROTECTED float farClip;
@@ -49,8 +49,8 @@ class Camera {
 		App::GetGraphicsContext().ClearRenderTargetView(renderTarget.Get(), color);
 	}
 	PROTECTED void Initialize() {
-		position = DirectX::XMFLOAT3(0.0f, 0.0f, -5.0f);
-		angles = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		position = Float3(0.0f, 0.0f, -5.0f);
+		angles = Float3(0.0f, 0.0f, 0.0f);
 
 		SetPerspective(60.0f, 0.1f, 1000.0f);
 	}

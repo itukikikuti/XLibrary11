@@ -1,5 +1,5 @@
 class Input {
-	PRIVATE DirectX::XMFLOAT2 mousePosition;
+	PRIVATE Float2 mousePosition;
 	PRIVATE BYTE preKeyState[256];
 	PRIVATE BYTE keyState[256];
 	PRIVATE bool isShowCursor = true;
@@ -18,7 +18,7 @@ class Input {
 	PUBLIC bool GetKeyDown(int keyCode) {
 		return (keyState[keyCode] & 0x80) && !(preKeyState[keyCode] & 0x80);
 	}
-	PUBLIC DirectX::XMFLOAT2 GetMousePosition() {
+	PUBLIC Float2 GetMousePosition() {
 		return mousePosition;
 	}
 	PUBLIC void SetMousePosition(float x, float y) {
@@ -45,7 +45,7 @@ class Input {
 		GetCursorPos(&point);
 
 		ScreenToClient(App::GetWindowHandle(), &point);
-		mousePosition = DirectX::XMFLOAT2(static_cast<float>(point.x), static_cast<float>(point.y));
+		mousePosition = Float2(static_cast<float>(point.x), static_cast<float>(point.y));
 
 		for (int i = 0; i < 256; i++) {
 			preKeyState[i] = keyState[i];
