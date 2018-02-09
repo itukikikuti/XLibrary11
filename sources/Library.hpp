@@ -44,7 +44,7 @@ namespace Library {
 	}
 
 	inline void Generate(const wchar_t* fileName) {
-		wstring library = GetSourceCode(L"sources/App.h");
+		wstring library = GetSourceCode(L"sources/App.hpp");
 
 		vector<wstring> sourceFileNameList = GetSourceFileNameList(library);
 		for (wstring fileName : sourceFileNameList) {
