@@ -9,45 +9,45 @@
     <ClCompile Include="sources\Main.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="sources\Library.h">
+    <ClCompile Include="sources\Library.hpp">
       <Filter>sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sources\Sprite.h">
+    <ClInclude Include="sources\App.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Text.h">
+    <ClInclude Include="sources\Camera.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Material.h">
+    <ClInclude Include="sources\Graphics.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Texture.h">
+    <ClInclude Include="sources\Input.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Mesh.h">
+    <ClInclude Include="sources\Material.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Window.h">
+    <ClInclude Include="sources\Math.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\App.h">
+    <ClInclude Include="sources\Mesh.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Input.h">
+    <ClInclude Include="sources\Sprite.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Camera.h">
+    <ClInclude Include="sources\Text.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Timer.h">
+    <ClInclude Include="sources\Texture.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Graphics.h">
+    <ClInclude Include="sources\Timer.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Math.h">
+    <ClInclude Include="sources\Window.hpp">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>

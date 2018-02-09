@@ -24,14 +24,14 @@
 
 namespace GameLibrary {
 
-#include "Math.h"
+#include "Math.hpp"
 
 	class App {
 
-	#include "Window.h"
-	#include "Graphics.h"
-	#include "Input.h"
-	#include "Timer.h"
+	#include "Window.hpp"
+	#include "Graphics.hpp"
+	#include "Input.hpp"
+	#include "Timer.hpp"
 
 		PUBLIC App() = delete;
 		PUBLIC static HWND GetWindowHandle() {
@@ -124,10 +124,10 @@ namespace GameLibrary {
 		}
 	};
 
-#include "Texture.h"
-#include "Material.h"
-#include "Camera.h"
-#include "Mesh.h"
-#include "Sprite.h"
-#include "Text.h"
+#include "Texture.hpp"
+#include "Material.hpp"
+#include "Camera.hpp"
+#include "Mesh.hpp"
+#include "Sprite.hpp"
+#include "Text.hpp"
 }
