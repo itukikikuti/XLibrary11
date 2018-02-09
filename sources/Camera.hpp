@@ -76,17 +76,23 @@ class Camera {
 	}
 	PROTECTED void TryResize() {
 		for (UINT message : App::GetWindowMessages()) {
-			if (message == WM_SIZE) {
-				App::GetGraphicsContext().OMSetRenderTargets(1, nullptr, nullptr);
-				renderTarget.Reset();
-				texture.Reset();
-				App::GetGraphicsContext().Flush();
-				App::GetGraphicsMemory().ResizeBuffers(2, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), DXGI_FORMAT_R8G8B8A8_UNORM, 0);
-
-				SetPerspective(fieldOfView, nearClip, farClip);
-				Setup();
-				break;
+			if (message != WM_SIZE) {
+				continue;
 			}
+			if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f) {
+				continue;
+			}
+
+			Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
+			App::GetGraphicsContext().OMSetRenderTargets(1, nullRenderTarget.GetAddressOf(), nullptr);
+			renderTarget.Reset();
+			texture.Reset();
+			App::GetGraphicsContext().Flush();
+			App::GetGraphicsMemory().ResizeBuffers(2, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+
+			SetPerspective(fieldOfView, nearClip, farClip);
+			Setup();
+			return;
 		}
 	}
 };

@@ -1,6 +1,6 @@
 ﻿class Window {
 	PRIVATE HWND handle;
-	PRIVATE const DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX;
+	PRIVATE const DWORD style = WS_OVERLAPPEDWINDOW;
 	PRIVATE std::vector<UINT> messages;
 
 	PUBLIC Window() {
