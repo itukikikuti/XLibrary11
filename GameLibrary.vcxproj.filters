@@ -9,7 +9,7 @@
     <ClCompile Include="sources\Main.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="sources\Library.hpp">
+    <ClCompile Include="sources\Library.cpp">
       <Filter>sources</Filter>
     </ClCompile>
   </ItemGroup>

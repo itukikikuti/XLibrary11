@@ -1,10 +1,9 @@
 ﻿#include "App.hpp"
-#include "Library.hpp"
+#include "Library.cpp"
 #include <crtdbg.h>
 
 using namespace std;
 using namespace DirectX;
-using namespace GameLibrary;
 
 int Main() {
 	Library::Generate(L"GameLibrary.hpp");

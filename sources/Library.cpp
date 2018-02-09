@@ -53,7 +53,7 @@ namespace Library {
 
 		wofstream libraryFile(fileName);
 		libraryFile.imbue(locale(locale(""), new codecvt_utf8_utf16<wchar_t, 0x10ffff, generate_header>()));
-		libraryFile << library;
+		libraryFile << L"namespace GameLibrary {\n" << library << L"\n}\n";
 		libraryFile.close();
 	}
 }

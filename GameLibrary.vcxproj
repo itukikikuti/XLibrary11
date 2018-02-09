@@ -111,7 +111,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="sources\Library.hpp" />
+    <ClCompile Include="sources\Library.cpp" />
     <ClCompile Include="sources\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
