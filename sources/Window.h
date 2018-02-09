@@ -23,7 +23,7 @@
 
 		handle = CreateWindowW(L"GameLibrary", L"GameLibrary", style, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
 
-		SetSize(1280, 720);
+		SetSize(1280.0f, 720.0f);
 
 		ShowWindow(handle, SW_SHOWNORMAL);
 
@@ -37,20 +37,20 @@
 	PUBLIC std::vector<UINT>& GetMessages() {
 		return messages;
 	}
-	PUBLIC DirectX::XMINT2 GetSize() {
+	PUBLIC DirectX::XMFLOAT2 GetSize() {
 		RECT clientRect = {};
 		GetClientRect(handle, &clientRect);
 
-		return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+		return DirectX::XMFLOAT2(static_cast<float>(clientRect.right - clientRect.left), static_cast<float>(clientRect.bottom - clientRect.top));
 	}
-	PUBLIC void SetSize(int width, int height) {
+	PUBLIC void SetSize(float width, float height) {
 		RECT windowRect = {};
 		RECT clientRect = {};
 		GetWindowRect(handle, &windowRect);
 		GetClientRect(handle, &clientRect);
 
-		int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + width;
-		int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + height;
+		int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + static_cast<int>(width);
+		int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + static_cast<int>(height);
 
 		int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
 		int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
@@ -66,7 +66,7 @@
 		SetWindowTextW(handle, title);
 	}
 	PUBLIC void SetFullScreen(bool isFullscreen) {
-		static DirectX::XMINT2 size = GetSize();
+		static DirectX::XMFLOAT2 size = GetSize();
 
 		if (isFullscreen) {
 			size = GetSize();

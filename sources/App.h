@@ -40,10 +40,10 @@ namespace GameLibrary {
 		PUBLIC static std::vector<UINT>& GetWindowMessages() {
 			return GetWindow().GetMessages();
 		}
-		PUBLIC static DirectX::XMINT2 GetWindowSize() {
+		PUBLIC static DirectX::XMFLOAT2 GetWindowSize() {
 			return GetWindow().GetSize();
 		}
-		PUBLIC static void SetWindowSize(int width, int height) {
+		PUBLIC static void SetWindowSize(float width, float height) {
 			GetWindow().SetSize(width, height);
 		}
 		PUBLIC static wchar_t* GetTitle() {

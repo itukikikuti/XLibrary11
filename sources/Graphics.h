@@ -30,8 +30,8 @@
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		swapChainDesc.BufferCount = SWAP_CHAIN_COUNT;
-		swapChainDesc.BufferDesc.Width = App::GetWindowSize().x;
-		swapChainDesc.BufferDesc.Height = App::GetWindowSize().y;
+		swapChainDesc.BufferDesc.Width = static_cast<UINT>(App::GetWindowSize().x);
+		swapChainDesc.BufferDesc.Height = static_cast<UINT>(App::GetWindowSize().y);
 		swapChainDesc.BufferDesc.Format = SWAP_CHAIN_FORMAT;
 		swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;

@@ -81,7 +81,7 @@ class Camera {
 				renderTarget.Reset();
 				texture.Reset();
 				App::GetGraphicsContext().Flush();
-				App::GetGraphicsMemory().ResizeBuffers(2, App::GetWindowSize().x, App::GetWindowSize().y, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+				App::GetGraphicsMemory().ResizeBuffers(2, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 
 				SetPerspective(fieldOfView, nearClip, farClip);
 				Setup();
