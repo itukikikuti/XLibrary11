@@ -1,4 +1,4 @@
-# GameLibrary
+# XLibrary11
 
-ダウンロード [GameLibrary.hpp](https://raw.githubusercontent.com/itukikikuti/GameLibrary/master/GameLibrary.hpp)  
-リファレンス [Wiki](https://github.com/itukikikuti/GameLibrary/wiki)
+ダウンロード [XLibrary11.hpp](https://raw.githubusercontent.com/itukikikuti/XLibrary11/master/XLibrary11.hpp)  
+リファレンス [Wiki](https://github.com/itukikikuti/XLibrary11/wiki)
