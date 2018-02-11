@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{A9324620-E81A-40A5-A571-F4D15138C960}</ProjectGuid>
-    <RootNamespace>GameLibrary</RootNamespace>
+    <ProjectGuid>{3BB975E3-911F-4346-AD4B-3C0381876063}</ProjectGuid>
+    <RootNamespace>XLibrary11</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -111,22 +111,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="sources\Library.cpp" />
-    <ClCompile Include="sources\Main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="sources\App.hpp" />
     <ClInclude Include="sources\Camera.hpp" />
+    <ClInclude Include="sources\Graphics.hpp" />
     <ClInclude Include="sources\Input.hpp" />
     <ClInclude Include="sources\Material.hpp" />
     <ClInclude Include="sources\Math.hpp" />
     <ClInclude Include="sources\Mesh.hpp" />
-    <ClInclude Include="sources\Graphics.hpp" />
     <ClInclude Include="sources\Sprite.hpp" />
     <ClInclude Include="sources\Text.hpp" />
     <ClInclude Include="sources\Texture.hpp" />
     <ClInclude Include="sources\Timer.hpp" />
     <ClInclude Include="sources\Window.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="sources\Library.cpp" />
+    <ClCompile Include="sources\Main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,21 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="sources">
-      <UniqueIdentifier>{39a643cd-071c-4c9a-be24-4d3d926378d4}</UniqueIdentifier>
+      <UniqueIdentifier>{115a15bf-cf66-4227-8ac6-649f7cd79b4e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sources\Main.cpp">
-      <Filter>sources</Filter>
-    </ClCompile>
-    <ClCompile Include="sources\Library.cpp">
-      <Filter>sources</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="sources\App.hpp">
-      <Filter>sources</Filter>
-    </ClInclude>
     <ClInclude Include="sources\Camera.hpp">
       <Filter>sources</Filter>
     </ClInclude>
@@ -50,5 +39,16 @@
     <ClInclude Include="sources\Window.hpp">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\App.hpp">
+      <Filter>sources</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="sources\Library.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\Main.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

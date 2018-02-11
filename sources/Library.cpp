@@ -43,17 +43,17 @@ namespace Library {
 		return list;
 	}
 
-	inline void Generate(const wchar_t* fileName) {
-		wstring library = GetSourceCode(L"sources/App.hpp");
+	inline void Generate(const wchar_t* inputFilePath, const wchar_t* outputFilePath) {
+		wstring library = GetSourceCode(inputFilePath);
 
 		vector<wstring> sourceFileNameList = GetSourceFileNameList(library);
 		for (wstring fileName : sourceFileNameList) {
 			MargeSourceCode(fileName.c_str(), library);
 		}
 
-		wofstream libraryFile(fileName);
+		wofstream libraryFile(outputFilePath);
 		libraryFile.imbue(locale(locale(""), new codecvt_utf8_utf16<wchar_t, 0x10ffff, generate_header>()));
-		libraryFile << L"namespace GameLibrary {\n" << library << L"\n}\n";
+		libraryFile << L"namespace XLibrary11 {\n" << library << L"\n}\n";
 		libraryFile.close();
 	}
 }
