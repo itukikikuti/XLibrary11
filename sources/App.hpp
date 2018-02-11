@@ -17,6 +17,8 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
+XLIBRARY_NAMESPACE_BEGIN
+
 #define Main() WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 #define PUBLIC public:
 #define PRIVATE private:
@@ -25,6 +27,7 @@
 #include "Math.hpp"
 
 class App {
+	PUBLIC static constexpr wchar_t* name = L"XLibrary11";
 
 #include "Window.hpp"
 #include "Graphics.hpp"
@@ -128,3 +131,4 @@ class App {
 #include "Mesh.hpp"
 #include "Sprite.hpp"
 #include "Text.hpp"
+XLIBRARY_NAMESPACE_END

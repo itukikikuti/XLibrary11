@@ -1,4 +1,6 @@
-﻿#include "App.hpp"
+﻿#define XLIBRARY_NAMESPACE_BEGIN
+#define XLIBRARY_NAMESPACE_END
+#include "App.hpp"
 #include "Library.cpp"
 #include <crtdbg.h>
 

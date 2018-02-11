@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <regex>
 
 namespace Library {
 	using namespace std;
@@ -32,7 +33,7 @@ namespace Library {
 
 	inline vector<wstring> GetSourceFileNameList(wstring& sourceCode) {
 		vector<wstring> list;
-		for (int i = 0; i < sourceCode.length(); i++) {
+		for (size_t i = 0; i < sourceCode.length(); i++) {
 			if (sourceCode[i] != '#') continue;
 			if (sourceCode.substr(i, 10) != L"#include \"") continue;
 			i += 10;
@@ -51,9 +52,12 @@ namespace Library {
 			MargeSourceCode(fileName.c_str(), library);
 		}
 
+		library = regex_replace(library, wregex(L"XLIBRARY_NAMESPACE_BEGIN"), L"namespace XLibrary11 {");
+		library = regex_replace(library, wregex(L"XLIBRARY_NAMESPACE_END"), L"}");
+
 		wofstream libraryFile(outputFilePath);
 		libraryFile.imbue(locale(locale(""), new codecvt_utf8_utf16<wchar_t, 0x10ffff, generate_header>()));
-		libraryFile << L"namespace XLibrary11 {\n" << library << L"\n}\n";
+		libraryFile << library;
 		libraryFile.close();
 	}
 }

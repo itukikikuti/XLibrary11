@@ -17,11 +17,11 @@
 		windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
 		windowClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 		windowClass.lpszMenuName = nullptr;
-		windowClass.lpszClassName = L"XLibrary11";
+		windowClass.lpszClassName = App::name;
 		windowClass.hIconSm = nullptr;
 		RegisterClassExW(&windowClass);
 
-		handle = CreateWindowW(L"XLibrary11", L"XLibrary11", style, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
+		handle = CreateWindowW(App::name, App::name, style, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
 
 		SetSize(1280.0f, 720.0f);
 
