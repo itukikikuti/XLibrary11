@@ -23,7 +23,7 @@
 		Initialize();
 	}
 	PUBLIC Sprite(const wchar_t* filePath) {
-		CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+		CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
 		Microsoft::WRL::ComPtr<IWICImagingFactory> factory = nullptr;
 		CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(factory.GetAddressOf()));

@@ -9,9 +9,9 @@
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
 
 	PUBLIC Graphics() {
-		int createDeviceFlag = 0;
+		int flags = 0;
 #if defined(DEBUG) || defined(_DEBUG)
-		createDeviceFlag |= D3D11_CREATE_DEVICE_DEBUG;
+		flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
 		D3D_DRIVER_TYPE driverTypes[] = {
@@ -42,7 +42,7 @@
 		swapChainDesc.Windowed = true;
 
 		for (int i = 0; i < driverTypeCount; i++) {
-			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, createDeviceFlag, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, swapChain.GetAddressOf(), device.GetAddressOf(), nullptr, context.GetAddressOf());
+			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, swapChain.GetAddressOf(), device.GetAddressOf(), nullptr, context.GetAddressOf());
 
 			if (SUCCEEDED(result)) {
 				break;
