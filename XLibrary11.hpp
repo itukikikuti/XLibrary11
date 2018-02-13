@@ -1040,8 +1040,8 @@ class Camera {
 
 		depthTexture.Reset();
 		D3D11_TEXTURE2D_DESC textureDesc = {};
-		textureDesc.Width = static_cast<float>(App::GetWindowSize().x);
-		textureDesc.Height = static_cast<float>(App::GetWindowSize().y);
+		textureDesc.Width = static_cast<UINT>(App::GetWindowSize().x);
+		textureDesc.Height = static_cast<UINT>(App::GetWindowSize().y);
 		textureDesc.MipLevels = 1;
 		textureDesc.ArraySize = 1;
 		textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -1066,8 +1066,8 @@ class Camera {
 		App::GetGraphicsDevice().CreateDepthStencilView(depthTexture.Get(), &depthStencilViewDesc, depthStencilView.GetAddressOf());
 
 		D3D11_VIEWPORT viewPort = {};
-		viewPort.Width = static_cast<float>(App::GetWindowSize().x);
-		viewPort.Height = static_cast<float>(App::GetWindowSize().y);
+		viewPort.Width = App::GetWindowSize().x;
+		viewPort.Height = App::GetWindowSize().y;
 		viewPort.MinDepth = 0.0f;
 		viewPort.MaxDepth = 1.0f;
 		viewPort.TopLeftX = 0;
@@ -1447,8 +1447,8 @@ class Sprite {
 		};
 		indexCount = sizeof(index) / sizeof(index[0]);
 
-		int x = App::GetWindowSize().x;
-		int y = App::GetWindowSize().y;
+		int x = static_cast<int>(App::GetWindowSize().x);
+		int y = static_cast<int>(App::GetWindowSize().y);
 
 		D3D11_BUFFER_DESC vertexBufferDesc = {};
 		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;

@@ -68,8 +68,8 @@ class Camera {
 
 		depthTexture.Reset();
 		D3D11_TEXTURE2D_DESC textureDesc = {};
-		textureDesc.Width = static_cast<float>(App::GetWindowSize().x);
-		textureDesc.Height = static_cast<float>(App::GetWindowSize().y);
+		textureDesc.Width = static_cast<UINT>(App::GetWindowSize().x);
+		textureDesc.Height = static_cast<UINT>(App::GetWindowSize().y);
 		textureDesc.MipLevels = 1;
 		textureDesc.ArraySize = 1;
 		textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -94,8 +94,8 @@ class Camera {
 		App::GetGraphicsDevice().CreateDepthStencilView(depthTexture.Get(), &depthStencilViewDesc, depthStencilView.GetAddressOf());
 
 		D3D11_VIEWPORT viewPort = {};
-		viewPort.Width = static_cast<float>(App::GetWindowSize().x);
-		viewPort.Height = static_cast<float>(App::GetWindowSize().y);
+		viewPort.Width = App::GetWindowSize().x;
+		viewPort.Height = App::GetWindowSize().y;
 		viewPort.MinDepth = 0.0f;
 		viewPort.MaxDepth = 1.0f;
 		viewPort.TopLeftX = 0;
