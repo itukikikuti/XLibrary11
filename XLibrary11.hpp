@@ -24,7 +24,7 @@ namespace XLibrary11 {
 #define PRIVATE private:
 #define PROTECTED protected:
 
-class Float2 : public DirectX::XMFLOAT2 {
+struct Float2 : public DirectX::XMFLOAT2 {
 	PUBLIC Float2() : DirectX::XMFLOAT2() {
 	}
 	PUBLIC Float2(float x, float y) : DirectX::XMFLOAT2(x, y) {
@@ -116,7 +116,7 @@ Float2 operator/(const Float2& t1, const float& t2) {
 	return Float2(t1) /= t2;
 }
 
-class Float3 : public DirectX::XMFLOAT3 {
+struct Float3 : public DirectX::XMFLOAT3 {
 	PUBLIC Float3() : DirectX::XMFLOAT3() {
 	}
 	PUBLIC Float3(float x, float y, float z) : DirectX::XMFLOAT3(x, y, z) {
@@ -218,7 +218,7 @@ Float3 operator/(const Float3& t1, const float& t2) {
 	return Float3(t1) /= t2;
 }
 
-class Float4 : public DirectX::XMFLOAT4 {
+struct Float4 : public DirectX::XMFLOAT4 {
 	PUBLIC Float4() : DirectX::XMFLOAT4() {
 	}
 	PUBLIC Float4(float x, float y, float z, float w) : DirectX::XMFLOAT4(x, y, z, w) {
@@ -331,11 +331,11 @@ Float4 operator/(const Float4& t1, const float& t2) {
 }
 
 struct Vertex {
-	Float3 position;
-	Float3 normal;
-	Float2 uv;
+	PUBLIC Float3 position;
+	PUBLIC Float3 normal;
+	PUBLIC Float2 uv;
 
-	Vertex(Float3 position, Float3 normal, Float2 uv) {
+	PUBLIC Vertex(Float3 position, Float3 normal, Float2 uv) {
 		this->position = position;
 		this->normal = normal;
 		this->uv = uv;
