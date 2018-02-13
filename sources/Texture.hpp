@@ -33,7 +33,7 @@
 
 		WICPixelFormatGUID pixelFormat;
 		frame->GetPixelFormat(&pixelFormat);
-		BYTE* buffer = new BYTE[width * height * 4];
+		std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
 
 		if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
 			Microsoft::WRL::ComPtr<IWICFormatConverter> formatConverter = nullptr;
@@ -41,15 +41,13 @@
 
 			formatConverter->Initialize(frame.Get(), GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
 
-			formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer);
+			formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
 		}
 		else {
-			frame->CopyPixels(0, width * 4, width * height * 4, buffer);
+			frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
 		}
 
-		Setup(buffer);
-
-		delete[] buffer;
+		Setup(buffer.get());
 	}
 	PUBLIC Float2 GetSize() {
 		return Float2(static_cast<float>(width), static_cast<float>(height));
@@ -59,6 +57,7 @@
 		App::GetGraphicsContext().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
 	}
 	PROTECTED void Setup(BYTE* buffer) {
+		texture.Reset();
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = width;
 		textureDesc.Height = height;
@@ -78,12 +77,14 @@
 		textureSubresourceData.SysMemSlicePitch = width * height * 4;
 		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, texture.GetAddressOf());
 
+		shaderResourceView.Reset();
 		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
 		App::GetGraphicsDevice().CreateShaderResourceView(texture.Get(), &shaderResourceViewDesc, shaderResourceView.GetAddressOf());
 
+		samplerState.Reset();
 		D3D11_SAMPLER_DESC samplerDesc = {};
 		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;

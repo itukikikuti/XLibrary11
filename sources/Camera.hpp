@@ -55,7 +55,9 @@ class Camera {
 		SetPerspective(60.0f, 0.1f, 1000.0f);
 	}
 	PROTECTED void Setup() {
+		texture.Reset();
 		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(texture.GetAddressOf()));
+		renderTarget.Reset();
 		App::GetGraphicsDevice().CreateRenderTargetView(texture.Get(), nullptr, renderTarget.GetAddressOf());
 
 		D3D11_VIEWPORT viewPort = {};
@@ -67,6 +69,7 @@ class Camera {
 		viewPort.TopLeftY = 0;
 		App::GetGraphicsContext().RSSetViewports(1, &viewPort);
 
+		constantBuffer.Reset();
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;

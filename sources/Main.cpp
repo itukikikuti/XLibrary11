@@ -17,6 +17,8 @@ int Main() {
 
 	camera.position = Float3(0.0f, 1.0f, -2.0f);
 	camera.angles.x = 20.0f;
+	mesh.CreateCube();
+	mesh.Apply();
 	mesh.material.SetTexture(0, &tex);
 
 	while (App::Refresh()) {

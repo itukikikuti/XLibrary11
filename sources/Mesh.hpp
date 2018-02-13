@@ -45,7 +45,6 @@
 			"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
 			"}") {
 		Initialize();
-		CreateCube();
 		Setup();
 	}
 	PUBLIC virtual ~Mesh() {
@@ -158,9 +157,7 @@
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		DirectX::XMFLOAT3 lightDirection;
-		DirectX::XMStoreFloat3(&lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
-		constant.lightDirection = lightDirection;
+		DirectX::XMStoreFloat3(&constant.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
 
 		if (vertexBuffer == nullptr) {
 			return;
@@ -185,6 +182,7 @@
 	}
 	PROTECTED void Setup() {
 		if (vertices.size() > 0) {
+			vertexBuffer.Reset();
 			D3D11_BUFFER_DESC vertexBufferDesc = {};
 			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 			vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
@@ -194,11 +192,9 @@
 			vertexSubresourceData.pSysMem = &vertices[0];
 			App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
 		}
-		else {
-			vertexBuffer.Reset();
-		}
 
 		if (indices.size() > 0) {
+			indexBuffer.Reset();
 			D3D11_BUFFER_DESC indexBufferDesc = {};
 			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 			indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indices.size());
@@ -207,9 +203,6 @@
 			D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 			indexSubresourceData.pSysMem = &indices[0];
 			App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
-		}
-		else {
-			indexBuffer.Reset();
 		}
 
 		material.SetCBuffer(&constant, sizeof(Constant));

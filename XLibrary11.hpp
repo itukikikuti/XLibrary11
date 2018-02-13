@@ -24,18 +24,20 @@ namespace XLibrary11 {
 #define PRIVATE private:
 #define PROTECTED protected:
 
-class Float2 {
-	PUBLIC float x;
-	PUBLIC float y;
-
-	PUBLIC Float2() : x(0.0f), y(0.0f) {
+class Float2 : public DirectX::XMFLOAT2 {
+	PUBLIC Float2() : DirectX::XMFLOAT2() {
 	}
-	PUBLIC Float2(float x, float y) : x(x), y(y) {
+	PUBLIC Float2(float x, float y) : DirectX::XMFLOAT2(x, y) {
 	}
-	PUBLIC Float2& operator=(const DirectX::XMFLOAT2& value) {
-		x = value.x;
-		y = value.y;
+	PUBLIC Float2(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT2() {
+		DirectX::XMStoreFloat2(this, vector);
+	}
+	PUBLIC Float2& operator=(const DirectX::XMVECTOR& vector) {
+		DirectX::XMStoreFloat2(this, vector);
 		return *this;
+	}
+	PUBLIC operator DirectX::XMVECTOR() const noexcept {
+		return DirectX::XMLoadFloat2(this);
 	}
 	PUBLIC Float2& operator=(const Float2& value) {
 		x = value.x;
@@ -114,20 +116,20 @@ Float2 operator/(const Float2& t1, const float& t2) {
 	return Float2(t1) /= t2;
 }
 
-class Float3 {
-	PUBLIC float x;
-	PUBLIC float y;
-	PUBLIC float z;
-
-	PUBLIC Float3() : x(0.0f), y(0.0f), z(0.0f) {
+class Float3 : public DirectX::XMFLOAT3 {
+	PUBLIC Float3() : DirectX::XMFLOAT3() {
 	}
-	PUBLIC Float3(float x, float y, float z) : x(x), y(y), z(z) {
+	PUBLIC Float3(float x, float y, float z) : DirectX::XMFLOAT3(x, y, z) {
 	}
-	PUBLIC Float3& operator=(const DirectX::XMFLOAT3& value) {
-		x = value.x;
-		y = value.y;
-		z = value.z;
+	PUBLIC Float3(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT3() {
+		DirectX::XMStoreFloat3(this, vector);
+	}
+	PUBLIC Float3& operator=(const DirectX::XMVECTOR& vector) {
+		DirectX::XMStoreFloat3(this, vector);
 		return *this;
+	}
+	PUBLIC operator DirectX::XMVECTOR() const noexcept {
+		return DirectX::XMLoadFloat3(this);
 	}
 	PUBLIC Float3& operator=(const Float3& value) {
 		x = value.x;
@@ -216,22 +218,20 @@ Float3 operator/(const Float3& t1, const float& t2) {
 	return Float3(t1) /= t2;
 }
 
-class Float4 {
-	PUBLIC float x;
-	PUBLIC float y;
-	PUBLIC float z;
-	PUBLIC float w;
-
-	PUBLIC Float4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {
+class Float4 : public DirectX::XMFLOAT4 {
+	PUBLIC Float4() : DirectX::XMFLOAT4() {
 	}
-	PUBLIC Float4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {
+	PUBLIC Float4(float x, float y, float z, float w) : DirectX::XMFLOAT4(x, y, z, w) {
 	}
-	PUBLIC Float4& operator=(const DirectX::XMFLOAT4& value) {
-		x = value.x;
-		y = value.y;
-		z = value.z;
-		w = value.w;
+	PUBLIC Float4(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT4() {
+		DirectX::XMStoreFloat4(this, vector);
+	}
+	PUBLIC Float4& operator=(const DirectX::XMVECTOR& vector) {
+		DirectX::XMStoreFloat4(this, vector);
 		return *this;
+	}
+	PUBLIC operator DirectX::XMVECTOR() const noexcept {
+		return DirectX::XMLoadFloat4(this);
 	}
 	PUBLIC Float4& operator=(const Float4& value) {
 		x = value.x;
@@ -536,13 +536,6 @@ class Graphics {
 		float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		device->CreateBlendState(&blendDesc, &blendState);
 		context->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
-
-		//Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
-		//D3D11_RASTERIZER_DESC rasterizerDesc = {};
-		//rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		//rasterizerDesc.CullMode = D3D11_CULL_NONE;
-		//device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
-		//context->RSSetState(rasterizerState.Get());
 	}
 	PUBLIC ~Graphics() {
 	}
@@ -794,7 +787,7 @@ class Texture {
 
 		WICPixelFormatGUID pixelFormat;
 		frame->GetPixelFormat(&pixelFormat);
-		BYTE* buffer = new BYTE[width * height * 4];
+		std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
 
 		if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
 			Microsoft::WRL::ComPtr<IWICFormatConverter> formatConverter = nullptr;
@@ -802,15 +795,13 @@ class Texture {
 
 			formatConverter->Initialize(frame.Get(), GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
 
-			formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer);
+			formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
 		}
 		else {
-			frame->CopyPixels(0, width * 4, width * height * 4, buffer);
+			frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
 		}
 
-		Setup(buffer);
-
-		delete[] buffer;
+		Setup(buffer.get());
 	}
 	PUBLIC Float2 GetSize() {
 		return Float2(static_cast<float>(width), static_cast<float>(height));
@@ -820,6 +811,7 @@ class Texture {
 		App::GetGraphicsContext().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
 	}
 	PROTECTED void Setup(BYTE* buffer) {
+		texture.Reset();
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = width;
 		textureDesc.Height = height;
@@ -839,12 +831,14 @@ class Texture {
 		textureSubresourceData.SysMemSlicePitch = width * height * 4;
 		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, texture.GetAddressOf());
 
+		shaderResourceView.Reset();
 		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
 		App::GetGraphicsDevice().CreateShaderResourceView(texture.Get(), &shaderResourceViewDesc, shaderResourceView.GetAddressOf());
 
+		samplerState.Reset();
 		D3D11_SAMPLER_DESC samplerDesc = {};
 		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -935,6 +929,7 @@ class Material {
 	PUBLIC void SetCBuffer(void* cbuffer, size_t size) {
 		this->cbuffer = cbuffer;
 
+		constantBuffer.Reset();
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = static_cast<UINT>(size);
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -946,14 +941,17 @@ class Material {
 		textures[slot] = texture;
 	}
 	PROTECTED void Setup(const char* source) {
+		vertexShader.Reset();
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
 		App::GetGraphicsDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
 
+		pixelShader.Reset();
 		Microsoft::WRL::ComPtr<ID3DBlob> pixelShaderBlob = nullptr;
 		CompileShader(source, "PS", "ps_5_0", pixelShaderBlob.GetAddressOf());
 		App::GetGraphicsDevice().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, pixelShader.GetAddressOf());
 
+		inputLayout.Reset();
 		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc;
 		inputElementDesc.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 		inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
@@ -1034,7 +1032,9 @@ class Camera {
 		SetPerspective(60.0f, 0.1f, 1000.0f);
 	}
 	PROTECTED void Setup() {
+		texture.Reset();
 		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(texture.GetAddressOf()));
+		renderTarget.Reset();
 		App::GetGraphicsDevice().CreateRenderTargetView(texture.Get(), nullptr, renderTarget.GetAddressOf());
 
 		D3D11_VIEWPORT viewPort = {};
@@ -1046,6 +1046,7 @@ class Camera {
 		viewPort.TopLeftY = 0;
 		App::GetGraphicsContext().RSSetViewports(1, &viewPort);
 
+		constantBuffer.Reset();
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -1123,7 +1124,6 @@ class Mesh {
 			"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
 			"}") {
 		Initialize();
-		CreateCube();
 		Setup();
 	}
 	PUBLIC virtual ~Mesh() {
@@ -1236,17 +1236,23 @@ class Mesh {
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		DirectX::XMFLOAT3 lightDirection;
-		DirectX::XMStoreFloat3(&lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
-		constant.lightDirection = lightDirection;
+		DirectX::XMStoreFloat3(&constant.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
+
+		if (vertexBuffer == nullptr) {
+			return;
+		}
 
 		UINT stride = static_cast<UINT>(sizeof(Vertex));
 		UINT offset = 0;
 		App::GetGraphicsContext().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 
-		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-		App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
+		if (indexBuffer == nullptr) {
+			App::GetGraphicsContext().Draw(static_cast<UINT>(vertices.size()), 0);
+		}
+		else {
+			App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+			App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
+		}
 	}
 	PROTECTED void Initialize() {
 		position = Float3(0.0f, 0.0f, 0.0f);
@@ -1254,23 +1260,29 @@ class Mesh {
 		scale = Float3(1.0f, 1.0f, 1.0f);
 	}
 	PROTECTED void Setup() {
-		D3D11_BUFFER_DESC vertexBufferDesc = {};
-		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vertexBufferDesc.CPUAccessFlags = 0;
-		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
-		vertexSubresourceData.pSysMem = &vertices[0];
-		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
+		if (vertices.size() > 0) {
+			vertexBuffer.Reset();
+			D3D11_BUFFER_DESC vertexBufferDesc = {};
+			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
+			vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			vertexBufferDesc.CPUAccessFlags = 0;
+			D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
+			vertexSubresourceData.pSysMem = &vertices[0];
+			App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
+		}
 
-		D3D11_BUFFER_DESC indexBufferDesc = {};
-		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indices.size());
-		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		indexBufferDesc.CPUAccessFlags = 0;
-		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
-		indexSubresourceData.pSysMem = &indices[0];
-		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
+		if (indices.size() > 0) {
+			indexBuffer.Reset();
+			D3D11_BUFFER_DESC indexBufferDesc = {};
+			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indices.size());
+			indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			indexBufferDesc.CPUAccessFlags = 0;
+			D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
+			indexSubresourceData.pSysMem = &indices[0];
+			App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
+		}
 
 		material.SetCBuffer(&constant, sizeof(Constant));
 	}

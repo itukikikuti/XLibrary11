@@ -70,6 +70,7 @@
 	PUBLIC void SetCBuffer(void* cbuffer, size_t size) {
 		this->cbuffer = cbuffer;
 
+		constantBuffer.Reset();
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = static_cast<UINT>(size);
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -81,14 +82,17 @@
 		textures[slot] = texture;
 	}
 	PROTECTED void Setup(const char* source) {
+		vertexShader.Reset();
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
 		App::GetGraphicsDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
 
+		pixelShader.Reset();
 		Microsoft::WRL::ComPtr<ID3DBlob> pixelShaderBlob = nullptr;
 		CompileShader(source, "PS", "ps_5_0", pixelShaderBlob.GetAddressOf());
 		App::GetGraphicsDevice().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, pixelShader.GetAddressOf());
 
+		inputLayout.Reset();
 		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc;
 		inputElementDesc.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 		inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });

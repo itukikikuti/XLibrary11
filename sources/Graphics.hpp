@@ -67,13 +67,6 @@
 		float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		device->CreateBlendState(&blendDesc, &blendState);
 		context->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
-
-		//Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
-		//D3D11_RASTERIZER_DESC rasterizerDesc = {};
-		//rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		//rasterizerDesc.CullMode = D3D11_CULL_NONE;
-		//device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
-		//context->RSSetState(rasterizerState.Get());
 	}
 	PUBLIC ~Graphics() {
 	}
