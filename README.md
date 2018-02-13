@@ -9,5 +9,5 @@
 
 ### 拡張ライブラリ
 * [XModelLibrary11](https://github.com/itukikikuti/XModelLibrary11)（FBXを読み込めます。「FBX SDK」が必要です。）
-* ~XAudioLibrary11（Ogg Vorbisを読み込めます。「Ogg Vorbis SDK」が必要です。）~
-* ~XPhysicsLibrary11（物理演算を使えます。「Bullet Physics SDK」が必要です。）~
+* ~XAudioLibrary11（Oggを読み込めます。「Ogg Vorbis SDK」が必要です。）~
+* ~XPhysicsLibrary11（物理演算を行えます。「Bullet Physics SDK」が必要です。）~
