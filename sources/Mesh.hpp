@@ -162,13 +162,21 @@
 		DirectX::XMStoreFloat3(&lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
 		constant.lightDirection = lightDirection;
 
+		if (vertexBuffer == nullptr) {
+			return;
+		}
+
 		UINT stride = static_cast<UINT>(sizeof(Vertex));
 		UINT offset = 0;
 		App::GetGraphicsContext().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 
-		App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-		App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
+		if (indexBuffer == nullptr) {
+			App::GetGraphicsContext().Draw(static_cast<UINT>(vertices.size()), 0);
+		}
+		else {
+			App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+			App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
+		}
 	}
 	PROTECTED void Initialize() {
 		position = Float3(0.0f, 0.0f, 0.0f);
@@ -176,23 +184,33 @@
 		scale = Float3(1.0f, 1.0f, 1.0f);
 	}
 	PROTECTED void Setup() {
-		D3D11_BUFFER_DESC vertexBufferDesc = {};
-		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vertexBufferDesc.CPUAccessFlags = 0;
-		D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
-		vertexSubresourceData.pSysMem = &vertices[0];
-		App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
+		if (vertices.size() > 0) {
+			D3D11_BUFFER_DESC vertexBufferDesc = {};
+			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
+			vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			vertexBufferDesc.CPUAccessFlags = 0;
+			D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
+			vertexSubresourceData.pSysMem = &vertices[0];
+			App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
+		}
+		else {
+			vertexBuffer.Reset();
+		}
 
-		D3D11_BUFFER_DESC indexBufferDesc = {};
-		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indices.size());
-		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		indexBufferDesc.CPUAccessFlags = 0;
-		D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
-		indexSubresourceData.pSysMem = &indices[0];
-		App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
+		if (indices.size() > 0) {
+			D3D11_BUFFER_DESC indexBufferDesc = {};
+			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indices.size());
+			indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			indexBufferDesc.CPUAccessFlags = 0;
+			D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
+			indexSubresourceData.pSysMem = &indices[0];
+			App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
+		}
+		else {
+			indexBuffer.Reset();
+		}
 
 		material.SetCBuffer(&constant, sizeof(Constant));
 	}
