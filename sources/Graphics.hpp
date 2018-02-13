@@ -1,9 +1,4 @@
 ﻿class Graphics {
-	PRIVATE const int SWAP_CHAIN_COUNT = 2;
-	PRIVATE const DXGI_FORMAT SWAP_CHAIN_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
-	PRIVATE const int MULTI_SAMPLE_COUNT = 4;
-	PRIVATE const int MULTI_SAMPLE_QUALITY = 0;
-
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
@@ -29,16 +24,16 @@
 		int featureLevelCount = sizeof(featureLevels) / sizeof(featureLevels[0]);
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-		swapChainDesc.BufferCount = SWAP_CHAIN_COUNT;
+		swapChainDesc.BufferCount = 2;
 		swapChainDesc.BufferDesc.Width = static_cast<UINT>(App::GetWindowSize().x);
 		swapChainDesc.BufferDesc.Height = static_cast<UINT>(App::GetWindowSize().y);
-		swapChainDesc.BufferDesc.Format = SWAP_CHAIN_FORMAT;
+		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
 		swapChainDesc.OutputWindow = App::GetWindowHandle();
-		swapChainDesc.SampleDesc.Count = MULTI_SAMPLE_COUNT;
-		swapChainDesc.SampleDesc.Quality = MULTI_SAMPLE_QUALITY;
+		swapChainDesc.SampleDesc.Count = 4;
+		swapChainDesc.SampleDesc.Quality = 0;
 		swapChainDesc.Windowed = true;
 
 		for (int i = 0; i < driverTypeCount; i++) {
