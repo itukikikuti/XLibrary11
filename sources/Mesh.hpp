@@ -13,6 +13,7 @@
 	PROTECTED Constant constant;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
 
 	PUBLIC Mesh() :
 		material(
@@ -46,6 +47,7 @@
 			"}") {
 		Initialize();
 		Setup();
+		SetCullingMode(D3D11_CULL_BACK);
 	}
 	PUBLIC virtual ~Mesh() {
 	}
@@ -163,6 +165,8 @@
 			return;
 		}
 
+		App::GetGraphicsContext().RSSetState(rasterizerState.Get());
+
 		UINT stride = static_cast<UINT>(sizeof(Vertex));
 		UINT offset = 0;
 		App::GetGraphicsContext().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
@@ -174,6 +178,12 @@
 			App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 			App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
 		}
+	}
+	PUBLIC void SetCullingMode(D3D11_CULL_MODE cullingMode) {
+		D3D11_RASTERIZER_DESC rasterizerDesc = {};
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.CullMode = cullingMode;
+		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
 	}
 	PROTECTED void Initialize() {
 		position = Float3(0.0f, 0.0f, 0.0f);
