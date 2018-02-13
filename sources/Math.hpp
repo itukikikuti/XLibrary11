@@ -1,15 +1,17 @@
-class Float2 {
-	PUBLIC float x;
-	PUBLIC float y;
-
-	PUBLIC Float2() : x(0.0f), y(0.0f) {
+class Float2 : public DirectX::XMFLOAT2 {
+	PUBLIC Float2() : DirectX::XMFLOAT2() {
 	}
-	PUBLIC Float2(float x, float y) : x(x), y(y) {
+	PUBLIC Float2(float x, float y) : DirectX::XMFLOAT2(x, y) {
 	}
-	PUBLIC Float2& operator=(const DirectX::XMFLOAT2& value) {
-		x = value.x;
-		y = value.y;
+	PUBLIC Float2(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT2() {
+		DirectX::XMStoreFloat2(this, vector);
+	}
+	PUBLIC Float2& operator=(const DirectX::XMVECTOR& vector) {
+		DirectX::XMStoreFloat2(this, vector);
 		return *this;
+	}
+	PUBLIC operator DirectX::XMVECTOR() const noexcept {
+		return DirectX::XMLoadFloat2(this);
 	}
 	PUBLIC Float2& operator=(const Float2& value) {
 		x = value.x;
@@ -88,20 +90,20 @@ Float2 operator/(const Float2& t1, const float& t2) {
 	return Float2(t1) /= t2;
 }
 
-class Float3 {
-	PUBLIC float x;
-	PUBLIC float y;
-	PUBLIC float z;
-
-	PUBLIC Float3() : x(0.0f), y(0.0f), z(0.0f) {
+class Float3 : public DirectX::XMFLOAT3 {
+	PUBLIC Float3() : DirectX::XMFLOAT3() {
 	}
-	PUBLIC Float3(float x, float y, float z) : x(x), y(y), z(z) {
+	PUBLIC Float3(float x, float y, float z) : DirectX::XMFLOAT3(x, y, z) {
 	}
-	PUBLIC Float3& operator=(const DirectX::XMFLOAT3& value) {
-		x = value.x;
-		y = value.y;
-		z = value.z;
+	PUBLIC Float3(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT3() {
+		DirectX::XMStoreFloat3(this, vector);
+	}
+	PUBLIC Float3& operator=(const DirectX::XMVECTOR& vector) {
+		DirectX::XMStoreFloat3(this, vector);
 		return *this;
+	}
+	PUBLIC operator DirectX::XMVECTOR() const noexcept {
+		return DirectX::XMLoadFloat3(this);
 	}
 	PUBLIC Float3& operator=(const Float3& value) {
 		x = value.x;
@@ -190,22 +192,20 @@ Float3 operator/(const Float3& t1, const float& t2) {
 	return Float3(t1) /= t2;
 }
 
-class Float4 {
-	PUBLIC float x;
-	PUBLIC float y;
-	PUBLIC float z;
-	PUBLIC float w;
-
-	PUBLIC Float4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {
+class Float4 : public DirectX::XMFLOAT4 {
+	PUBLIC Float4() : DirectX::XMFLOAT4() {
 	}
-	PUBLIC Float4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {
+	PUBLIC Float4(float x, float y, float z, float w) : DirectX::XMFLOAT4(x, y, z, w) {
 	}
-	PUBLIC Float4& operator=(const DirectX::XMFLOAT4& value) {
-		x = value.x;
-		y = value.y;
-		z = value.z;
-		w = value.w;
+	PUBLIC Float4(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT4() {
+		DirectX::XMStoreFloat4(this, vector);
+	}
+	PUBLIC Float4& operator=(const DirectX::XMVECTOR& vector) {
+		DirectX::XMStoreFloat4(this, vector);
 		return *this;
+	}
+	PUBLIC operator DirectX::XMVECTOR() const noexcept {
+		return DirectX::XMLoadFloat4(this);
 	}
 	PUBLIC Float4& operator=(const Float4& value) {
 		x = value.x;
