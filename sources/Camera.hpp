@@ -29,8 +29,6 @@ class Camera {
 		constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
 	}
 	PUBLIC virtual void Update() {
-		TryResize();
-
 		constant.view =
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
@@ -56,6 +54,8 @@ class Camera {
 		angles = Float3(0.0f, 0.0f, 0.0f);
 
 		SetPerspective(60.0f, 0.1f, 1000.0f);
+
+		App::RegisterProcedure([this](HWND hwnd, UINT msg, WPARAM w, LPARAM l) { OnProceed(hwnd, msg, w, l); });
 	}
 	PROTECTED void Setup() {
 		renderTexture.Reset();
@@ -110,31 +110,28 @@ class Camera {
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
-	PROTECTED void TryResize() {
-		for (UINT message : App::GetWindowMessages()) {
-			if (message != WM_SIZE) {
-				continue;
-			}
-			if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f) {
-				continue;
-			}
-			
-			DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-			App::GetGraphicsMemory().GetDesc(&swapChainDesc);
-
-			Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
-			Microsoft::WRL::ComPtr<ID3D11DepthStencilView> nullDepthStencil = nullptr;
-			App::GetGraphicsContext().OMSetRenderTargets(1, nullRenderTarget.GetAddressOf(), nullDepthStencil.Get());
-			renderTargetView.Reset();
-			depthStencilView.Reset();
-			renderTexture.Reset();
-			depthTexture.Reset();
-			App::GetGraphicsContext().Flush();
-			App::GetGraphicsMemory().ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
-
-			SetPerspective(fieldOfView, nearClip, farClip);
-			Setup();
+	PROTECTED void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
+		if (message != WM_SIZE) {
 			return;
 		}
+		if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f) {
+			return;
+		}
+
+		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+		App::GetGraphicsMemory().GetDesc(&swapChainDesc);
+
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> nullDepthStencil = nullptr;
+		App::GetGraphicsContext().OMSetRenderTargets(1, nullRenderTarget.GetAddressOf(), nullDepthStencil.Get());
+		renderTargetView.Reset();
+		depthStencilView.Reset();
+		renderTexture.Reset();
+		depthTexture.Reset();
+		App::GetGraphicsContext().Flush();
+		App::GetGraphicsMemory().ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
+
+		SetPerspective(fieldOfView, nearClip, farClip);
+		Setup();
 	}
 };
