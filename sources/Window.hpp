@@ -31,6 +31,7 @@
 		ShowWindow(handle, SW_SHOWNORMAL);
 	}
 	PUBLIC ~Window() {
+		UnregisterClassW(App::name, GetModuleHandleW(nullptr));
 	}
 	PUBLIC HWND GetHandle() {
 		return handle;

@@ -111,7 +111,7 @@ class Camera : public App::Window::Procedurable {
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
-	PROTECTED void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) override {
+	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override {
 		if (message != WM_SIZE) {
 			return;
 		}

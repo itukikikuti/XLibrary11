@@ -379,6 +379,7 @@ class Window {
 		ShowWindow(handle, SW_SHOWNORMAL);
 	}
 	PUBLIC ~Window() {
+		UnregisterClassW(App::name, GetModuleHandleW(nullptr));
 	}
 	PUBLIC HWND GetHandle() {
 		return handle;
@@ -759,14 +760,12 @@ class Texture {
 		Load(filePath);
 	}
 	PUBLIC Texture(int width, int height, BYTE* buffer) {
-		this->width = width;
-		this->height = height;
-		Setup(buffer);
+		Setup(width, height, buffer);
 	}
 	PUBLIC virtual ~Texture() {
 	}
 	PUBLIC void Load(wchar_t* filePath) {
-		CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+		App::GetWindowHandle();
 
 		Microsoft::WRL::ComPtr<IWICImagingFactory> factory = nullptr;
 		CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(factory.GetAddressOf()));
@@ -778,8 +777,6 @@ class Texture {
 		decoder->GetFrame(0, frame.GetAddressOf());
 		UINT width, height;
 		frame->GetSize(&width, &height);
-		this->width = static_cast<UINT>(width);
-		this->height = static_cast<UINT>(height);
 
 		WICPixelFormatGUID pixelFormat;
 		frame->GetPixelFormat(&pixelFormat);
@@ -797,7 +794,7 @@ class Texture {
 			frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
 		}
 
-		Setup(buffer.get());
+		Setup(width, height, buffer.get());
 	}
 	PUBLIC Float2 GetSize() {
 		return Float2(static_cast<float>(width), static_cast<float>(height));
@@ -806,7 +803,10 @@ class Texture {
 		App::GetGraphicsContext().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
 		App::GetGraphicsContext().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
 	}
-	PROTECTED void Setup(BYTE* buffer) {
+	PROTECTED void Setup(int width, int height, BYTE* buffer) {
+		this->width = width;
+		this->height = height;
+
 		texture.Reset();
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = width;
@@ -1084,7 +1084,7 @@ class Camera : public App::Window::Procedurable {
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
-	PROTECTED void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) override {
+	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override {
 		if (message != WM_SIZE) {
 			return;
 		}
