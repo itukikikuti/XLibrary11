@@ -51,23 +51,28 @@
 	}
 	PUBLIC virtual ~Mesh() {
 	}
-	PUBLIC void CreateQuad(bool shouldClear = true) {
+	PUBLIC void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f)) {
 		if (shouldClear) {
 			vertices.clear();
 			indices.clear();
 		}
 
-		vertices.push_back(Vertex(Float3(-0.5f, 0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(0.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(0.5f, 0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(1.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(-0.5f, -0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(0.0f, 1.0f)));
-		vertices.push_back(Vertex(Float3(0.5f, -0.5f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float2(1.0f, 1.0f)));
+		leftDirection = DirectX::XMVector3Normalize(leftDirection);
+		upDirection = DirectX::XMVector3Normalize(upDirection);
+		forwardDirection = DirectX::XMVector3Normalize(forwardDirection);
 
-		indices.push_back(0);
-		indices.push_back(1);
-		indices.push_back(2);
-		indices.push_back(3);
-		indices.push_back(2);
-		indices.push_back(1);
+		vertices.push_back(Vertex(leftDirection * -size.x + upDirection * size.y + offset, -forwardDirection, Float2(0.0f, 0.0f)));
+		vertices.push_back(Vertex(leftDirection * size.x + upDirection * size.y + offset, -forwardDirection, Float2(1.0f, 0.0f)));
+		vertices.push_back(Vertex(leftDirection * -size.x + upDirection * -size.y + offset, -forwardDirection, Float2(0.0f, 1.0f)));
+		vertices.push_back(Vertex(leftDirection * size.x + upDirection * -size.y + offset, -forwardDirection, Float2(1.0f, 1.0f)));
+
+		size_t indexOffset = vertices.size() - 4;
+		indices.push_back(indexOffset + 0);
+		indices.push_back(indexOffset + 1);
+		indices.push_back(indexOffset + 2);
+		indices.push_back(indexOffset + 3);
+		indices.push_back(indexOffset + 2);
+		indices.push_back(indexOffset + 1);
 	}
 	PUBLIC void CreateCube(bool shouldClear = true) {
 		if (shouldClear) {
