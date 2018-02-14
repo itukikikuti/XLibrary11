@@ -10,6 +10,7 @@
 #include <wrl.h>
 #include <memory>
 #include <vector>
+#include <list>
 #include <fstream>
 #include <functional>
 #include <strsafe.h>
@@ -52,8 +53,11 @@ class App {
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
 		GetWindow().SetFullScreen(isFullscreen);
 	}
-	PUBLIC static void RegisterProcedure(const std::function<void(HWND, UINT, WPARAM, LPARAM)>& procedure) {
-		GetWindow().RegisterProcedure(procedure);
+	PUBLIC static void AddProcedure(Window::Procedural* const procedure) {
+		GetWindow().AddProcedure(procedure);
+	}
+	PUBLIC static void RemoveProcedure(Window::Procedural* const procedure) {
+		GetWindow().RemoveProcedure(procedure);
 	}
 	PUBLIC static ID3D11Device& GetGraphicsDevice() {
 		return GetGraphics().GetDevice();

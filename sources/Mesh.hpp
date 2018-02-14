@@ -47,7 +47,6 @@
 			"}") {
 		Initialize();
 		Setup();
-		SetCullingMode(D3D11_CULL_BACK);
 	}
 	PUBLIC virtual ~Mesh() {
 	}
@@ -135,6 +134,8 @@
 		position = Float3(0.0f, 0.0f, 0.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
 		scale = Float3(1.0f, 1.0f, 1.0f);
+
+		SetCullingMode(D3D11_CULL_BACK);
 	}
 	PROTECTED void Setup() {
 		if (vertices.size() > 0) {

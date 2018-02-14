@@ -1,4 +1,9 @@
 ﻿class Window {
+	PUBLIC class Procedural {
+		PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
+		PUBLIC virtual ~Procedural() {}
+	};
+
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPEDWINDOW;
 
@@ -74,8 +79,11 @@
 			SetSize(size.x, size.y);
 		}
 	}
-	PUBLIC void RegisterProcedure(const std::function<void(HWND, UINT, WPARAM, LPARAM)>& procedure) {
+	PUBLIC void AddProcedure(Procedural* const procedure) {
 		GetProcedures().push_back(procedure);
+	}
+	PUBLIC void RemoveProcedure(Procedural* const procedure) {
+		GetProcedures().remove(procedure);
 	}
 	PUBLIC bool Update() {
 		static MSG message = {};
@@ -92,13 +100,13 @@
 
 		return false;
 	}
-	PRIVATE static std::vector<std::function<void(HWND, UINT, WPARAM, LPARAM)>>& GetProcedures() {
-		static std::vector<std::function<void(HWND, UINT, WPARAM, LPARAM)>> procedures;
+	PRIVATE static std::list<Procedural*>& GetProcedures() {
+		static std::list<Procedural*> procedures;
 		return procedures;
 	}
 	PRIVATE static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
-		for (std::function<void(HWND, UINT, WPARAM, LPARAM)> onProceed : GetProcedures()) {
-			onProceed(handle, message, wParam, lParam);
+		for (Procedural* procedure : GetProcedures()) {
+			procedure->OnProceed(handle, message, wParam, lParam);
 		}
 		switch (message) {
 		case WM_DESTROY:

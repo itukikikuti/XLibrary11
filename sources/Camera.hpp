@@ -1,4 +1,4 @@
-class Camera {
+class Camera : public App::Window::Procedural {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;
@@ -21,6 +21,7 @@ class Camera {
 		Setup();
 	}
 	PUBLIC virtual ~Camera() {
+		App::RemoveProcedure(this);
 	}
 	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip) {
 		this->fieldOfView = fieldOfView;
@@ -55,7 +56,7 @@ class Camera {
 
 		SetPerspective(60.0f, 0.1f, 1000.0f);
 
-		App::RegisterProcedure([this](HWND hwnd, UINT msg, WPARAM w, LPARAM l) { OnProceed(hwnd, msg, w, l); });
+		App::AddProcedure(this);
 	}
 	PROTECTED void Setup() {
 		renderTexture.Reset();
@@ -110,7 +111,7 @@ class Camera {
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
-	PROTECTED void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
+	PROTECTED void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) override {
 		if (message != WM_SIZE) {
 			return;
 		}

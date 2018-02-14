@@ -10,6 +10,7 @@
 #include <wrl.h>
 #include <memory>
 #include <vector>
+#include <list>
 #include <fstream>
 #include <functional>
 #include <strsafe.h>
@@ -346,6 +347,11 @@ class App {
 	PUBLIC static constexpr wchar_t* name = L"XLibrary11";
 
 class Window {
+	PUBLIC class Procedural {
+		PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
+		PUBLIC virtual ~Procedural() {}
+	};
+
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPEDWINDOW;
 
@@ -421,8 +427,11 @@ class Window {
 			SetSize(size.x, size.y);
 		}
 	}
-	PUBLIC void RegisterProcedure(const std::function<void(HWND, UINT, WPARAM, LPARAM)>& procedure) {
+	PUBLIC void AddProcedure(Procedural* const procedure) {
 		GetProcedures().push_back(procedure);
+	}
+	PUBLIC void RemoveProcedure(Procedural* const procedure) {
+		GetProcedures().remove(procedure);
 	}
 	PUBLIC bool Update() {
 		static MSG message = {};
@@ -439,13 +448,13 @@ class Window {
 
 		return false;
 	}
-	PRIVATE static std::vector<std::function<void(HWND, UINT, WPARAM, LPARAM)>>& GetProcedures() {
-		static std::vector<std::function<void(HWND, UINT, WPARAM, LPARAM)>> procedures;
+	PRIVATE static std::list<Procedural*>& GetProcedures() {
+		static std::list<Procedural*> procedures;
 		return procedures;
 	}
 	PRIVATE static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
-		for (std::function<void(HWND, UINT, WPARAM, LPARAM)> onProceed : GetProcedures()) {
-			onProceed(handle, message, wParam, lParam);
+		for (Procedural* procedure : GetProcedures()) {
+			procedure->OnProceed(handle, message, wParam, lParam);
 		}
 		switch (message) {
 		case WM_DESTROY:
@@ -664,8 +673,11 @@ class Timer {
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
 		GetWindow().SetFullScreen(isFullscreen);
 	}
-	PUBLIC static void RegisterProcedure(const std::function<void(HWND, UINT, WPARAM, LPARAM)>& procedure) {
-		GetWindow().RegisterProcedure(procedure);
+	PUBLIC static void AddProcedure(Window::Procedural* const procedure) {
+		GetWindow().AddProcedure(procedure);
+	}
+	PUBLIC static void RemoveProcedure(Window::Procedural* const procedure) {
+		GetWindow().RemoveProcedure(procedure);
 	}
 	PUBLIC static ID3D11Device& GetGraphicsDevice() {
 		return GetGraphics().GetDevice();
@@ -959,7 +971,7 @@ class Material {
 	}
 };
 
-class Camera {
+class Camera : public App::Window::Procedural {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;
@@ -982,6 +994,7 @@ class Camera {
 		Setup();
 	}
 	PUBLIC virtual ~Camera() {
+		App::RemoveProcedure(this);
 	}
 	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip) {
 		this->fieldOfView = fieldOfView;
@@ -1016,7 +1029,7 @@ class Camera {
 
 		SetPerspective(60.0f, 0.1f, 1000.0f);
 
-		App::RegisterProcedure([this](HWND hwnd, UINT msg, WPARAM w, LPARAM l) { OnProceed(hwnd, msg, w, l); });
+		App::AddProcedure(this);
 	}
 	PROTECTED void Setup() {
 		renderTexture.Reset();
@@ -1071,7 +1084,7 @@ class Camera {
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
-	PROTECTED void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
+	PROTECTED void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) override {
 		if (message != WM_SIZE) {
 			return;
 		}
@@ -1146,7 +1159,6 @@ class Mesh {
 			"}") {
 		Initialize();
 		Setup();
-		SetCullingMode(D3D11_CULL_BACK);
 	}
 	PUBLIC virtual ~Mesh() {
 	}
@@ -1234,6 +1246,8 @@ class Mesh {
 		position = Float3(0.0f, 0.0f, 0.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
 		scale = Float3(1.0f, 1.0f, 1.0f);
+
+		SetCullingMode(D3D11_CULL_BACK);
 	}
 	PROTECTED void Setup() {
 		if (vertices.size() > 0) {
