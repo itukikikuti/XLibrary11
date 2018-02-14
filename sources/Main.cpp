@@ -26,7 +26,7 @@ int Main() {
 
 		mesh.angles.y += App::GetDeltaTime() * 50.0f;
 
-		mesh.position = Float3(0.5f, 0.0f, 0.0f);
+		mesh.position = Float3(0.5f, 0.01f, 0.0f);
 		mesh.Draw();
 
 		mesh.position = Float3(-0.5f, 0.0f, 0.0f);

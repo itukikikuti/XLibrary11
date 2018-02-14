@@ -1,7 +1,6 @@
 ﻿class Window {
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPEDWINDOW;
-	PRIVATE std::vector<UINT> messages;
 
 	PUBLIC Window() {
 		HINSTANCE instance = GetModuleHandleW(nullptr);
@@ -9,7 +8,7 @@
 		WNDCLASSEXW windowClass = {};
 		windowClass.cbSize = sizeof(WNDCLASSEXW);
 		windowClass.style = CS_HREDRAW | CS_VREDRAW;
-		windowClass.lpfnWndProc = Procedure;
+		windowClass.lpfnWndProc = Proceed;
 		windowClass.cbClsExtra = 0;
 		windowClass.cbWndExtra = 0;
 		windowClass.hInstance = instance;
@@ -24,18 +23,12 @@
 		handle = CreateWindowW(App::name, App::name, style, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
 
 		SetSize(1280.0f, 720.0f);
-
 		ShowWindow(handle, SW_SHOWNORMAL);
-
-		SetWindowLongPtrW(handle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 	}
 	PUBLIC ~Window() {
 	}
 	PUBLIC HWND GetHandle() {
 		return handle;
-	}
-	PUBLIC std::vector<UINT>& GetMessages() {
-		return messages;
 	}
 	PUBLIC Float2 GetSize() {
 		RECT clientRect = {};
@@ -81,10 +74,11 @@
 			SetSize(size.x, size.y);
 		}
 	}
+	PUBLIC void RegisterProcedure(const std::function<void(HWND, UINT, WPARAM, LPARAM)>& procedure) {
+		GetProcedures().push_back(procedure);
+	}
 	PUBLIC bool Update() {
 		static MSG message = {};
-
-		messages.clear();
 
 		while (message.message != WM_QUIT) {
 			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
@@ -98,22 +92,18 @@
 
 		return false;
 	}
-	PRIVATE LRESULT Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
-		messages.push_back(message);
-
+	PRIVATE static std::vector<std::function<void(HWND, UINT, WPARAM, LPARAM)>>& GetProcedures() {
+		static std::vector<std::function<void(HWND, UINT, WPARAM, LPARAM)>> procedures;
+		return procedures;
+	}
+	PRIVATE static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
+		for (std::function<void(HWND, UINT, WPARAM, LPARAM)> onProceed : GetProcedures()) {
+			onProceed(handle, message, wParam, lParam);
+		}
 		switch (message) {
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			break;
-		default:
-			return DefWindowProcW(handle, message, wParam, lParam);
-		}
-		return 0;
-	}
-	PRIVATE static LRESULT WINAPI Procedure(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
-		Window* window = (Window*)(GetWindowLongPtrW(handle, GWLP_USERDATA));
-		if (window) {
-			return window->Proceed(handle, message, wParam, lParam);
 		}
 		return DefWindowProcW(handle, message, wParam, lParam);
 	}

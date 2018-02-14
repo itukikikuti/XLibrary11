@@ -2,18 +2,17 @@
 #pragma once
 
 #define OEMRESOURCE
+#include <windows.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
-#include <DirectXMath.h>
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <strsafe.h>
-#include <utility>
-#include <vector>
 #include <wincodec.h>
-#include <windows.h>
+#include <DirectXMath.h>
 #include <wrl.h>
+#include <memory>
+#include <vector>
+#include <fstream>
+#include <functional>
+#include <strsafe.h>
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
@@ -38,9 +37,6 @@ class App {
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindow().GetHandle();
 	}
-	PUBLIC static std::vector<UINT>& GetWindowMessages() {
-		return GetWindow().GetMessages();
-	}
 	PUBLIC static Float2 GetWindowSize() {
 		return GetWindow().GetSize();
 	}
@@ -55,6 +51,9 @@ class App {
 	}
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
 		GetWindow().SetFullScreen(isFullscreen);
+	}
+	PUBLIC static void RegisterProcedure(const std::function<void(HWND, UINT, WPARAM, LPARAM)>& procedure) {
+		GetWindow().RegisterProcedure(procedure);
 	}
 	PUBLIC static ID3D11Device& GetGraphicsDevice() {
 		return GetGraphics().GetDevice();
