@@ -3,6 +3,7 @@
 #include "App.hpp"
 #include "Library.cpp"
 #include <crtdbg.h>
+#include <xaudio2.h>
 
 using namespace std;
 using namespace DirectX;

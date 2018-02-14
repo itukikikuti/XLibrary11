@@ -10,7 +10,7 @@
 #include <wrl.h>
 #include <memory>
 #include <vector>
-#include <list>
+#include <forward_list>
 #include <fstream>
 #include <functional>
 #include <strsafe.h>
@@ -347,9 +347,9 @@ class App {
 	PUBLIC static constexpr wchar_t* name = L"XLibrary11";
 
 class Window {
-	PUBLIC class Procedural {
+	PUBLIC class Procedurable {
 		PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
-		PUBLIC virtual ~Procedural() {}
+		PUBLIC virtual ~Procedurable() {}
 	};
 
 	PRIVATE HWND handle;
@@ -427,10 +427,10 @@ class Window {
 			SetSize(size.x, size.y);
 		}
 	}
-	PUBLIC void AddProcedure(Procedural* const procedure) {
-		GetProcedures().push_back(procedure);
+	PUBLIC void AddProcedure(Procedurable* const procedure) {
+		GetProcedures().push_front(procedure);
 	}
-	PUBLIC void RemoveProcedure(Procedural* const procedure) {
+	PUBLIC void RemoveProcedure(Procedurable* const procedure) {
 		GetProcedures().remove(procedure);
 	}
 	PUBLIC bool Update() {
@@ -448,12 +448,12 @@ class Window {
 
 		return false;
 	}
-	PRIVATE static std::list<Procedural*>& GetProcedures() {
-		static std::list<Procedural*> procedures;
+	PRIVATE static std::forward_list<Procedurable*>& GetProcedures() {
+		static std::forward_list<Procedurable*> procedures;
 		return procedures;
 	}
 	PRIVATE static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
-		for (Procedural* procedure : GetProcedures()) {
+		for (Procedurable* procedure : GetProcedures()) {
 			procedure->OnProceed(handle, message, wParam, lParam);
 		}
 		switch (message) {
@@ -673,10 +673,10 @@ class Timer {
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
 		GetWindow().SetFullScreen(isFullscreen);
 	}
-	PUBLIC static void AddProcedure(Window::Procedural* const procedure) {
+	PUBLIC static void AddProcedure(Window::Procedurable* const procedure) {
 		GetWindow().AddProcedure(procedure);
 	}
-	PUBLIC static void RemoveProcedure(Window::Procedural* const procedure) {
+	PUBLIC static void RemoveProcedure(Window::Procedurable* const procedure) {
 		GetWindow().RemoveProcedure(procedure);
 	}
 	PUBLIC static ID3D11Device& GetGraphicsDevice() {
@@ -971,7 +971,7 @@ class Material {
 	}
 };
 
-class Camera : public App::Window::Procedural {
+class Camera : public App::Window::Procedurable {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;

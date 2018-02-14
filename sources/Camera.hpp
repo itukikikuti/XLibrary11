@@ -1,4 +1,4 @@
-class Camera : public App::Window::Procedural {
+class Camera : public App::Window::Procedurable {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;

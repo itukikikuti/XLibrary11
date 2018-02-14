@@ -10,7 +10,7 @@
 #include <wrl.h>
 #include <memory>
 #include <vector>
-#include <list>
+#include <forward_list>
 #include <fstream>
 #include <functional>
 #include <strsafe.h>
@@ -53,10 +53,10 @@ class App {
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
 		GetWindow().SetFullScreen(isFullscreen);
 	}
-	PUBLIC static void AddProcedure(Window::Procedural* const procedure) {
+	PUBLIC static void AddProcedure(Window::Procedurable* const procedure) {
 		GetWindow().AddProcedure(procedure);
 	}
-	PUBLIC static void RemoveProcedure(Window::Procedural* const procedure) {
+	PUBLIC static void RemoveProcedure(Window::Procedurable* const procedure) {
 		GetWindow().RemoveProcedure(procedure);
 	}
 	PUBLIC static ID3D11Device& GetGraphicsDevice() {
