@@ -1179,77 +1179,18 @@ class Mesh {
 			indices.clear();
 		}
 
-		vertices.push_back(Vertex(Float3(-0.5f, 0.5f, -0.5f), Float3(0.0f, 0.0f, -1.0f), Float2(0.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(0.5f, 0.5f, -0.5f), Float3(0.0f, 0.0f, -1.0f), Float2(1.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(-0.5f, -0.5f, -0.5f), Float3(0.0f, 0.0f, -1.0f), Float2(0.0f, 1.0f)));
-		vertices.push_back(Vertex(Float3(0.5f, -0.5f, -0.5f), Float3(0.0f, 0.0f, -1.0f), Float2(1.0f, 1.0f)));
-
-		vertices.push_back(Vertex(Float3(0.5f, 0.5f, -0.5f), Float3(1.0f, 0.0f, 0.0f), Float2(0.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(0.5f, 0.5f, 0.5f), Float3(1.0f, 0.0f, 0.0f), Float2(1.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(0.5f, -0.5f, -0.5f), Float3(1.0f, 0.0f, 0.0f), Float2(0.0f, 1.0f)));
-		vertices.push_back(Vertex(Float3(0.5f, -0.5f, 0.5f), Float3(1.0f, 0.0f, 0.0f), Float2(1.0f, 1.0f)));
-		
-		vertices.push_back(Vertex(Float3(0.5f, 0.5f, 0.5f), Float3(0.0f, 0.0f, 1.0f), Float2(0.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(-0.5f, 0.5f, 0.5f), Float3(0.0f, 0.0f, 1.0f), Float2(1.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(0.5f, -0.5f, 0.5f), Float3(0.0f, 0.0f, 1.0f), Float2(0.0f, 1.0f)));
-		vertices.push_back(Vertex(Float3(-0.5f, -0.5f, 0.5f), Float3(0.0f, 0.0f, 1.0f), Float2(1.0f, 1.0f)));
-		
-		vertices.push_back(Vertex(Float3(-0.5f, 0.5f, 0.5f), Float3(-1.0f, 0.0f, 0.0f), Float2(0.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(-0.5f, 0.5f, -0.5f), Float3(-1.0f, 0.0f, 0.0f), Float2(1.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(-0.5f, -0.5f, 0.5f), Float3(-1.0f, 0.0f, 0.0f), Float2(0.0f, 1.0f)));
-		vertices.push_back(Vertex(Float3(-0.5f, -0.5f, -0.5f), Float3(-1.0f, 0.0f, 0.0f), Float2(1.0f, 1.0f)));
-		
-		vertices.push_back(Vertex(Float3(-0.5f, 0.5f, 0.5f), Float3(0.0f, 1.0f, 0.0f), Float2(0.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(0.5f, 0.5f, 0.5f), Float3(0.0f, 1.0f, 0.0f), Float2(1.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(-0.5f, 0.5f, -0.5f), Float3(0.0f, 1.0f, 0.0f), Float2(0.0f, 1.0f)));
-		vertices.push_back(Vertex(Float3(0.5f, 0.5f, -0.5f), Float3(0.0f, 1.0f, 0.0f), Float2(1.0f, 1.0f)));
-		
-		vertices.push_back(Vertex(Float3(-0.5f, -0.5f, -0.5f), Float3(0.0f, -1.0f, 0.0f), Float2(0.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(0.5f, -0.5f, -0.5f), Float3(0.0f, -1.0f, 0.0f), Float2(1.0f, 0.0f)));
-		vertices.push_back(Vertex(Float3(-0.5f, -0.5f, 0.5f), Float3(0.0f, -1.0f, 0.0f), Float2(0.0f, 1.0f)));
-		vertices.push_back(Vertex(Float3(0.5f, -0.5f, 0.5f), Float3(0.0f, -1.0f, 0.0f), Float2(1.0f, 1.0f)));
-
-		indices.push_back(0);
-		indices.push_back(1);
-		indices.push_back(2);
-		indices.push_back(3);
-		indices.push_back(2);
-		indices.push_back(1);
-
-		indices.push_back(4);
-		indices.push_back(5);
-		indices.push_back(6);
-		indices.push_back(7);
-		indices.push_back(6);
-		indices.push_back(5);
-
-		indices.push_back(8);
-		indices.push_back(9);
-		indices.push_back(10);
-		indices.push_back(11);
-		indices.push_back(10);
-		indices.push_back(9);
-
-		indices.push_back(12);
-		indices.push_back(13);
-		indices.push_back(14);
-		indices.push_back(15);
-		indices.push_back(14);
-		indices.push_back(13);
-
-		indices.push_back(16);
-		indices.push_back(17);
-		indices.push_back(18);
-		indices.push_back(19);
-		indices.push_back(18);
-		indices.push_back(17);
-
-		indices.push_back(20);
-		indices.push_back(21);
-		indices.push_back(22);
-		indices.push_back(23);
-		indices.push_back(22);
-		indices.push_back(21);
+		// front
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, -0.5f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));
+		// back
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, 0.5f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));
+		// left
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));
+		// right
+		CreateQuad(Float2(0.5f, 0.5f), Float3(-0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));
+		// up
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));
+		// down
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));
 	}
 	PUBLIC void Apply() {
 		Setup();
