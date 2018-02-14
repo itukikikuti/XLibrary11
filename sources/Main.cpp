@@ -20,16 +20,16 @@ int Main() {
 	mesh.CreateCube();
 	mesh.Apply();
 	mesh.material.SetTexture(0, &tex);
-
+	
 	while (App::Refresh()) {
 		camera.Update();
 
 		mesh.angles.y += App::GetDeltaTime() * 50.0f;
 
-		mesh.position = Float3(0.0f, 0.1f, 0.5f);
+		mesh.position = Float3(0.5f, 0.0f, 0.0f);
 		mesh.Draw();
 
-		mesh.position = Float3(-0.3f, 0.0f, 0.0f);
+		mesh.position = Float3(-0.5f, 0.0f, 0.0f);
 		mesh.Draw();
 	}
 

@@ -1145,9 +1145,9 @@ class Mesh {
 			"    float4 normal : NORMAL;"
 			"    float2 uv : TEXCOORD;"
 			"};"
-			"VSOutput VS(float3 vertex : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD) {"
+			"VSOutput VS(float3 position : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD) {"
 			"    VSOutput output = (VSOutput)0;"
-			"    output.position = mul(_world, float4(vertex, 1.0));"
+			"    output.position = mul(_world, float4(position, 1.0));"
 			"    output.position = mul(_view, output.position);"
 			"    output.position = mul(_projection, output.position);"
 			"    output.normal = normalize(mul(_world, float4(normal, 1)));"
@@ -1155,7 +1155,7 @@ class Mesh {
 			"    return output;"
 			"}"
 			"float4 PS(VSOutput pixel) : SV_TARGET {"
-			"    float diffuse = dot(-_lightDirection, pixel.normal.xyz);"
+			"    float diffuse = dot(-_lightDirection, normalize(pixel.normal).xyz) + 0.25;"
 			"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
 			"}") {
 		Initialize();
@@ -1272,7 +1272,7 @@ class Mesh {
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		DirectX::XMStoreFloat3(&constant.lightDirection, DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f)));
+		constant.lightDirection = DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f));
 
 		if (vertexBuffer == nullptr) {
 			return;
