@@ -123,9 +123,6 @@
 		};
 		indexCount = sizeof(index) / sizeof(index[0]);
 
-		int x = static_cast<int>(App::GetWindowSize().x);
-		int y = static_cast<int>(App::GetWindowSize().y);
-
 		D3D11_BUFFER_DESC vertexBufferDesc = {};
 		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertexCount;
