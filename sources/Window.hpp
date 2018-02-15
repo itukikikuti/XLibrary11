@@ -1,7 +1,7 @@
 ﻿class Window {
-	PUBLIC class Procedurable {
+	PUBLIC class Proceedable {
 		PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
-		PUBLIC virtual ~Procedurable() {}
+		PUBLIC virtual ~Proceedable() {}
 	};
 
 	PRIVATE HWND handle;
@@ -80,10 +80,10 @@
 			SetSize(size.x, size.y);
 		}
 	}
-	PUBLIC void AddProcedure(Procedurable* const procedure) {
+	PUBLIC void AddProcedure(Proceedable* const procedure) {
 		GetProcedures().push_front(procedure);
 	}
-	PUBLIC void RemoveProcedure(Procedurable* const procedure) {
+	PUBLIC void RemoveProcedure(Proceedable* const procedure) {
 		GetProcedures().remove(procedure);
 	}
 	PUBLIC bool Update() {
@@ -101,12 +101,12 @@
 
 		return false;
 	}
-	PRIVATE static std::forward_list<Procedurable*>& GetProcedures() {
-		static std::forward_list<Procedurable*> procedures;
+	PRIVATE static std::forward_list<Proceedable*>& GetProcedures() {
+		static std::forward_list<Proceedable*> procedures;
 		return procedures;
 	}
 	PRIVATE static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
-		for (Procedurable* procedure : GetProcedures()) {
+		for (Proceedable* procedure : GetProcedures()) {
 			procedure->OnProceed(handle, message, wParam, lParam);
 		}
 		switch (message) {

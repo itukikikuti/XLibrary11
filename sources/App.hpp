@@ -53,10 +53,10 @@ class App {
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
 		GetWindow().SetFullScreen(isFullscreen);
 	}
-	PUBLIC static void AddProcedure(Window::Procedurable* const procedure) {
+	PUBLIC static void AddProcedure(Window::Proceedable* const procedure) {
 		GetWindow().AddProcedure(procedure);
 	}
-	PUBLIC static void RemoveProcedure(Window::Procedurable* const procedure) {
+	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure) {
 		GetWindow().RemoveProcedure(procedure);
 	}
 	PUBLIC static ID3D11Device& GetGraphicsDevice() {

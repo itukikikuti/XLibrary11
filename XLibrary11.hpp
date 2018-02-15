@@ -347,9 +347,9 @@ class App {
 	PUBLIC static constexpr wchar_t* name = L"XLibrary11";
 
 class Window {
-	PUBLIC class Procedurable {
+	PUBLIC class Proceedable {
 		PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
-		PUBLIC virtual ~Procedurable() {}
+		PUBLIC virtual ~Proceedable() {}
 	};
 
 	PRIVATE HWND handle;
@@ -428,10 +428,10 @@ class Window {
 			SetSize(size.x, size.y);
 		}
 	}
-	PUBLIC void AddProcedure(Procedurable* const procedure) {
+	PUBLIC void AddProcedure(Proceedable* const procedure) {
 		GetProcedures().push_front(procedure);
 	}
-	PUBLIC void RemoveProcedure(Procedurable* const procedure) {
+	PUBLIC void RemoveProcedure(Proceedable* const procedure) {
 		GetProcedures().remove(procedure);
 	}
 	PUBLIC bool Update() {
@@ -449,12 +449,12 @@ class Window {
 
 		return false;
 	}
-	PRIVATE static std::forward_list<Procedurable*>& GetProcedures() {
-		static std::forward_list<Procedurable*> procedures;
+	PRIVATE static std::forward_list<Proceedable*>& GetProcedures() {
+		static std::forward_list<Proceedable*> procedures;
 		return procedures;
 	}
 	PRIVATE static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
-		for (Procedurable* procedure : GetProcedures()) {
+		for (Proceedable* procedure : GetProcedures()) {
 			procedure->OnProceed(handle, message, wParam, lParam);
 		}
 		switch (message) {
@@ -674,10 +674,10 @@ class Timer {
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
 		GetWindow().SetFullScreen(isFullscreen);
 	}
-	PUBLIC static void AddProcedure(Window::Procedurable* const procedure) {
+	PUBLIC static void AddProcedure(Window::Proceedable* const procedure) {
 		GetWindow().AddProcedure(procedure);
 	}
-	PUBLIC static void RemoveProcedure(Window::Procedurable* const procedure) {
+	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure) {
 		GetWindow().RemoveProcedure(procedure);
 	}
 	PUBLIC static ID3D11Device& GetGraphicsDevice() {
@@ -971,7 +971,7 @@ class Material {
 	}
 };
 
-class Camera : public App::Window::Procedurable {
+class Camera : public App::Window::Proceedable {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;
