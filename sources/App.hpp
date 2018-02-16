@@ -35,6 +35,7 @@ XLIBRARY_NAMESPACE_BEGIN
 #define PRIVATE private:
 #define PROTECTED protected:
 
+#include "Interface.hpp"
 #include "Math.hpp"
 
 class App {

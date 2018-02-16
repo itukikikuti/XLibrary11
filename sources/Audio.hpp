@@ -11,7 +11,6 @@ class Audio {
 
 		MFStartup(MF_VERSION);
 	}
-
 	PUBLIC ~Audio() {
 		MFShutdown();
 
