@@ -6,6 +6,8 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <wincodec.h>
+#include <xaudio2.h>
+#include <mfapi.h>
 #include <DirectXMath.h>
 #include <wrl.h>
 #include <memory>
@@ -14,8 +16,17 @@
 #include <fstream>
 #include <functional>
 #include <strsafe.h>
+#include <Shlwapi.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
+
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "mfplat.lib")
+#pragma comment(lib, "mfreadwrite.lib")
+#pragma comment(lib, "mfuuid.lib")
+#pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "xaudio2.lib")
 
 namespace XLibrary11 {
 
@@ -544,6 +555,32 @@ class Graphics {
 	}
 };
 
+class Audio {
+	PROTECTED Microsoft::WRL::ComPtr<IXAudio2> audioEngine;
+	PROTECTED IXAudio2MasteringVoice* masteringVoice = nullptr;
+
+	PUBLIC Audio() {
+		App::GetWindowHandle();
+
+		XAudio2Create(audioEngine.GetAddressOf());
+
+		audioEngine->CreateMasteringVoice(&masteringVoice);
+
+		MFStartup(MF_VERSION);
+	}
+
+	PUBLIC ~Audio() {
+		MFShutdown();
+
+		masteringVoice->DestroyVoice();
+		
+		audioEngine->StopEngine();
+	}
+	PUBLIC IXAudio2& GetAudioEngine() {
+		return *audioEngine.Get();
+	}
+};
+
 class Input {
 	PRIVATE Float2 mousePosition;
 	PRIVATE BYTE preKeyState[256];
@@ -689,6 +726,9 @@ class Timer {
 	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
 		return GetGraphics().GetMemory();
 	}
+	PUBLIC static IXAudio2& GetAudioEngine() {
+		return GetAudio().GetAudioEngine();
+	}
 	PUBLIC static bool GetKey(int VK_CODE) {
 		return GetInput().GetKey(VK_CODE);
 	}
@@ -738,6 +778,10 @@ class Timer {
 	PRIVATE static Graphics& GetGraphics() {
 		static std::unique_ptr<Graphics> graphics(new Graphics());
 		return *graphics.get();
+	}
+	PRIVATE static Audio& GetAudio() {
+		static std::unique_ptr<Audio> audio(new Audio());
+		return *audio.get();
 	}
 	PRIVATE static Input& GetInput() {
 		static std::unique_ptr<Input> input(new Input());
@@ -1540,6 +1584,91 @@ class Text : public Sprite {
 		App::GetGraphicsContext().Unmap(texture.Get(), D3D11CalcSubresource(0, 0, 1));
 		delete[] textureBuffer;
 	}
+};
+
+class Voice : public IXAudio2VoiceCallback {
+	PROTECTED Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
+	PROTECTED IXAudio2SourceVoice* sourceVoice;
+
+	PUBLIC Voice(wchar_t* filePath) {
+		App::GetAudioEngine();
+
+		Microsoft::WRL::ComPtr<IStream> stream;
+		SHCreateStreamOnFileW(filePath, STGM_READ, stream.GetAddressOf());
+
+		Microsoft::WRL::ComPtr<IMFByteStream> byteStream;
+		MFCreateMFByteStreamOnStream(stream.Get(), byteStream.GetAddressOf());
+
+		Microsoft::WRL::ComPtr<IMFAttributes> attributes;
+		MFCreateAttributes(attributes.GetAddressOf(), 1);
+
+		MFCreateSourceReaderFromByteStream(byteStream.Get(), attributes.Get(), sourceReader.GetAddressOf());
+
+		Microsoft::WRL::ComPtr<IMFMediaType> mediaType;
+		MFCreateMediaType(mediaType.GetAddressOf());
+		mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+		mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
+
+		sourceReader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType.Get());
+
+		mediaType.Reset();
+		sourceReader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, mediaType.GetAddressOf());
+
+		UINT32 waveFormatSize = 0;
+		WAVEFORMATEX* waveFormat;
+		MFCreateWaveFormatExFromMFMediaType(mediaType.Get(), &waveFormat, &waveFormatSize);
+
+		App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
+	}
+	PUBLIC ~Voice() {
+		sourceVoice->DestroyVoice();
+	}
+	PUBLIC void Play() {
+		sourceVoice->Start();
+		SubmitSourceBuffer();
+	}
+	PROTECTED void SubmitSourceBuffer() {
+		Microsoft::WRL::ComPtr<IMFSample> sample;
+		DWORD flags = 0;
+		sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
+
+		if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
+			//sourceVoice->Stop();
+			//sourceVoice->FlushSourceBuffers();
+
+			PROPVARIANT position = {};
+			position.vt = VT_I8;
+			position.hVal.QuadPart = 0;
+			sourceReader->SetCurrentPosition(GUID_NULL, position);
+
+			sample.Reset();
+			sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
+			//sourceVoice->Start();
+			//return;
+		}
+
+		Microsoft::WRL::ComPtr<IMFMediaBuffer> mediaBuffer;
+		sample->ConvertToContiguousBuffer(mediaBuffer.GetAddressOf());
+
+		DWORD audioDataLength = 0;
+		BYTE* audioData;
+		mediaBuffer->Lock(&audioData, nullptr, &audioDataLength);
+		mediaBuffer->Unlock();
+
+		XAUDIO2_BUFFER audioBuffer = {};
+		audioBuffer.AudioBytes = audioDataLength;
+		audioBuffer.pAudioData = audioData;
+		sourceVoice->SubmitSourceBuffer(&audioBuffer);
+	}
+	PROTECTED void _stdcall OnBufferEnd(void*) override {
+		SubmitSourceBuffer();
+	}
+	PRIVATE void _stdcall OnBufferStart(void*) override {}
+	PRIVATE void _stdcall OnLoopEnd(void*) override {}
+	PRIVATE void _stdcall OnStreamEnd() override {}
+	PRIVATE void _stdcall OnVoiceError(void*, HRESULT) override {}
+	PRIVATE void _stdcall OnVoiceProcessingPassStart(UINT32) override {}
+	PRIVATE void _stdcall OnVoiceProcessingPassEnd() override {}
 };
 
 }

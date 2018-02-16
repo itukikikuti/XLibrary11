@@ -114,6 +114,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="sources\App.hpp" />
+    <ClInclude Include="sources\Audio.hpp" />
     <ClInclude Include="sources\Camera.hpp" />
     <ClInclude Include="sources\Graphics.hpp" />
     <ClInclude Include="sources\Input.hpp" />
@@ -124,6 +125,7 @@
     <ClInclude Include="sources\Text.hpp" />
     <ClInclude Include="sources\Texture.hpp" />
     <ClInclude Include="sources\Timer.hpp" />
+    <ClInclude Include="sources\Voice.hpp" />
     <ClInclude Include="sources\Window.hpp" />
   </ItemGroup>
   <ItemGroup>
