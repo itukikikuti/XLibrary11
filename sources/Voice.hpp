@@ -1,8 +1,19 @@
-class Voice : public IXAudio2VoiceCallback {
+class Voice : public Constructable<>, public Loadable, public IXAudio2VoiceCallback {
 	PROTECTED Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
 	PROTECTED IXAudio2SourceVoice* sourceVoice;
 
 	PUBLIC Voice(wchar_t* filePath) {
+		Initialize();
+		Load(filePath);
+	}
+	PUBLIC ~Voice() {
+		sourceVoice->DestroyVoice();
+	}
+	PROTECTED void Initialize() override {
+	}
+	PROTECTED void Construct() override {
+	}
+	PUBLIC void Load(const wchar_t* const filePath) override {
 		App::GetAudioEngine();
 
 		Microsoft::WRL::ComPtr<IStream> stream;
@@ -32,22 +43,16 @@ class Voice : public IXAudio2VoiceCallback {
 
 		App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
 	}
-	PUBLIC ~Voice() {
-		sourceVoice->DestroyVoice();
-	}
 	PUBLIC void Play() {
 		sourceVoice->Start();
-		SubmitSourceBuffer();
+		SubmitBuffer();
 	}
-	PROTECTED void SubmitSourceBuffer() {
+	PROTECTED void SubmitBuffer() {
 		Microsoft::WRL::ComPtr<IMFSample> sample;
 		DWORD flags = 0;
 		sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
 
 		if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
-			//sourceVoice->Stop();
-			//sourceVoice->FlushSourceBuffers();
-
 			PROPVARIANT position = {};
 			position.vt = VT_I8;
 			position.hVal.QuadPart = 0;
@@ -55,8 +60,6 @@ class Voice : public IXAudio2VoiceCallback {
 
 			sample.Reset();
 			sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
-			//sourceVoice->Start();
-			//return;
 		}
 
 		Microsoft::WRL::ComPtr<IMFMediaBuffer> mediaBuffer;
@@ -73,12 +76,18 @@ class Voice : public IXAudio2VoiceCallback {
 		sourceVoice->SubmitSourceBuffer(&audioBuffer);
 	}
 	PROTECTED void _stdcall OnBufferEnd(void*) override {
-		SubmitSourceBuffer();
+		SubmitBuffer();
 	}
-	PRIVATE void _stdcall OnBufferStart(void*) override {}
-	PRIVATE void _stdcall OnLoopEnd(void*) override {}
-	PRIVATE void _stdcall OnStreamEnd() override {}
-	PRIVATE void _stdcall OnVoiceError(void*, HRESULT) override {}
-	PRIVATE void _stdcall OnVoiceProcessingPassStart(UINT32) override {}
-	PRIVATE void _stdcall OnVoiceProcessingPassEnd() override {}
+	PRIVATE void _stdcall OnBufferStart(void*) override {
+	}
+	PRIVATE void _stdcall OnLoopEnd(void*) override {
+	}
+	PRIVATE void _stdcall OnStreamEnd() override {
+	}
+	PRIVATE void _stdcall OnVoiceError(void*, HRESULT) override {
+	}
+	PRIVATE void _stdcall OnVoiceProcessingPassStart(UINT32) override {
+	}
+	PRIVATE void _stdcall OnVoiceProcessingPassEnd() override {
+	}
 };

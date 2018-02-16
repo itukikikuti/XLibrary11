@@ -23,6 +23,7 @@ int Main() {
 	mesh.material.SetTexture(0, &tex);
 
 	voice.Play();
+
 	while (App::Refresh()) {
 		camera.Update();
 

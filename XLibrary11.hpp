@@ -35,6 +35,16 @@ namespace XLibrary11 {
 #define PRIVATE private:
 #define PROTECTED protected:
 
+template<class ...Args>
+class Constructable {
+	PROTECTED virtual void Initialize() = 0;
+	PROTECTED virtual void Construct(Args ...args) = 0;
+};
+
+class Loadable {
+	PUBLIC virtual void Load(const wchar_t* const filePath) = 0;
+};
+
 struct Float2 : public DirectX::XMFLOAT2 {
 	PUBLIC Float2() : DirectX::XMFLOAT2() {
 	}
@@ -568,7 +578,6 @@ class Audio {
 
 		MFStartup(MF_VERSION);
 	}
-
 	PUBLIC ~Audio() {
 		MFShutdown();
 
@@ -793,7 +802,7 @@ class Timer {
 	}
 };
 
-class Texture {
+class Texture : public Constructable<int, int, const BYTE* const>, public Loadable {
 	PROTECTED int width;
 	PROTECTED int height;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
@@ -801,53 +810,18 @@ class Texture {
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
 	PUBLIC Texture(wchar_t* filePath) {
+		Initialize();
 		Load(filePath);
 	}
 	PUBLIC Texture(int width, int height, BYTE* buffer) {
-		Setup(width, height, buffer);
+		Initialize();
+		Construct(width, height, buffer);
 	}
 	PUBLIC virtual ~Texture() {
 	}
-	PUBLIC void Load(wchar_t* filePath) {
-		App::GetWindowHandle();
-
-		Microsoft::WRL::ComPtr<IWICImagingFactory> factory = nullptr;
-		CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(factory.GetAddressOf()));
-
-		Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder = nullptr;
-
-		factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, decoder.GetAddressOf());
-		Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frame = nullptr;
-		decoder->GetFrame(0, frame.GetAddressOf());
-		UINT width, height;
-		frame->GetSize(&width, &height);
-
-		WICPixelFormatGUID pixelFormat;
-		frame->GetPixelFormat(&pixelFormat);
-		std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
-
-		if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
-			Microsoft::WRL::ComPtr<IWICFormatConverter> formatConverter = nullptr;
-			factory->CreateFormatConverter(formatConverter.GetAddressOf());
-
-			formatConverter->Initialize(frame.Get(), GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
-
-			formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
-		}
-		else {
-			frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
-		}
-
-		Setup(width, height, buffer.get());
+	PROTECTED void Initialize() override {
 	}
-	PUBLIC Float2 GetSize() {
-		return Float2(static_cast<float>(width), static_cast<float>(height));
-	}
-	PUBLIC virtual void Attach(int slot) {
-		App::GetGraphicsContext().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
-		App::GetGraphicsContext().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
-	}
-	PROTECTED void Setup(int width, int height, BYTE* buffer) {
+	PROTECTED void Construct(int width, int height, const BYTE* const buffer) override {
 		this->width = width;
 		this->height = height;
 
@@ -895,9 +869,48 @@ class Texture {
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
 	}
+	PUBLIC void Load(const wchar_t* const filePath) override {
+		App::GetWindowHandle();
+
+		Microsoft::WRL::ComPtr<IWICImagingFactory> factory = nullptr;
+		CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(factory.GetAddressOf()));
+
+		Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder = nullptr;
+
+		factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, decoder.GetAddressOf());
+		Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frame = nullptr;
+		decoder->GetFrame(0, frame.GetAddressOf());
+		UINT width, height;
+		frame->GetSize(&width, &height);
+
+		WICPixelFormatGUID pixelFormat;
+		frame->GetPixelFormat(&pixelFormat);
+		std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
+
+		if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
+			Microsoft::WRL::ComPtr<IWICFormatConverter> formatConverter = nullptr;
+			factory->CreateFormatConverter(formatConverter.GetAddressOf());
+
+			formatConverter->Initialize(frame.Get(), GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
+
+			formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
+		}
+		else {
+			frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
+		}
+
+		Construct(width, height, buffer.get());
+	}
+	PUBLIC Float2 GetSize() {
+		return Float2(static_cast<float>(width), static_cast<float>(height));
+	}
+	PUBLIC virtual void Attach(int slot) {
+		App::GetGraphicsContext().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
+		App::GetGraphicsContext().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
+	}
 };
 
-class Material {
+class Material : public Constructable<const char* const>, public Loadable {
 	PUBLIC void* cbuffer = nullptr;
 	PUBLIC Texture* textures[10];
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
@@ -925,24 +938,65 @@ class Material {
 			"    return float4(1, 0, 1, 1);"
 			"}";
 
-		Setup(source);
+		Initialize();
+		Construct(source);
 	}
 	PUBLIC Material(char* source) {
-		Setup(source);
+		Initialize();
+		Construct(source);
 	}
 	PUBLIC Material(wchar_t* filePath) {
+		Initialize();
 		Load(filePath);
 	}
 	PUBLIC virtual ~Material() {
 	}
-	PUBLIC void Load(wchar_t* filePath) {
+	PROTECTED void Initialize() override {
+		for (int i = 0; i < 10; i++) {
+			textures[i] = nullptr;
+		}
+	}
+	PROTECTED void Construct(const char* source) override{
+		vertexShader.Reset();
+		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
+		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
+		App::GetGraphicsDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
+
+		pixelShader.Reset();
+		Microsoft::WRL::ComPtr<ID3DBlob> pixelShaderBlob = nullptr;
+		CompileShader(source, "PS", "ps_5_0", pixelShaderBlob.GetAddressOf());
+		App::GetGraphicsDevice().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, pixelShader.GetAddressOf());
+
+		inputLayout.Reset();
+		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc;
+		inputElementDesc.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+
+		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
+	}
+	PUBLIC void Load(const wchar_t* const filePath) override {
 		std::ifstream sourceFile(filePath);
 		std::istreambuf_iterator<char> iterator(sourceFile);
 		std::istreambuf_iterator<char> last;
 		std::string source(iterator, last);
 		sourceFile.close();
 
-		Setup(source.c_str());
+		Construct(source.c_str());
+	}
+	PUBLIC void SetCBuffer(void* cbuffer, size_t size) {
+		this->cbuffer = cbuffer;
+
+		constantBuffer.Reset();
+		D3D11_BUFFER_DESC constantBufferDesc = {};
+		constantBufferDesc.ByteWidth = static_cast<UINT>(size);
+		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags = 0;
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
+	}
+	PUBLIC void SetTexture(int slot, Texture* texture) {
+		textures[slot] = texture;
 	}
 	PUBLIC virtual void Attach() {
 		App::GetGraphicsContext().VSSetShader(vertexShader.Get(), nullptr, 0);
@@ -966,39 +1020,6 @@ class Material {
 			i++;
 		}
 	}
-	PUBLIC void SetCBuffer(void* cbuffer, size_t size) {
-		this->cbuffer = cbuffer;
-
-		constantBuffer.Reset();
-		D3D11_BUFFER_DESC constantBufferDesc = {};
-		constantBufferDesc.ByteWidth = static_cast<UINT>(size);
-		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
-	}
-	PUBLIC void SetTexture(int slot, Texture* texture) {
-		textures[slot] = texture;
-	}
-	PROTECTED void Setup(const char* source) {
-		vertexShader.Reset();
-		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
-		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
-		App::GetGraphicsDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
-
-		pixelShader.Reset();
-		Microsoft::WRL::ComPtr<ID3DBlob> pixelShaderBlob = nullptr;
-		CompileShader(source, "PS", "ps_5_0", pixelShaderBlob.GetAddressOf());
-		App::GetGraphicsDevice().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, pixelShader.GetAddressOf());
-
-		inputLayout.Reset();
-		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc;
-		inputElementDesc.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-		inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-		inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-
-		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
-	}
 	PROTECTED static void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(DEBUG) || defined(_DEBUG)
@@ -1015,7 +1036,7 @@ class Material {
 	}
 };
 
-class Camera : public App::Window::Proceedable {
+class Camera : public Constructable<>, public App::Window::Proceedable {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;
@@ -1035,39 +1056,12 @@ class Camera : public App::Window::Proceedable {
 
 	PUBLIC Camera() {
 		Initialize();
-		Setup();
+		Construct();
 	}
 	PUBLIC virtual ~Camera() {
 		App::RemoveProcedure(this);
 	}
-	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip) {
-		this->fieldOfView = fieldOfView;
-		this->nearClip = nearClip;
-		this->farClip = farClip;
-		constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
-	}
-	PUBLIC virtual void Update() {
-		constant.view =
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
-			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
-			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
-			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		constant.view = DirectX::XMMatrixInverse(nullptr, constant.view);
-
-		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().HSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().DSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().GSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-
-		App::GetGraphicsContext().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
-		
-		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		App::GetGraphicsContext().ClearRenderTargetView(renderTargetView.Get(), color);
-		App::GetGraphicsContext().ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	}
-	PROTECTED void Initialize() {
+	PROTECTED void Initialize() override {
 		position = Float3(0.0f, 0.0f, -5.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
 
@@ -1075,12 +1069,12 @@ class Camera : public App::Window::Proceedable {
 
 		App::AddProcedure(this);
 	}
-	PROTECTED void Setup() {
+	PROTECTED void Construct() override {
 		renderTexture.Reset();
 		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
 		renderTargetView.Reset();
 		App::GetGraphicsDevice().CreateRenderTargetView(renderTexture.Get(), nullptr, renderTargetView.GetAddressOf());
-		
+
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		App::GetGraphicsMemory().GetDesc(&swapChainDesc);
 
@@ -1128,6 +1122,33 @@ class Camera : public App::Window::Proceedable {
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
+	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip) {
+		this->fieldOfView = fieldOfView;
+		this->nearClip = nearClip;
+		this->farClip = farClip;
+		constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
+	}
+	PUBLIC virtual void Update() {
+		constant.view =
+			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
+			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		constant.view = DirectX::XMMatrixInverse(nullptr, constant.view);
+
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().HSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().DSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().GSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+
+		App::GetGraphicsContext().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+		
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		App::GetGraphicsContext().ClearRenderTargetView(renderTargetView.Get(), color);
+		App::GetGraphicsContext().ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	}
 	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override {
 		if (message != WM_SIZE) {
 			return;
@@ -1150,11 +1171,11 @@ class Camera : public App::Window::Proceedable {
 		App::GetGraphicsMemory().ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
 
 		SetPerspective(fieldOfView, nearClip, farClip);
-		Setup();
+		Construct();
 	}
 };
 
-class Mesh {
+class Mesh : public Constructable<> {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX world;
 		Float3 lightDirection;
@@ -1171,8 +1192,18 @@ class Mesh {
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
 
-	PUBLIC Mesh() :
-		material(
+	PUBLIC Mesh() {
+		Initialize();
+		Construct();
+	}
+	PUBLIC virtual ~Mesh() {
+	}
+	PROTECTED void Initialize() override {
+		position = Float3(0.0f, 0.0f, 0.0f);
+		angles = Float3(0.0f, 0.0f, 0.0f);
+		scale = Float3(1.0f, 1.0f, 1.0f);
+
+		material = Material(
 			"cbuffer Object : register(b0) {"
 			"    matrix _world;"
 			"    float3 _lightDirection;"
@@ -1200,11 +1231,37 @@ class Mesh {
 			"float4 PS(VSOutput pixel) : SV_TARGET {"
 			"    float diffuse = dot(-_lightDirection, normalize(pixel.normal).xyz) + 0.25;"
 			"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
-			"}") {
-		Initialize();
-		Setup();
+			"}"
+		);
+
+		SetCullingMode(D3D11_CULL_BACK);
 	}
-	PUBLIC virtual ~Mesh() {
+	PROTECTED void Construct() override {
+		if (vertices.size() > 0) {
+			vertexBuffer.Reset();
+			D3D11_BUFFER_DESC vertexBufferDesc = {};
+			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
+			vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			vertexBufferDesc.CPUAccessFlags = 0;
+			D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
+			vertexSubresourceData.pSysMem = &vertices[0];
+			App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
+		}
+
+		if (indices.size() > 0) {
+			indexBuffer.Reset();
+			D3D11_BUFFER_DESC indexBufferDesc = {};
+			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indices.size());
+			indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			indexBufferDesc.CPUAccessFlags = 0;
+			D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
+			indexSubresourceData.pSysMem = &indices[0];
+			App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
+		}
+
+		material.SetCBuffer(&constant, sizeof(Constant));
 	}
 	PUBLIC void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f)) {
 		if (shouldClear) {
@@ -1235,21 +1292,21 @@ class Mesh {
 			indices.clear();
 		}
 
-		// front
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, -0.5f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));
-		// back
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, 0.5f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));
-		// left
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));
-		// right
-		CreateQuad(Float2(0.5f, 0.5f), Float3(-0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));
-		// up
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));
-		// down
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, -0.5f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));		// front
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, 0.5f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));	// back
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));		// left
+		CreateQuad(Float2(0.5f, 0.5f), Float3(-0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));	// right
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));		// up
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
+	}
+	PUBLIC void SetCullingMode(D3D11_CULL_MODE cullingMode) {
+		D3D11_RASTERIZER_DESC rasterizerDesc = {};
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.CullMode = cullingMode;
+		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
 	}
 	PUBLIC void Apply() {
-		Setup();
+		Construct();
 	}
 	PUBLIC virtual void Draw() {
 		material.Attach();
@@ -1279,46 +1336,6 @@ class Mesh {
 			App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 			App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
 		}
-	}
-	PUBLIC void SetCullingMode(D3D11_CULL_MODE cullingMode) {
-		D3D11_RASTERIZER_DESC rasterizerDesc = {};
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerDesc.CullMode = cullingMode;
-		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
-	}
-	PROTECTED void Initialize() {
-		position = Float3(0.0f, 0.0f, 0.0f);
-		angles = Float3(0.0f, 0.0f, 0.0f);
-		scale = Float3(1.0f, 1.0f, 1.0f);
-
-		SetCullingMode(D3D11_CULL_BACK);
-	}
-	PROTECTED void Setup() {
-		if (vertices.size() > 0) {
-			vertexBuffer.Reset();
-			D3D11_BUFFER_DESC vertexBufferDesc = {};
-			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
-			vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			vertexBufferDesc.CPUAccessFlags = 0;
-			D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
-			vertexSubresourceData.pSysMem = &vertices[0];
-			App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
-		}
-
-		if (indices.size() > 0) {
-			indexBuffer.Reset();
-			D3D11_BUFFER_DESC indexBufferDesc = {};
-			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indices.size());
-			indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-			indexBufferDesc.CPUAccessFlags = 0;
-			D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
-			indexSubresourceData.pSysMem = &indices[0];
-			App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
-		}
-
-		material.SetCBuffer(&constant, sizeof(Constant));
 	}
 };
 
@@ -1586,11 +1603,22 @@ class Text : public Sprite {
 	}
 };
 
-class Voice : public IXAudio2VoiceCallback {
+class Voice : public Constructable<>, public Loadable, public IXAudio2VoiceCallback {
 	PROTECTED Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
 	PROTECTED IXAudio2SourceVoice* sourceVoice;
 
 	PUBLIC Voice(wchar_t* filePath) {
+		Initialize();
+		Load(filePath);
+	}
+	PUBLIC ~Voice() {
+		sourceVoice->DestroyVoice();
+	}
+	PROTECTED void Initialize() override {
+	}
+	PROTECTED void Construct() override {
+	}
+	PUBLIC void Load(const wchar_t* const filePath) override {
 		App::GetAudioEngine();
 
 		Microsoft::WRL::ComPtr<IStream> stream;
@@ -1620,22 +1648,16 @@ class Voice : public IXAudio2VoiceCallback {
 
 		App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
 	}
-	PUBLIC ~Voice() {
-		sourceVoice->DestroyVoice();
-	}
 	PUBLIC void Play() {
 		sourceVoice->Start();
-		SubmitSourceBuffer();
+		SubmitBuffer();
 	}
-	PROTECTED void SubmitSourceBuffer() {
+	PROTECTED void SubmitBuffer() {
 		Microsoft::WRL::ComPtr<IMFSample> sample;
 		DWORD flags = 0;
 		sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
 
 		if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
-			//sourceVoice->Stop();
-			//sourceVoice->FlushSourceBuffers();
-
 			PROPVARIANT position = {};
 			position.vt = VT_I8;
 			position.hVal.QuadPart = 0;
@@ -1643,8 +1665,6 @@ class Voice : public IXAudio2VoiceCallback {
 
 			sample.Reset();
 			sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
-			//sourceVoice->Start();
-			//return;
 		}
 
 		Microsoft::WRL::ComPtr<IMFMediaBuffer> mediaBuffer;
@@ -1661,14 +1681,20 @@ class Voice : public IXAudio2VoiceCallback {
 		sourceVoice->SubmitSourceBuffer(&audioBuffer);
 	}
 	PROTECTED void _stdcall OnBufferEnd(void*) override {
-		SubmitSourceBuffer();
+		SubmitBuffer();
 	}
-	PRIVATE void _stdcall OnBufferStart(void*) override {}
-	PRIVATE void _stdcall OnLoopEnd(void*) override {}
-	PRIVATE void _stdcall OnStreamEnd() override {}
-	PRIVATE void _stdcall OnVoiceError(void*, HRESULT) override {}
-	PRIVATE void _stdcall OnVoiceProcessingPassStart(UINT32) override {}
-	PRIVATE void _stdcall OnVoiceProcessingPassEnd() override {}
+	PRIVATE void _stdcall OnBufferStart(void*) override {
+	}
+	PRIVATE void _stdcall OnLoopEnd(void*) override {
+	}
+	PRIVATE void _stdcall OnStreamEnd() override {
+	}
+	PRIVATE void _stdcall OnVoiceError(void*, HRESULT) override {
+	}
+	PRIVATE void _stdcall OnVoiceProcessingPassStart(UINT32) override {
+	}
+	PRIVATE void _stdcall OnVoiceProcessingPassEnd() override {
+	}
 };
 
 }

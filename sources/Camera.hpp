@@ -1,4 +1,4 @@
-class Camera : public App::Window::Proceedable {
+class Camera : public Constructable<>, public App::Window::Proceedable {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;
@@ -18,39 +18,12 @@ class Camera : public App::Window::Proceedable {
 
 	PUBLIC Camera() {
 		Initialize();
-		Setup();
+		Construct();
 	}
 	PUBLIC virtual ~Camera() {
 		App::RemoveProcedure(this);
 	}
-	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip) {
-		this->fieldOfView = fieldOfView;
-		this->nearClip = nearClip;
-		this->farClip = farClip;
-		constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
-	}
-	PUBLIC virtual void Update() {
-		constant.view =
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
-			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
-			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
-			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		constant.view = DirectX::XMMatrixInverse(nullptr, constant.view);
-
-		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().HSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().DSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().GSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-
-		App::GetGraphicsContext().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
-		
-		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		App::GetGraphicsContext().ClearRenderTargetView(renderTargetView.Get(), color);
-		App::GetGraphicsContext().ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	}
-	PROTECTED void Initialize() {
+	PROTECTED void Initialize() override {
 		position = Float3(0.0f, 0.0f, -5.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
 
@@ -58,12 +31,12 @@ class Camera : public App::Window::Proceedable {
 
 		App::AddProcedure(this);
 	}
-	PROTECTED void Setup() {
+	PROTECTED void Construct() override {
 		renderTexture.Reset();
 		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
 		renderTargetView.Reset();
 		App::GetGraphicsDevice().CreateRenderTargetView(renderTexture.Get(), nullptr, renderTargetView.GetAddressOf());
-		
+
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		App::GetGraphicsMemory().GetDesc(&swapChainDesc);
 
@@ -111,6 +84,33 @@ class Camera : public App::Window::Proceedable {
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
+	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip) {
+		this->fieldOfView = fieldOfView;
+		this->nearClip = nearClip;
+		this->farClip = farClip;
+		constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
+	}
+	PUBLIC virtual void Update() {
+		constant.view =
+			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
+			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		constant.view = DirectX::XMMatrixInverse(nullptr, constant.view);
+
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().HSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().DSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().GSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+
+		App::GetGraphicsContext().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+		
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		App::GetGraphicsContext().ClearRenderTargetView(renderTargetView.Get(), color);
+		App::GetGraphicsContext().ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	}
 	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override {
 		if (message != WM_SIZE) {
 			return;
@@ -133,6 +133,6 @@ class Camera : public App::Window::Proceedable {
 		App::GetGraphicsMemory().ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
 
 		SetPerspective(fieldOfView, nearClip, farClip);
-		Setup();
+		Construct();
 	}
 };

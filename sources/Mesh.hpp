@@ -1,4 +1,4 @@
-﻿class Mesh {
+﻿class Mesh : public Constructable<> {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX world;
 		Float3 lightDirection;
@@ -15,8 +15,18 @@
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
 
-	PUBLIC Mesh() :
-		material(
+	PUBLIC Mesh() {
+		Initialize();
+		Construct();
+	}
+	PUBLIC virtual ~Mesh() {
+	}
+	PROTECTED void Initialize() override {
+		position = Float3(0.0f, 0.0f, 0.0f);
+		angles = Float3(0.0f, 0.0f, 0.0f);
+		scale = Float3(1.0f, 1.0f, 1.0f);
+
+		material = Material(
 			"cbuffer Object : register(b0) {"
 			"    matrix _world;"
 			"    float3 _lightDirection;"
@@ -44,11 +54,37 @@
 			"float4 PS(VSOutput pixel) : SV_TARGET {"
 			"    float diffuse = dot(-_lightDirection, normalize(pixel.normal).xyz) + 0.25;"
 			"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
-			"}") {
-		Initialize();
-		Setup();
+			"}"
+		);
+
+		SetCullingMode(D3D11_CULL_BACK);
 	}
-	PUBLIC virtual ~Mesh() {
+	PROTECTED void Construct() override {
+		if (vertices.size() > 0) {
+			vertexBuffer.Reset();
+			D3D11_BUFFER_DESC vertexBufferDesc = {};
+			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
+			vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			vertexBufferDesc.CPUAccessFlags = 0;
+			D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
+			vertexSubresourceData.pSysMem = &vertices[0];
+			App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
+		}
+
+		if (indices.size() > 0) {
+			indexBuffer.Reset();
+			D3D11_BUFFER_DESC indexBufferDesc = {};
+			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indices.size());
+			indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			indexBufferDesc.CPUAccessFlags = 0;
+			D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
+			indexSubresourceData.pSysMem = &indices[0];
+			App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
+		}
+
+		material.SetCBuffer(&constant, sizeof(Constant));
 	}
 	PUBLIC void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f)) {
 		if (shouldClear) {
@@ -79,21 +115,21 @@
 			indices.clear();
 		}
 
-		// front
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, -0.5f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));
-		// back
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, 0.5f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));
-		// left
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));
-		// right
-		CreateQuad(Float2(0.5f, 0.5f), Float3(-0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));
-		// up
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));
-		// down
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, -0.5f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));		// front
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, 0.5f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));	// back
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));		// left
+		CreateQuad(Float2(0.5f, 0.5f), Float3(-0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));	// right
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));		// up
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
+	}
+	PUBLIC void SetCullingMode(D3D11_CULL_MODE cullingMode) {
+		D3D11_RASTERIZER_DESC rasterizerDesc = {};
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.CullMode = cullingMode;
+		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
 	}
 	PUBLIC void Apply() {
-		Setup();
+		Construct();
 	}
 	PUBLIC virtual void Draw() {
 		material.Attach();
@@ -123,45 +159,5 @@
 			App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 			App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
 		}
-	}
-	PUBLIC void SetCullingMode(D3D11_CULL_MODE cullingMode) {
-		D3D11_RASTERIZER_DESC rasterizerDesc = {};
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerDesc.CullMode = cullingMode;
-		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
-	}
-	PROTECTED void Initialize() {
-		position = Float3(0.0f, 0.0f, 0.0f);
-		angles = Float3(0.0f, 0.0f, 0.0f);
-		scale = Float3(1.0f, 1.0f, 1.0f);
-
-		SetCullingMode(D3D11_CULL_BACK);
-	}
-	PROTECTED void Setup() {
-		if (vertices.size() > 0) {
-			vertexBuffer.Reset();
-			D3D11_BUFFER_DESC vertexBufferDesc = {};
-			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
-			vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			vertexBufferDesc.CPUAccessFlags = 0;
-			D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
-			vertexSubresourceData.pSysMem = &vertices[0];
-			App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
-		}
-
-		if (indices.size() > 0) {
-			indexBuffer.Reset();
-			D3D11_BUFFER_DESC indexBufferDesc = {};
-			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indices.size());
-			indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-			indexBufferDesc.CPUAccessFlags = 0;
-			D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
-			indexSubresourceData.pSysMem = &indices[0];
-			App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
-		}
-
-		material.SetCBuffer(&constant, sizeof(Constant));
 	}
 };
