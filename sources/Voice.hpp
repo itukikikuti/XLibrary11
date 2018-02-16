@@ -2,7 +2,7 @@ class Voice : public Constructable<>, public Loadable, public IXAudio2VoiceCallb
 	PROTECTED Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
 	PROTECTED IXAudio2SourceVoice* sourceVoice;
 
-	PUBLIC Voice(wchar_t* filePath) {
+	PUBLIC Voice(const wchar_t* const filePath) {
 		Initialize();
 		Load(filePath);
 	}

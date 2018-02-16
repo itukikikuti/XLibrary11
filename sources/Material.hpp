@@ -33,7 +33,7 @@
 		Initialize();
 		Construct(source);
 	}
-	PUBLIC Material(wchar_t* filePath) {
+	PUBLIC Material(const wchar_t* const filePath) {
 		Initialize();
 		Load(filePath);
 	}

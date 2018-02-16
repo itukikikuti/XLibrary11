@@ -5,7 +5,7 @@
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
-	PUBLIC Texture(wchar_t* filePath) {
+	PUBLIC Texture(const wchar_t* const filePath) {
 		Initialize();
 		Load(filePath);
 	}

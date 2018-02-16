@@ -809,7 +809,7 @@ class Texture : public Constructable<int, int, const BYTE* const>, public Loadab
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
-	PUBLIC Texture(wchar_t* filePath) {
+	PUBLIC Texture(const wchar_t* const filePath) {
 		Initialize();
 		Load(filePath);
 	}
@@ -945,7 +945,7 @@ class Material : public Constructable<const char* const>, public Loadable {
 		Initialize();
 		Construct(source);
 	}
-	PUBLIC Material(wchar_t* filePath) {
+	PUBLIC Material(const wchar_t* const filePath) {
 		Initialize();
 		Load(filePath);
 	}
@@ -1607,7 +1607,7 @@ class Voice : public Constructable<>, public Loadable, public IXAudio2VoiceCallb
 	PROTECTED Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
 	PROTECTED IXAudio2SourceVoice* sourceVoice;
 
-	PUBLIC Voice(wchar_t* filePath) {
+	PUBLIC Voice(const wchar_t* const filePath) {
 		Initialize();
 		Load(filePath);
 	}
