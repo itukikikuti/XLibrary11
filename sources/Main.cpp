@@ -16,7 +16,36 @@
 using namespace std;
 using namespace DirectX;
 
-Texture tex(L"assets/box.jpg");
+bool endOfStream = false;
+IXAudio2SourceVoice* sourceVoice;
+
+void SubmitSourceBuffer(IMFSourceReader* sourceReader) {
+	HRESULT r;
+
+	Microsoft::WRL::ComPtr<IMFSample> sample;
+	DWORD flags = 0;
+	r = sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
+
+	if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
+		endOfStream = true;
+		return;
+	}
+
+	Microsoft::WRL::ComPtr<IMFMediaBuffer> mediaBuffer;
+	r = sample->ConvertToContiguousBuffer(mediaBuffer.GetAddressOf());
+
+	DWORD audioDataLength = 0;
+	BYTE* audioData;
+	r = mediaBuffer->Lock(&audioData, nullptr, &audioDataLength);
+	r = mediaBuffer->Unlock();
+
+	XAUDIO2_BUFFER audioBuffer = {};
+	audioBuffer.AudioBytes = audioDataLength;
+	audioBuffer.pAudioData = audioData;
+	r = sourceVoice->SubmitSourceBuffer(&audioBuffer);
+
+	r = sourceVoice->Start();
+}
 
 int Main() {
 	Library::Generate(L"sources/App.hpp", L"XLibrary11.hpp");
@@ -24,6 +53,7 @@ int Main() {
 
 	Camera camera;
 	Mesh mesh;
+	Texture tex(L"assets/box.jpg");
 
 	camera.position = Float3(0.0f, 1.0f, -2.0f);
 	camera.angles.x = 20.0f;
@@ -41,7 +71,7 @@ int Main() {
 	
 	MFStartup(MF_VERSION);
 
-	//std::basic_ifstream<BYTE> file("assets/sound.wav", std::basic_ios<BYTE>::in | std::basic_ios<BYTE>::binary);
+	//std::basic_ifstream<BYTE> file("assets/music.mp3", std::basic_ios<BYTE>::in | std::basic_ios<BYTE>::binary);
 	//if (file.fail()) {
 	//	return 0;
 	//}
@@ -54,7 +84,7 @@ int Main() {
 
 	//Microsoft::WRL::ComPtr<IStream> stream(SHCreateMemStream(buffer.get(), size));
 	Microsoft::WRL::ComPtr<IStream> stream;
-	r = SHCreateStreamOnFileW(L"assets/sound.wav", STGM_READ, stream.GetAddressOf());
+	r = SHCreateStreamOnFileW(L"assets/music.mp3", STGM_READ, stream.GetAddressOf());
 
 	Microsoft::WRL::ComPtr<IMFByteStream> byteStream;
 	r = MFCreateMFByteStreamOnStream(stream.Get(), byteStream.GetAddressOf());
@@ -79,29 +109,31 @@ int Main() {
 	WAVEFORMATEX* waveFormat;
 	r = MFCreateWaveFormatExFromMFMediaType(mediaType.Get(), &waveFormat, &waveFormatSize);
 
-	IXAudio2SourceVoice* sourceVoice;
 	r = audioEngine->CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, nullptr);
-	
-	Microsoft::WRL::ComPtr<IMFSample> sample;
-	DWORD flags = 0;
-	r = sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
 
-	Microsoft::WRL::ComPtr<IMFMediaBuffer> mediaBuffer;
-	r = sample->ConvertToContiguousBuffer(mediaBuffer.GetAddressOf());
-
-	BYTE* audioData;
-	DWORD currentAudioDataLength = 0;
-	r = mediaBuffer->Lock(&audioData, nullptr, &currentAudioDataLength);
-	r = mediaBuffer->Unlock();
-
-	XAUDIO2_BUFFER audioBuffer = {};
-	audioBuffer.AudioBytes = currentAudioDataLength;
-	audioBuffer.pAudioData = audioData;
-	r = sourceVoice->SubmitSourceBuffer(&audioBuffer);
-
-	r = sourceVoice->Start();
+	float updateSeconds = 85400.0f / waveFormat->nAvgBytesPerSec;
+	float sec = updateSeconds;
 
 	while (App::Refresh()) {
+		if (sec >= updateSeconds) {
+			sec -= updateSeconds;
+			if (endOfStream) {
+				sourceVoice->Stop();
+				sourceVoice->FlushSourceBuffers();
+
+				PROPVARIANT position = {};
+				position.vt = VT_I8;
+				position.hVal.QuadPart = 0;
+				sourceReader->SetCurrentPosition(GUID_NULL, position);
+				endOfStream = false;
+				SubmitSourceBuffer(sourceReader.Get());
+			}
+
+			SubmitSourceBuffer(sourceReader.Get());
+		}
+
+		sec += App::GetDeltaTime();
+
 		camera.Update();
 
 		mesh.angles.y += App::GetDeltaTime() * 50.0f;
