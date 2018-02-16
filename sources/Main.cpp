@@ -17,9 +17,12 @@ using namespace std;
 using namespace DirectX;
 
 bool endOfStream = false;
+Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
 IXAudio2SourceVoice* sourceVoice;
 
-void SubmitSourceBuffer(IMFSourceReader* sourceReader) {
+void SubmitSourceBuffer() {
+	static std::vector<BYTE> buffer;
+
 	HRESULT r;
 
 	Microsoft::WRL::ComPtr<IMFSample> sample;
@@ -37,17 +40,47 @@ void SubmitSourceBuffer(IMFSourceReader* sourceReader) {
 	DWORD audioDataLength = 0;
 	BYTE* audioData;
 	r = mediaBuffer->Lock(&audioData, nullptr, &audioDataLength);
+
+	buffer.resize(audioDataLength);
+	memcpy(&buffer[0], audioData, audioDataLength);
+
 	r = mediaBuffer->Unlock();
 
 	XAUDIO2_BUFFER audioBuffer = {};
 	audioBuffer.AudioBytes = audioDataLength;
-	audioBuffer.pAudioData = audioData;
+	audioBuffer.pAudioData = &buffer[0];
+	audioBuffer.pContext = &buffer[0];
 	r = sourceVoice->SubmitSourceBuffer(&audioBuffer);
 
 	r = sourceVoice->Start();
 }
 
-int Main() {
+class VoiceCallback : public IXAudio2VoiceCallback {
+	PUBLIC void _stdcall OnBufferStart(void *pBufferContext) override {
+		printf("OnBufferStart\n");
+	}
+	PUBLIC void _stdcall OnBufferEnd(void *pBufferContext) override {
+		SubmitSourceBuffer();
+		printf("OnBufferEnd\n");
+	}
+	PUBLIC void _stdcall OnLoopEnd(void *pBufferContext) override {
+		printf("OnLoopEnd\n");
+	}
+	PUBLIC void _stdcall OnStreamEnd() override {
+		printf("OnStreamEnd\n");
+	}
+	PUBLIC void _stdcall OnVoiceError(void *pBufferContext, HRESULT Error) override {
+		printf("OnVoiceError\n");
+	}
+	PUBLIC void _stdcall OnVoiceProcessingPassStart(UINT32 BytesRequired) override {
+		//printf("OnVoiceProcessingPassStart\n");
+	}
+	PUBLIC void _stdcall OnVoiceProcessingPassEnd() override {
+		//printf("OnVoiceProcessingPassEnd\n");
+	}
+};
+
+int main() {
 	Library::Generate(L"sources/App.hpp", L"XLibrary11.hpp");
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
@@ -92,7 +125,6 @@ int Main() {
 	Microsoft::WRL::ComPtr<IMFAttributes> attributes;
 	r = MFCreateAttributes(attributes.GetAddressOf(), 1);
 
-	Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
 	r = MFCreateSourceReaderFromByteStream(byteStream.Get(), attributes.Get(), sourceReader.GetAddressOf());
 
 	Microsoft::WRL::ComPtr<IMFMediaType> mediaType;
@@ -109,30 +141,23 @@ int Main() {
 	WAVEFORMATEX* waveFormat;
 	r = MFCreateWaveFormatExFromMFMediaType(mediaType.Get(), &waveFormat, &waveFormatSize);
 
-	r = audioEngine->CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, nullptr);
+	VoiceCallback a;
+	r = audioEngine->CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, &a);
 
-	float updateSeconds = 85400.0f / waveFormat->nAvgBytesPerSec;
-	float sec = updateSeconds;
+	SubmitSourceBuffer();
 
 	while (App::Refresh()) {
-		if (sec >= updateSeconds) {
-			sec -= updateSeconds;
-			if (endOfStream) {
-				sourceVoice->Stop();
-				sourceVoice->FlushSourceBuffers();
+		if (endOfStream) {
+			sourceVoice->Stop();
+			sourceVoice->FlushSourceBuffers();
 
-				PROPVARIANT position = {};
-				position.vt = VT_I8;
-				position.hVal.QuadPart = 0;
-				sourceReader->SetCurrentPosition(GUID_NULL, position);
-				endOfStream = false;
-				SubmitSourceBuffer(sourceReader.Get());
-			}
-
-			SubmitSourceBuffer(sourceReader.Get());
+			PROPVARIANT position = {};
+			position.vt = VT_I8;
+			position.hVal.QuadPart = 0;
+			sourceReader->SetCurrentPosition(GUID_NULL, position);
+			endOfStream = false;
+			SubmitSourceBuffer();
 		}
-
-		sec += App::GetDeltaTime();
 
 		camera.Update();
 
