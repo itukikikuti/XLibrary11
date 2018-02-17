@@ -1,7 +1,10 @@
 ﻿class Graphics {
+	//class Camera;
+
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
+	//PRIVATE std::unique_ptr<Camera> camera = nullptr;
 
 	PUBLIC Graphics() {
 		int flags = 0;
@@ -62,6 +65,8 @@
 		float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		device->CreateBlendState(&blendDesc, &blendState);
 		context->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
+
+		//camera = std::make_unique<Camera>(new Camera());
 	}
 	PUBLIC ~Graphics() {
 	}

@@ -48,6 +48,9 @@
     <ClInclude Include="sources\Voice.hpp">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\Interface.hpp">
+      <Filter>sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\Library.cpp">

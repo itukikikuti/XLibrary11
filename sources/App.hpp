@@ -36,115 +36,46 @@ XLIBRARY_NAMESPACE_BEGIN
 #define PROTECTED protected:
 
 #include "Math.hpp"
+#include "Interface.hpp"
+
+class Window;
+class Graphics;
+class Audio;
+class Input;
+class Timer;
 
 class App {
 	PUBLIC static constexpr wchar_t* name = L"XLibrary11";
-
-#include "Window.hpp"
-#include "Graphics.hpp"
-#include "Audio.hpp"
-#include "Input.hpp"
-#include "Timer.hpp"
-
 	PUBLIC App() = delete;
-	PUBLIC static HWND GetWindowHandle() {
-		return GetWindow().GetHandle();
-	}
-	PUBLIC static Float2 GetWindowSize() {
-		return GetWindow().GetSize();
-	}
-	PUBLIC static void SetWindowSize(float width, float height) {
-		GetWindow().SetSize(width, height);
-	}
-	PUBLIC static wchar_t* GetTitle() {
-		return GetWindow().GetTitle();
-	}
-	PUBLIC static void SetTitle(const wchar_t* title) {
-		GetWindow().SetTitle(title);
-	}
-	PUBLIC static void SetFullScreen(bool isFullscreen) {
-		GetWindow().SetFullScreen(isFullscreen);
-	}
-	PUBLIC static void AddProcedure(Window::Proceedable* const procedure) {
-		GetWindow().AddProcedure(procedure);
-	}
-	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure) {
-		GetWindow().RemoveProcedure(procedure);
-	}
-	PUBLIC static ID3D11Device& GetGraphicsDevice() {
-		return GetGraphics().GetDevice();
-	}
-	PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
-		return GetGraphics().GetContext();
-	}
-	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
-		return GetGraphics().GetMemory();
-	}
-	PUBLIC static IXAudio2& GetAudioEngine() {
-		return GetAudio().GetAudioEngine();
-	}
-	PUBLIC static bool GetKey(int VK_CODE) {
-		return GetInput().GetKey(VK_CODE);
-	}
-	PUBLIC static bool GetKeyUp(int VK_CODE) {
-		return GetInput().GetKeyUp(VK_CODE);
-	}
-	PUBLIC static bool GetKeyDown(int VK_CODE) {
-		return GetInput().GetKeyDown(VK_CODE);
-	}
-	PUBLIC static Float2 GetMousePosition() {
-		return GetInput().GetMousePosition();
-	}
-	PUBLIC static void SetMousePosition(Float2 position) {
-		GetInput().SetMousePosition(position.x, position.y);
-	}
-	PUBLIC static void SetMousePosition(float x, float y) {
-		GetInput().SetMousePosition(x, y);
-	}
-	PUBLIC static void SetShowCursor(bool isShowCursor) {
-		GetInput().SetShowCursor(isShowCursor);
-	}
-	PUBLIC static float GetTime() {
-		return GetTimer().GetTime();
-	}
-	PUBLIC static float GetDeltaTime() {
-		return GetTimer().GetDeltaTime();
-	}
-	PUBLIC static int GetFrameRate() {
-		return GetTimer().GetFrameRate();
-	}
-	PUBLIC static void AddFont(const wchar_t* filePath) {
-		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
-	}
-	PUBLIC static bool Refresh() {
-		GetGraphicsMemory().Present(1, 0);
-
-		if (!GetWindow().Update()) return false;
-		GetInput().Update();
-		GetTimer().Update();
-
-		return true;
-	}
-	PRIVATE static Window& GetWindow() {
-		static std::unique_ptr<Window> window(new Window());
-		return *window.get();
-	}
-	PRIVATE static Graphics& GetGraphics() {
-		static std::unique_ptr<Graphics> graphics(new Graphics());
-		return *graphics.get();
-	}
-	PRIVATE static Audio& GetAudio() {
-		static std::unique_ptr<Audio> audio(new Audio());
-		return *audio.get();
-	}
-	PRIVATE static Input& GetInput() {
-		static std::unique_ptr<Input> input(new Input());
-		return *input.get();
-	}
-	PRIVATE static Timer& GetTimer() {
-		static std::unique_ptr<Timer> timer(new Timer());
-		return *timer.get();
-	}
+	PUBLIC static HWND GetWindowHandle();
+	PUBLIC static Float2 GetWindowSize();
+	PUBLIC static void SetWindowSize(float width, float height);
+	PUBLIC static wchar_t* GetTitle();
+	PUBLIC static void SetTitle(const wchar_t* title);
+	PUBLIC static void SetFullScreen(bool isFullscreen);
+	PUBLIC static void AddProcedure(Proceedable* const procedure);
+	PUBLIC static void RemoveProcedure(Proceedable* const procedure);
+	PUBLIC static ID3D11Device& GetGraphicsDevice();
+	PUBLIC static ID3D11DeviceContext& GetGraphicsContext();
+	PUBLIC static IDXGISwapChain& GetGraphicsMemory();
+	PUBLIC static IXAudio2& GetAudioEngine();
+	PUBLIC static bool GetKey(int VK_CODE);
+	PUBLIC static bool GetKeyUp(int VK_CODE);
+	PUBLIC static bool GetKeyDown(int VK_CODE);
+	PUBLIC static Float2 GetMousePosition();
+	PUBLIC static void SetMousePosition(Float2 position);
+	PUBLIC static void SetMousePosition(float x, float y);
+	PUBLIC static void SetShowCursor(bool isShowCursor);
+	PUBLIC static float GetTime();
+	PUBLIC static float GetDeltaTime();
+	PUBLIC static int GetFrameRate();
+	PUBLIC static void AddFont(const wchar_t* filePath);
+	PUBLIC static bool Refresh();
+	PRIVATE static Window& GetWindow();
+	PRIVATE static Graphics& GetGraphics();
+	PRIVATE static Audio& GetAudio();
+	PRIVATE static Input& GetInput();
+	PRIVATE static Timer& GetTimer();
 };
 
 #include "Texture.hpp"
@@ -154,4 +85,110 @@ class App {
 #include "Sprite.hpp"
 #include "Text.hpp"
 #include "Voice.hpp"
+
+#include "Window.hpp"
+#include "Graphics.hpp"
+#include "Audio.hpp"
+#include "Input.hpp"
+#include "Timer.hpp"
+
+HWND App::GetWindowHandle() {
+	return GetWindow().GetHandle();
+}
+Float2 App::GetWindowSize() {
+	return GetWindow().GetSize();
+}
+void App::SetWindowSize(float width, float height) {
+	GetWindow().SetSize(width, height);
+}
+wchar_t* App::GetTitle() {
+	return GetWindow().GetTitle();
+}
+void App::SetTitle(const wchar_t* title) {
+	GetWindow().SetTitle(title);
+}
+void App::SetFullScreen(bool isFullscreen) {
+	GetWindow().SetFullScreen(isFullscreen);
+}
+void App::AddProcedure(Proceedable* const procedure) {
+	GetWindow().AddProcedure(procedure);
+}
+void App::RemoveProcedure(Proceedable* const procedure) {
+	GetWindow().RemoveProcedure(procedure);
+}
+ID3D11Device& App::GetGraphicsDevice() {
+	return GetGraphics().GetDevice();
+}
+ID3D11DeviceContext& App::GetGraphicsContext() {
+	return GetGraphics().GetContext();
+}
+IDXGISwapChain& App::GetGraphicsMemory() {
+	return GetGraphics().GetMemory();
+}
+IXAudio2& App::GetAudioEngine() {
+	return GetAudio().GetAudioEngine();
+}
+bool App::GetKey(int VK_CODE) {
+	return GetInput().GetKey(VK_CODE);
+}
+bool App::GetKeyUp(int VK_CODE) {
+	return GetInput().GetKeyUp(VK_CODE);
+}
+bool App::GetKeyDown(int VK_CODE) {
+	return GetInput().GetKeyDown(VK_CODE);
+}
+Float2 App::GetMousePosition() {
+	return GetInput().GetMousePosition();
+}
+void App::SetMousePosition(Float2 position) {
+	GetInput().SetMousePosition(position.x, position.y);
+}
+void App::SetMousePosition(float x, float y) {
+	GetInput().SetMousePosition(x, y);
+}
+void App::SetShowCursor(bool isShowCursor) {
+	GetInput().SetShowCursor(isShowCursor);
+}
+float App::GetTime() {
+	return GetTimer().GetTime();
+}
+float App::GetDeltaTime() {
+	return GetTimer().GetDeltaTime();
+}
+int App::GetFrameRate() {
+	return GetTimer().GetFrameRate();
+}
+void App::AddFont(const wchar_t* filePath) {
+	AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
+}
+bool App::Refresh() {
+	GetGraphicsMemory().Present(1, 0);
+
+	if (!GetWindow().Update()) return false;
+	GetInput().Update();
+	GetTimer().Update();
+
+	return true;
+}
+Window& App::GetWindow() {
+	static std::unique_ptr<Window> window(new Window());
+	return *window.get();
+}
+Graphics& App::GetGraphics() {
+	static std::unique_ptr<Graphics> graphics(new Graphics());
+	return *graphics.get();
+}
+Audio& App::GetAudio() {
+	static std::unique_ptr<Audio> audio(new Audio());
+	return *audio.get();
+}
+Input& App::GetInput() {
+	static std::unique_ptr<Input> input(new Input());
+	return *input.get();
+}
+Timer& App::GetTimer() {
+	static std::unique_ptr<Timer> timer(new Timer());
+	return *timer.get();
+}
+
 XLIBRARY_NAMESPACE_END
