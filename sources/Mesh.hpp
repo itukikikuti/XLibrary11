@@ -17,7 +17,7 @@
 
 	PUBLIC Mesh() {
 		Initialize();
-		Construct();
+		Create();
 	}
 	PUBLIC virtual ~Mesh() {
 	}
@@ -44,9 +44,10 @@
 			"};"
 			"VSOutput VS(float3 position : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD) {"
 			"    VSOutput output = (VSOutput)0;"
-			"    output.position = mul(_world, float4(position, 1.0));"
-			"    output.position = mul(_view, output.position);"
-			"    output.position = mul(_projection, output.position);"
+			//"    output.position = mul(_world, float4(position, 1.0));"
+			//"    output.position = mul(_view, output.position);"
+			//"    output.position = mul(_projection, output.position);"
+			"    output.position = float4(position, 1.0);"
 			"    output.normal = normalize(mul(_world, float4(normal, 1)));"
 			"    output.uv = uv;"
 			"    return output;"
@@ -59,7 +60,7 @@
 
 		SetCullingMode(D3D11_CULL_BACK);
 	}
-	PROTECTED void Construct() {
+	PROTECTED void Create() {
 		if (vertices.size() > 0) {
 			vertexBuffer.Reset();
 			D3D11_BUFFER_DESC vertexBufferDesc = {};
@@ -129,7 +130,7 @@
 		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
 	}
 	PUBLIC void Apply() {
-		Construct();
+		Create();
 	}
 	PUBLIC virtual void Draw() {
 		material.Attach();

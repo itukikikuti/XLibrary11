@@ -803,11 +803,11 @@ class Texture {
 		Load(filePath);
 	}
 	PUBLIC Texture(int width, int height, BYTE* buffer) {
-		Construct(width, height, buffer);
+		Create(width, height, buffer);
 	}
 	PUBLIC virtual ~Texture() {
 	}
-	PROTECTED void Construct(int width, int height, const BYTE* const buffer) {
+	PROTECTED void Create(int width, int height, const BYTE* const buffer) {
 		this->width = width;
 		this->height = height;
 
@@ -885,7 +885,7 @@ class Texture {
 			frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
 		}
 
-		Construct(width, height, buffer.get());
+		Create(width, height, buffer.get());
 	}
 	PUBLIC Float2 GetSize() {
 		return Float2(static_cast<float>(width), static_cast<float>(height));
@@ -925,11 +925,11 @@ class Material {
 			"}";
 
 		Initialize();
-		Construct(source);
+		Create(source);
 	}
 	PUBLIC Material(char* source) {
 		Initialize();
-		Construct(source);
+		Create(source);
 	}
 	PUBLIC Material(const wchar_t* const filePath) {
 		Initialize();
@@ -942,7 +942,7 @@ class Material {
 			textures[i] = nullptr;
 		}
 	}
-	PROTECTED void Construct(const char* source) {
+	PROTECTED void Create(const char* source) {
 		vertexShader.Reset();
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
@@ -968,7 +968,7 @@ class Material {
 		std::string source(iterator, last);
 		sourceFile.close();
 
-		Construct(source.c_str());
+		Create(source.c_str());
 	}
 	PUBLIC void SetCBuffer(void* cbuffer, size_t size) {
 		this->cbuffer = cbuffer;
@@ -1042,7 +1042,7 @@ class Camera : public App::Window::Proceedable {
 
 	PUBLIC Camera() {
 		Initialize();
-		Construct();
+		Create();
 	}
 	PUBLIC virtual ~Camera() {
 		App::RemoveProcedure(this);
@@ -1055,7 +1055,7 @@ class Camera : public App::Window::Proceedable {
 
 		App::AddProcedure(this);
 	}
-	PROTECTED void Construct() {
+	PROTECTED void Create() {
 		renderTexture.Reset();
 		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
 		renderTargetView.Reset();
@@ -1157,7 +1157,7 @@ class Camera : public App::Window::Proceedable {
 		App::GetGraphicsMemory().ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
 
 		SetPerspective(fieldOfView, nearClip, farClip);
-		Construct();
+		Create();
 	}
 };
 
@@ -1180,7 +1180,7 @@ class Mesh {
 
 	PUBLIC Mesh() {
 		Initialize();
-		Construct();
+		Create();
 	}
 	PUBLIC virtual ~Mesh() {
 	}
@@ -1207,9 +1207,10 @@ class Mesh {
 			"};"
 			"VSOutput VS(float3 position : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD) {"
 			"    VSOutput output = (VSOutput)0;"
-			"    output.position = mul(_world, float4(position, 1.0));"
-			"    output.position = mul(_view, output.position);"
-			"    output.position = mul(_projection, output.position);"
+			//"    output.position = mul(_world, float4(position, 1.0));"
+			//"    output.position = mul(_view, output.position);"
+			//"    output.position = mul(_projection, output.position);"
+			"    output.position = float4(position, 1.0);"
 			"    output.normal = normalize(mul(_world, float4(normal, 1)));"
 			"    output.uv = uv;"
 			"    return output;"
@@ -1222,7 +1223,7 @@ class Mesh {
 
 		SetCullingMode(D3D11_CULL_BACK);
 	}
-	PROTECTED void Construct() {
+	PROTECTED void Create() {
 		if (vertices.size() > 0) {
 			vertexBuffer.Reset();
 			D3D11_BUFFER_DESC vertexBufferDesc = {};
@@ -1292,7 +1293,7 @@ class Mesh {
 		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
 	}
 	PUBLIC void Apply() {
-		Construct();
+		Create();
 	}
 	PUBLIC virtual void Draw() {
 		material.Attach();

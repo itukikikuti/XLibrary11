@@ -27,11 +27,11 @@
 			"}";
 
 		Initialize();
-		Construct(source);
+		Create(source);
 	}
 	PUBLIC Material(char* source) {
 		Initialize();
-		Construct(source);
+		Create(source);
 	}
 	PUBLIC Material(const wchar_t* const filePath) {
 		Initialize();
@@ -44,7 +44,7 @@
 			textures[i] = nullptr;
 		}
 	}
-	PROTECTED void Construct(const char* source) {
+	PROTECTED void Create(const char* source) {
 		vertexShader.Reset();
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
@@ -70,7 +70,7 @@
 		std::string source(iterator, last);
 		sourceFile.close();
 
-		Construct(source.c_str());
+		Create(source.c_str());
 	}
 	PUBLIC void SetCBuffer(void* cbuffer, size_t size) {
 		this->cbuffer = cbuffer;

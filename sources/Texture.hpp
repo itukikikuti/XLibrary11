@@ -9,11 +9,11 @@
 		Load(filePath);
 	}
 	PUBLIC Texture(int width, int height, BYTE* buffer) {
-		Construct(width, height, buffer);
+		Create(width, height, buffer);
 	}
 	PUBLIC virtual ~Texture() {
 	}
-	PROTECTED void Construct(int width, int height, const BYTE* const buffer) {
+	PROTECTED void Create(int width, int height, const BYTE* const buffer) {
 		this->width = width;
 		this->height = height;
 
@@ -91,7 +91,7 @@
 			frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
 		}
 
-		Construct(width, height, buffer.get());
+		Create(width, height, buffer.get());
 	}
 	PUBLIC Float2 GetSize() {
 		return Float2(static_cast<float>(width), static_cast<float>(height));

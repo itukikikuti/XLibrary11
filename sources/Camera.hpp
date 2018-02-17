@@ -18,7 +18,7 @@ class Camera : public App::Window::Proceedable {
 
 	PUBLIC Camera() {
 		Initialize();
-		Construct();
+		Create();
 	}
 	PUBLIC virtual ~Camera() {
 		App::RemoveProcedure(this);
@@ -31,7 +31,7 @@ class Camera : public App::Window::Proceedable {
 
 		App::AddProcedure(this);
 	}
-	PROTECTED void Construct() {
+	PROTECTED void Create() {
 		renderTexture.Reset();
 		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
 		renderTargetView.Reset();
@@ -133,6 +133,6 @@ class Camera : public App::Window::Proceedable {
 		App::GetGraphicsMemory().ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
 
 		SetPerspective(fieldOfView, nearClip, farClip);
-		Construct();
+		Create();
 	}
 };

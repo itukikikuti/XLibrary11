@@ -14,15 +14,12 @@ int Main() {
 	Camera camera;
 	Mesh mesh;
 	Texture tex(L"assets/box.jpg");
-	Voice voice(L"assets/music.mp3");
 
 	camera.position = Float3(0.0f, 1.0f, -2.0f);
 	camera.angles.x = 20.0f;
 	mesh.CreateCube();
 	mesh.Apply();
 	mesh.material.SetTexture(0, &tex);
-
-	voice.Play();
 
 	while (App::Refresh()) {
 		camera.Update();
