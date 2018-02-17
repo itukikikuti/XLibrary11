@@ -1,19 +1,14 @@
-class Voice : public Constructable<>, public Loadable, public IXAudio2VoiceCallback {
+class Voice : public IXAudio2VoiceCallback {
 	PROTECTED Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
 	PROTECTED IXAudio2SourceVoice* sourceVoice;
 
 	PUBLIC Voice(const wchar_t* const filePath) {
-		Initialize();
 		Load(filePath);
 	}
 	PUBLIC ~Voice() {
 		sourceVoice->DestroyVoice();
 	}
-	PROTECTED void Initialize() override {
-	}
-	PROTECTED void Construct() override {
-	}
-	PUBLIC void Load(const wchar_t* const filePath) override {
+	PUBLIC void Load(const wchar_t* const filePath) {
 		App::GetAudioEngine();
 
 		Microsoft::WRL::ComPtr<IStream> stream;

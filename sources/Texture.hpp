@@ -1,4 +1,4 @@
-﻿class Texture : public Constructable<int, int, const BYTE* const>, public Loadable {
+﻿class Texture {
 	PROTECTED int width;
 	PROTECTED int height;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
@@ -6,18 +6,14 @@
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
 	PUBLIC Texture(const wchar_t* const filePath) {
-		Initialize();
 		Load(filePath);
 	}
 	PUBLIC Texture(int width, int height, BYTE* buffer) {
-		Initialize();
 		Construct(width, height, buffer);
 	}
 	PUBLIC virtual ~Texture() {
 	}
-	PROTECTED void Initialize() override {
-	}
-	PROTECTED void Construct(int width, int height, const BYTE* const buffer) override {
+	PROTECTED void Construct(int width, int height, const BYTE* const buffer) {
 		this->width = width;
 		this->height = height;
 
@@ -65,7 +61,7 @@
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
 	}
-	PUBLIC void Load(const wchar_t* const filePath) override {
+	PUBLIC void Load(const wchar_t* const filePath) {
 		App::GetWindowHandle();
 
 		Microsoft::WRL::ComPtr<IWICImagingFactory> factory = nullptr;

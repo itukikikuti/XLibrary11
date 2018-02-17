@@ -35,16 +35,6 @@ namespace XLibrary11 {
 #define PRIVATE private:
 #define PROTECTED protected:
 
-template<class ...Args>
-class Constructable {
-	PROTECTED virtual void Initialize() = 0;
-	PROTECTED virtual void Construct(Args ...args) = 0;
-};
-
-class Loadable {
-	PUBLIC virtual void Load(const wchar_t* const filePath) = 0;
-};
-
 struct Float2 : public DirectX::XMFLOAT2 {
 	PUBLIC Float2() : DirectX::XMFLOAT2() {
 	}
@@ -802,7 +792,7 @@ class Timer {
 	}
 };
 
-class Texture : public Constructable<int, int, const BYTE* const>, public Loadable {
+class Texture {
 	PROTECTED int width;
 	PROTECTED int height;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
@@ -810,18 +800,14 @@ class Texture : public Constructable<int, int, const BYTE* const>, public Loadab
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
 	PUBLIC Texture(const wchar_t* const filePath) {
-		Initialize();
 		Load(filePath);
 	}
 	PUBLIC Texture(int width, int height, BYTE* buffer) {
-		Initialize();
 		Construct(width, height, buffer);
 	}
 	PUBLIC virtual ~Texture() {
 	}
-	PROTECTED void Initialize() override {
-	}
-	PROTECTED void Construct(int width, int height, const BYTE* const buffer) override {
+	PROTECTED void Construct(int width, int height, const BYTE* const buffer) {
 		this->width = width;
 		this->height = height;
 
@@ -869,7 +855,7 @@ class Texture : public Constructable<int, int, const BYTE* const>, public Loadab
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
 	}
-	PUBLIC void Load(const wchar_t* const filePath) override {
+	PUBLIC void Load(const wchar_t* const filePath) {
 		App::GetWindowHandle();
 
 		Microsoft::WRL::ComPtr<IWICImagingFactory> factory = nullptr;
@@ -910,7 +896,7 @@ class Texture : public Constructable<int, int, const BYTE* const>, public Loadab
 	}
 };
 
-class Material : public Constructable<const char* const>, public Loadable {
+class Material {
 	PUBLIC void* cbuffer = nullptr;
 	PUBLIC Texture* textures[10];
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
@@ -951,12 +937,12 @@ class Material : public Constructable<const char* const>, public Loadable {
 	}
 	PUBLIC virtual ~Material() {
 	}
-	PROTECTED void Initialize() override {
+	PROTECTED void Initialize() {
 		for (int i = 0; i < 10; i++) {
 			textures[i] = nullptr;
 		}
 	}
-	PROTECTED void Construct(const char* source) override{
+	PROTECTED void Construct(const char* source) {
 		vertexShader.Reset();
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
@@ -975,7 +961,7 @@ class Material : public Constructable<const char* const>, public Loadable {
 
 		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
 	}
-	PUBLIC void Load(const wchar_t* const filePath) override {
+	PUBLIC void Load(const wchar_t* const filePath) {
 		std::ifstream sourceFile(filePath);
 		std::istreambuf_iterator<char> iterator(sourceFile);
 		std::istreambuf_iterator<char> last;
@@ -1036,7 +1022,7 @@ class Material : public Constructable<const char* const>, public Loadable {
 	}
 };
 
-class Camera : public Constructable<>, public App::Window::Proceedable {
+class Camera : public App::Window::Proceedable {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;
@@ -1061,7 +1047,7 @@ class Camera : public Constructable<>, public App::Window::Proceedable {
 	PUBLIC virtual ~Camera() {
 		App::RemoveProcedure(this);
 	}
-	PROTECTED void Initialize() override {
+	PROTECTED void Initialize() {
 		position = Float3(0.0f, 0.0f, -5.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
 
@@ -1069,7 +1055,7 @@ class Camera : public Constructable<>, public App::Window::Proceedable {
 
 		App::AddProcedure(this);
 	}
-	PROTECTED void Construct() override {
+	PROTECTED void Construct() {
 		renderTexture.Reset();
 		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
 		renderTargetView.Reset();
@@ -1175,7 +1161,7 @@ class Camera : public Constructable<>, public App::Window::Proceedable {
 	}
 };
 
-class Mesh : public Constructable<> {
+class Mesh {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX world;
 		Float3 lightDirection;
@@ -1198,7 +1184,7 @@ class Mesh : public Constructable<> {
 	}
 	PUBLIC virtual ~Mesh() {
 	}
-	PROTECTED void Initialize() override {
+	PROTECTED void Initialize() {
 		position = Float3(0.0f, 0.0f, 0.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
 		scale = Float3(1.0f, 1.0f, 1.0f);
@@ -1236,7 +1222,7 @@ class Mesh : public Constructable<> {
 
 		SetCullingMode(D3D11_CULL_BACK);
 	}
-	PROTECTED void Construct() override {
+	PROTECTED void Construct() {
 		if (vertices.size() > 0) {
 			vertexBuffer.Reset();
 			D3D11_BUFFER_DESC vertexBufferDesc = {};
@@ -1603,22 +1589,17 @@ class Text : public Sprite {
 	}
 };
 
-class Voice : public Constructable<>, public Loadable, public IXAudio2VoiceCallback {
+class Voice : public IXAudio2VoiceCallback {
 	PROTECTED Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
 	PROTECTED IXAudio2SourceVoice* sourceVoice;
 
 	PUBLIC Voice(const wchar_t* const filePath) {
-		Initialize();
 		Load(filePath);
 	}
 	PUBLIC ~Voice() {
 		sourceVoice->DestroyVoice();
 	}
-	PROTECTED void Initialize() override {
-	}
-	PROTECTED void Construct() override {
-	}
-	PUBLIC void Load(const wchar_t* const filePath) override {
+	PUBLIC void Load(const wchar_t* const filePath) {
 		App::GetAudioEngine();
 
 		Microsoft::WRL::ComPtr<IStream> stream;

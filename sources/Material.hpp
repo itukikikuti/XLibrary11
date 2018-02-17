@@ -1,4 +1,4 @@
-﻿class Material : public Constructable<const char* const>, public Loadable {
+﻿class Material {
 	PUBLIC void* cbuffer = nullptr;
 	PUBLIC Texture* textures[10];
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
@@ -39,12 +39,12 @@
 	}
 	PUBLIC virtual ~Material() {
 	}
-	PROTECTED void Initialize() override {
+	PROTECTED void Initialize() {
 		for (int i = 0; i < 10; i++) {
 			textures[i] = nullptr;
 		}
 	}
-	PROTECTED void Construct(const char* source) override{
+	PROTECTED void Construct(const char* source) {
 		vertexShader.Reset();
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
@@ -63,7 +63,7 @@
 
 		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
 	}
-	PUBLIC void Load(const wchar_t* const filePath) override {
+	PUBLIC void Load(const wchar_t* const filePath) {
 		std::ifstream sourceFile(filePath);
 		std::istreambuf_iterator<char> iterator(sourceFile);
 		std::istreambuf_iterator<char> last;
