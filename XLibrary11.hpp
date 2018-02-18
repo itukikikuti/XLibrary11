@@ -480,7 +480,7 @@ class Window {
 	}
 };
 
-class Graphics {
+class Graphics : public App::Window::Proceedable {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;
@@ -499,6 +499,7 @@ class Graphics {
 		Create();
 	}
 	PUBLIC ~Graphics() {
+		App::RemoveProcedure(this);
 	}
 	PROTECTED virtual void Initialize() {
 		int flags = 0;
@@ -567,6 +568,8 @@ class Graphics {
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
 		device->CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
+
+		App::AddProcedure(this);
 	}
 	PROTECTED virtual void Create() {
 		D3D11_VIEWPORT viewPort = {};
@@ -607,6 +610,26 @@ class Graphics {
 
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 		context->ClearRenderTargetView(renderTargetView.Get(), color);
+	}
+	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override {
+		if (message != WM_SIZE) {
+			return;
+		}
+		if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f) {
+			return;
+		}
+
+		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+		swapChain->GetDesc(&swapChainDesc);
+
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
+		context->OMSetRenderTargets(1, nullRenderTarget.GetAddressOf(), nullptr);
+		renderTargetView.Reset();
+		renderTexture.Reset();
+		context->Flush();
+		swapChain->ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
+
+		Create();
 	}
 };
 

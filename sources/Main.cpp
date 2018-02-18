@@ -14,14 +14,12 @@ int Main() {
 	Mesh mesh;
 	Texture tex(L"assets/box.jpg");
 
-	mesh.CreateCube();
-	mesh.scale = 100.0f;
-	mesh.Apply();
 	mesh.material.SetTexture(0, &tex);
+	mesh.CreateQuad(tex.GetSize() / 2.0f);
+	mesh.position = Float3(0.0f, 0.0f, 0.0f);
+	mesh.Apply();
 
 	while (App::Refresh()) {
-		mesh.angles.y += App::GetDeltaTime() * 50.0f;
-		mesh.position = Float3(0.0f, 0.0f, 0.0f);
 		mesh.Draw();
 	}
 
