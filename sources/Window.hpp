@@ -4,10 +4,16 @@
 		PUBLIC virtual ~Proceedable() {}
 	};
 
-	PRIVATE HWND handle;
-	PRIVATE const DWORD style = WS_OVERLAPPEDWINDOW;
+	PROTECTED HWND handle;
+	PROTECTED const DWORD style = WS_OVERLAPPEDWINDOW;
 
 	PUBLIC Window() {
+		Initialize();
+	}
+	PUBLIC ~Window() {
+		UnregisterClassW(App::name, GetModuleHandleW(nullptr));
+	}
+	PROTECTED virtual void Initialize() {
 		HINSTANCE instance = GetModuleHandleW(nullptr);
 
 		WNDCLASSEXW windowClass = {};
@@ -29,9 +35,6 @@
 
 		SetSize(1280.0f, 720.0f);
 		ShowWindow(handle, SW_SHOWNORMAL);
-	}
-	PUBLIC ~Window() {
-		UnregisterClassW(App::name, GetModuleHandleW(nullptr));
 	}
 	PUBLIC HWND GetHandle() {
 		return handle;
@@ -101,11 +104,11 @@
 
 		return false;
 	}
-	PRIVATE static std::forward_list<Proceedable*>& GetProcedures() {
+	PROTECTED static std::forward_list<Proceedable*>& GetProcedures() {
 		static std::forward_list<Proceedable*> procedures;
 		return procedures;
 	}
-	PRIVATE static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
+	PROTECTED static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
 		for (Proceedable* procedure : GetProcedures()) {
 			procedure->OnProceed(handle, message, wParam, lParam);
 		}

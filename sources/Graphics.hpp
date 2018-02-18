@@ -4,15 +4,21 @@
 		DirectX::XMMATRIX projection;
 	};
 
-	PRIVATE Constant constant;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTexture = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
+	PROTECTED Constant constant;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTexture = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
 	PUBLIC Graphics() {
+		Initialize();
+		Create();
+	}
+	PUBLIC ~Graphics() {
+	}
+	PROTECTED virtual void Initialize() {
 		int flags = 0;
 #if defined(DEBUG) || defined(_DEBUG)
 		flags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -72,6 +78,15 @@
 		device->CreateBlendState(&blendDesc, &blendState);
 		context->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
 
+		constantBuffer.Reset();
+		D3D11_BUFFER_DESC constantBufferDesc = {};
+		constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
+		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags = 0;
+		device->CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
+	}
+	PROTECTED virtual void Create() {
 		D3D11_VIEWPORT viewPort = {};
 		viewPort.Width = App::GetWindowSize().x;
 		viewPort.Height = App::GetWindowSize().y;
@@ -88,16 +103,6 @@
 
 		constant.view = DirectX::XMMatrixIdentity();
 		constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
-
-		constantBuffer.Reset();
-		D3D11_BUFFER_DESC constantBufferDesc = {};
-		constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
-		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		constantBufferDesc.CPUAccessFlags = 0;
-		device->CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
-	}
-	PUBLIC ~Graphics() {
 	}
 	PUBLIC ID3D11Device& GetDevice() {
 		return *device.Get();

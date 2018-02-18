@@ -363,10 +363,16 @@ class Window {
 		PUBLIC virtual ~Proceedable() {}
 	};
 
-	PRIVATE HWND handle;
-	PRIVATE const DWORD style = WS_OVERLAPPEDWINDOW;
+	PROTECTED HWND handle;
+	PROTECTED const DWORD style = WS_OVERLAPPEDWINDOW;
 
 	PUBLIC Window() {
+		Initialize();
+	}
+	PUBLIC ~Window() {
+		UnregisterClassW(App::name, GetModuleHandleW(nullptr));
+	}
+	PROTECTED virtual void Initialize() {
 		HINSTANCE instance = GetModuleHandleW(nullptr);
 
 		WNDCLASSEXW windowClass = {};
@@ -388,9 +394,6 @@ class Window {
 
 		SetSize(1280.0f, 720.0f);
 		ShowWindow(handle, SW_SHOWNORMAL);
-	}
-	PUBLIC ~Window() {
-		UnregisterClassW(App::name, GetModuleHandleW(nullptr));
 	}
 	PUBLIC HWND GetHandle() {
 		return handle;
@@ -460,11 +463,11 @@ class Window {
 
 		return false;
 	}
-	PRIVATE static std::forward_list<Proceedable*>& GetProcedures() {
+	PROTECTED static std::forward_list<Proceedable*>& GetProcedures() {
 		static std::forward_list<Proceedable*> procedures;
 		return procedures;
 	}
-	PRIVATE static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
+	PROTECTED static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
 		for (Proceedable* procedure : GetProcedures()) {
 			procedure->OnProceed(handle, message, wParam, lParam);
 		}
@@ -483,15 +486,21 @@ class Graphics {
 		DirectX::XMMATRIX projection;
 	};
 
-	PRIVATE Constant constant;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTexture = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
+	PROTECTED Constant constant;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTexture = nullptr;
+	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
 	PUBLIC Graphics() {
+		Initialize();
+		Create();
+	}
+	PUBLIC ~Graphics() {
+	}
+	PROTECTED virtual void Initialize() {
 		int flags = 0;
 #if defined(DEBUG) || defined(_DEBUG)
 		flags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -551,6 +560,15 @@ class Graphics {
 		device->CreateBlendState(&blendDesc, &blendState);
 		context->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
 
+		constantBuffer.Reset();
+		D3D11_BUFFER_DESC constantBufferDesc = {};
+		constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
+		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags = 0;
+		device->CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
+	}
+	PROTECTED virtual void Create() {
 		D3D11_VIEWPORT viewPort = {};
 		viewPort.Width = App::GetWindowSize().x;
 		viewPort.Height = App::GetWindowSize().y;
@@ -567,16 +585,6 @@ class Graphics {
 
 		constant.view = DirectX::XMMatrixIdentity();
 		constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
-
-		constantBuffer.Reset();
-		D3D11_BUFFER_DESC constantBufferDesc = {};
-		constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
-		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		constantBufferDesc.CPUAccessFlags = 0;
-		device->CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
-	}
-	PUBLIC ~Graphics() {
 	}
 	PUBLIC ID3D11Device& GetDevice() {
 		return *device.Get();
@@ -607,13 +615,6 @@ class Audio {
 	PROTECTED IXAudio2MasteringVoice* masteringVoice = nullptr;
 
 	PUBLIC Audio() {
-		App::GetWindowHandle();
-
-		XAudio2Create(audioEngine.GetAddressOf());
-
-		audioEngine->CreateMasteringVoice(&masteringVoice);
-
-		MFStartup(MF_VERSION);
 	}
 	PUBLIC ~Audio() {
 		MFShutdown();
@@ -622,21 +623,33 @@ class Audio {
 		
 		audioEngine->StopEngine();
 	}
+	PROTECTED virtual void Initialize() {
+		App::GetWindowHandle();
+
+		XAudio2Create(audioEngine.GetAddressOf());
+
+		audioEngine->CreateMasteringVoice(&masteringVoice);
+
+		MFStartup(MF_VERSION);
+	}
 	PUBLIC IXAudio2& GetAudioEngine() {
 		return *audioEngine.Get();
 	}
 };
 
 class Input {
-	PRIVATE Float2 mousePosition;
-	PRIVATE BYTE preKeyState[256];
-	PRIVATE BYTE keyState[256];
-	PRIVATE bool isShowCursor = true;
+	PROTECTED Float2 mousePosition;
+	PROTECTED BYTE preKeyState[256];
+	PROTECTED BYTE keyState[256];
+	PROTECTED bool isShowCursor = true;
 
 	PUBLIC Input() {
-		Update();
+		Initialize();
 	}
 	PUBLIC ~Input() {
+	}
+	PROTECTED virtual void Initialize() {
+		Update();
 	}
 	PUBLIC bool GetKey(int keyCode) {
 		return keyState[keyCode] & 0x80;
@@ -685,19 +698,22 @@ class Input {
 };
 
 class Timer {
-	PRIVATE float time = 0.0f;
-	PRIVATE float deltaTime = 0.0f;
-	PRIVATE int frameRate = 0;
-	PRIVATE float second = 0.0f;
-	PRIVATE int frameCount = 0;
+	PROTECTED float time = 0.0f;
+	PROTECTED float deltaTime = 0.0f;
+	PROTECTED int frameRate = 0;
+	PROTECTED float second = 0.0f;
+	PROTECTED int frameCount = 0;
 	LARGE_INTEGER preCount;
 	LARGE_INTEGER frequency;
 
 	PUBLIC Timer() {
-		preCount = GetCounter();
-		frequency = GetCountFrequency();
+		Initialize();
 	}
 	PUBLIC ~Timer() {
+	}
+	PROTECTED virtual void Initialize() {
+		preCount = GetCounter();
+		frequency = GetCountFrequency();
 	}
 	PUBLIC float GetTime() {
 		return time;
@@ -725,12 +741,12 @@ class Timer {
 			second -= 1.0f;
 		}
 	}
-	PRIVATE LARGE_INTEGER GetCounter() {
+	PROTECTED LARGE_INTEGER GetCounter() {
 		LARGE_INTEGER counter;
 		QueryPerformanceCounter(&counter);
 		return counter;
 	}
-	PRIVATE LARGE_INTEGER GetCountFrequency() {
+	PROTECTED LARGE_INTEGER GetCountFrequency() {
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency;

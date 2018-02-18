@@ -3,13 +3,6 @@ class Audio {
 	PROTECTED IXAudio2MasteringVoice* masteringVoice = nullptr;
 
 	PUBLIC Audio() {
-		App::GetWindowHandle();
-
-		XAudio2Create(audioEngine.GetAddressOf());
-
-		audioEngine->CreateMasteringVoice(&masteringVoice);
-
-		MFStartup(MF_VERSION);
 	}
 	PUBLIC ~Audio() {
 		MFShutdown();
@@ -17,6 +10,15 @@ class Audio {
 		masteringVoice->DestroyVoice();
 		
 		audioEngine->StopEngine();
+	}
+	PROTECTED virtual void Initialize() {
+		App::GetWindowHandle();
+
+		XAudio2Create(audioEngine.GetAddressOf());
+
+		audioEngine->CreateMasteringVoice(&masteringVoice);
+
+		MFStartup(MF_VERSION);
 	}
 	PUBLIC IXAudio2& GetAudioEngine() {
 		return *audioEngine.Get();

@@ -1,13 +1,16 @@
 class Input {
-	PRIVATE Float2 mousePosition;
-	PRIVATE BYTE preKeyState[256];
-	PRIVATE BYTE keyState[256];
-	PRIVATE bool isShowCursor = true;
+	PROTECTED Float2 mousePosition;
+	PROTECTED BYTE preKeyState[256];
+	PROTECTED BYTE keyState[256];
+	PROTECTED bool isShowCursor = true;
 
 	PUBLIC Input() {
-		Update();
+		Initialize();
 	}
 	PUBLIC ~Input() {
+	}
+	PROTECTED virtual void Initialize() {
+		Update();
 	}
 	PUBLIC bool GetKey(int keyCode) {
 		return keyState[keyCode] & 0x80;

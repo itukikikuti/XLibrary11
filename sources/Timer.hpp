@@ -1,17 +1,20 @@
 class Timer {
-	PRIVATE float time = 0.0f;
-	PRIVATE float deltaTime = 0.0f;
-	PRIVATE int frameRate = 0;
-	PRIVATE float second = 0.0f;
-	PRIVATE int frameCount = 0;
+	PROTECTED float time = 0.0f;
+	PROTECTED float deltaTime = 0.0f;
+	PROTECTED int frameRate = 0;
+	PROTECTED float second = 0.0f;
+	PROTECTED int frameCount = 0;
 	LARGE_INTEGER preCount;
 	LARGE_INTEGER frequency;
 
 	PUBLIC Timer() {
-		preCount = GetCounter();
-		frequency = GetCountFrequency();
+		Initialize();
 	}
 	PUBLIC ~Timer() {
+	}
+	PROTECTED virtual void Initialize() {
+		preCount = GetCounter();
+		frequency = GetCountFrequency();
 	}
 	PUBLIC float GetTime() {
 		return time;
@@ -39,12 +42,12 @@ class Timer {
 			second -= 1.0f;
 		}
 	}
-	PRIVATE LARGE_INTEGER GetCounter() {
+	PROTECTED LARGE_INTEGER GetCounter() {
 		LARGE_INTEGER counter;
 		QueryPerformanceCounter(&counter);
 		return counter;
 	}
-	PRIVATE LARGE_INTEGER GetCountFrequency() {
+	PROTECTED LARGE_INTEGER GetCountFrequency() {
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency;
