@@ -23,7 +23,7 @@ class Camera : public App::Window::Proceedable {
 	PUBLIC virtual ~Camera() {
 		App::RemoveProcedure(this);
 	}
-	PROTECTED void Initialize() {
+	PROTECTED virtual void Initialize() {
 		position = Float3(0.0f, 0.0f, -5.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
 
@@ -31,7 +31,7 @@ class Camera : public App::Window::Proceedable {
 
 		App::AddProcedure(this);
 	}
-	PROTECTED void Create() {
+	PROTECTED virtual void Create() {
 		renderTexture.Reset();
 		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
 		renderTargetView.Reset();

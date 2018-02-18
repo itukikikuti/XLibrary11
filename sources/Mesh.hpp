@@ -21,7 +21,7 @@
 	}
 	PUBLIC virtual ~Mesh() {
 	}
-	PROTECTED void Initialize() {
+	PROTECTED virtual void Initialize() {
 		position = Float3(0.0f, 0.0f, 0.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
 		scale = Float3(1.0f, 1.0f, 1.0f);
@@ -59,7 +59,7 @@
 
 		SetCullingMode(D3D11_CULL_BACK);
 	}
-	PROTECTED void Create() {
+	PROTECTED virtual void Create() {
 		if (vertices.size() > 0) {
 			vertexBuffer.Reset();
 			D3D11_BUFFER_DESC vertexBufferDesc = {};

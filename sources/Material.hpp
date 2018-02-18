@@ -39,12 +39,12 @@
 	}
 	PUBLIC virtual ~Material() {
 	}
-	PROTECTED void Initialize() {
+	PROTECTED virtual void Initialize() {
 		for (int i = 0; i < 10; i++) {
 			textures[i] = nullptr;
 		}
 	}
-	PROTECTED void Create(const char* source) {
+	PROTECTED virtual void Create(const char* source) {
 		vertexShader.Reset();
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());

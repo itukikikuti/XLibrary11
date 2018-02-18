@@ -38,7 +38,7 @@ class Voice : public IXAudio2VoiceCallback {
 
 		App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
 	}
-	PUBLIC void Play() {
+	PUBLIC virtual void Play() {
 		sourceVoice->Start();
 		SubmitBuffer();
 	}

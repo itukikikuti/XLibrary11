@@ -17,7 +17,7 @@
 	}
 	PUBLIC virtual ~Texture() {
 	}
-	PROTECTED void Create(int width, int height, const BYTE* const buffer) {
+	PROTECTED virtual void Create(int width, int height, const BYTE* const buffer) {
 		this->width = width;
 		this->height = height;
 
