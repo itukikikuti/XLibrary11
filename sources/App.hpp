@@ -120,6 +120,7 @@ class App {
 		GetGraphicsMemory().Present(1, 0);
 
 		if (!GetWindow().Update()) return false;
+		GetGraphics().Update();
 		GetInput().Update();
 		GetTimer().Update();
 

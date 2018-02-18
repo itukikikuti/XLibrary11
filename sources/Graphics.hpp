@@ -1,7 +1,16 @@
 ﻿class Graphics {
+	PROTECTED struct Constant {
+		DirectX::XMMATRIX view;
+		DirectX::XMMATRIX projection;
+	};
+
+	PRIVATE Constant constant;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
 	PRIVATE Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTexture = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
 	PUBLIC Graphics() {
 		int flags = 0;
@@ -62,6 +71,31 @@
 		float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		device->CreateBlendState(&blendDesc, &blendState);
 		context->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
+
+		D3D11_VIEWPORT viewPort = {};
+		viewPort.Width = App::GetWindowSize().x;
+		viewPort.Height = App::GetWindowSize().y;
+		viewPort.MinDepth = 0.0f;
+		viewPort.MaxDepth = 1.0f;
+		viewPort.TopLeftX = 0;
+		viewPort.TopLeftY = 0;
+		context->RSSetViewports(1, &viewPort);
+
+		renderTexture.Reset();
+		swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
+		renderTargetView.Reset();
+		device->CreateRenderTargetView(renderTexture.Get(), nullptr, renderTargetView.GetAddressOf());
+
+		constant.view = DirectX::XMMatrixIdentity();
+		constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
+
+		constantBuffer.Reset();
+		D3D11_BUFFER_DESC constantBufferDesc = {};
+		constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
+		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags = 0;
+		device->CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
 	PUBLIC ~Graphics() {
 	}
@@ -73,5 +107,18 @@
 	}
 	PUBLIC ID3D11DeviceContext& GetContext() {
 		return *context.Get();
+	}
+	PUBLIC void Update() {
+		context->UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
+		context->VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		context->HSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		context->DSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		context->GSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		context->PSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+
+		context->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
+
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		context->ClearRenderTargetView(renderTargetView.Get(), color);
 	}
 };

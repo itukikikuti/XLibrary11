@@ -67,15 +67,6 @@ class Camera : public App::Window::Proceedable {
 		}
 		App::GetGraphicsDevice().CreateDepthStencilView(depthTexture.Get(), &depthStencilViewDesc, depthStencilView.GetAddressOf());
 
-		D3D11_VIEWPORT viewPort = {};
-		viewPort.Width = App::GetWindowSize().x;
-		viewPort.Height = App::GetWindowSize().y;
-		viewPort.MinDepth = 0.0f;
-		viewPort.MaxDepth = 1.0f;
-		viewPort.TopLeftX = 0;
-		viewPort.TopLeftY = 0;
-		App::GetGraphicsContext().RSSetViewports(1, &viewPort);
-
 		constantBuffer.Reset();
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
