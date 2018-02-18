@@ -353,50 +353,443 @@ struct Vertex {
 	}
 };
 
-class Proceedable {
-	PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
-	PUBLIC virtual ~Proceedable() {}
-};
-
-
-class Window;
-class Graphics;
-class Audio;
-class Input;
-class Timer;
 
 class App {
 	PUBLIC static constexpr wchar_t* name = L"XLibrary11";
+
+class Window {
+	PUBLIC class Proceedable {
+		PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
+		PUBLIC virtual ~Proceedable() {}
+	};
+
+	PRIVATE HWND handle;
+	PRIVATE const DWORD style = WS_OVERLAPPEDWINDOW;
+
+	PUBLIC Window() {
+		HINSTANCE instance = GetModuleHandleW(nullptr);
+
+		WNDCLASSEXW windowClass = {};
+		windowClass.cbSize = sizeof(WNDCLASSEXW);
+		windowClass.style = CS_HREDRAW | CS_VREDRAW;
+		windowClass.lpfnWndProc = Proceed;
+		windowClass.cbClsExtra = 0;
+		windowClass.cbWndExtra = 0;
+		windowClass.hInstance = instance;
+		windowClass.hIcon = nullptr;
+		windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+		windowClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+		windowClass.lpszMenuName = nullptr;
+		windowClass.lpszClassName = App::name;
+		windowClass.hIconSm = nullptr;
+		RegisterClassExW(&windowClass);
+
+		handle = CreateWindowW(App::name, App::name, style, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
+
+		SetSize(1280.0f, 720.0f);
+		ShowWindow(handle, SW_SHOWNORMAL);
+	}
+	PUBLIC ~Window() {
+		UnregisterClassW(App::name, GetModuleHandleW(nullptr));
+	}
+	PUBLIC HWND GetHandle() {
+		return handle;
+	}
+	PUBLIC Float2 GetSize() {
+		RECT clientRect = {};
+		GetClientRect(handle, &clientRect);
+
+		return Float2(static_cast<float>(clientRect.right - clientRect.left), static_cast<float>(clientRect.bottom - clientRect.top));
+	}
+	PUBLIC void SetSize(float width, float height) {
+		RECT windowRect = {};
+		RECT clientRect = {};
+		GetWindowRect(handle, &windowRect);
+		GetClientRect(handle, &clientRect);
+
+		int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + static_cast<int>(width);
+		int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + static_cast<int>(height);
+
+		int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
+		int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
+
+		SetWindowPos(handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
+	}
+	PUBLIC wchar_t* GetTitle() {
+		wchar_t* title = nullptr;
+		GetWindowTextW(handle, title, GetWindowTextLengthW(handle));
+		return title;
+	}
+	PUBLIC void SetTitle(const wchar_t* title) {
+		SetWindowTextW(handle, title);
+	}
+	PUBLIC void SetFullScreen(bool isFullscreen) {
+		static Float2 size = GetSize();
+
+		if (isFullscreen) {
+			size = GetSize();
+			int w = GetSystemMetrics(SM_CXSCREEN);
+			int h = GetSystemMetrics(SM_CYSCREEN);
+			SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | WS_POPUP);
+			SetWindowPos(handle, HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
+		}
+		else {
+			SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | style);
+			SetWindowPos(handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+			SetSize(size.x, size.y);
+		}
+	}
+	PUBLIC void AddProcedure(Proceedable* const procedure) {
+		GetProcedures().push_front(procedure);
+	}
+	PUBLIC void RemoveProcedure(Proceedable* const procedure) {
+		GetProcedures().remove(procedure);
+	}
+	PUBLIC bool Update() {
+		static MSG message = {};
+
+		while (message.message != WM_QUIT) {
+			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
+				TranslateMessage(&message);
+				DispatchMessageW(&message);
+			}
+			else {
+				return true;
+			}
+		}
+
+		return false;
+	}
+	PRIVATE static std::forward_list<Proceedable*>& GetProcedures() {
+		static std::forward_list<Proceedable*> procedures;
+		return procedures;
+	}
+	PRIVATE static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
+		for (Proceedable* procedure : GetProcedures()) {
+			procedure->OnProceed(handle, message, wParam, lParam);
+		}
+		switch (message) {
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
+		}
+		return DefWindowProcW(handle, message, wParam, lParam);
+	}
+};
+
+class Graphics {
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
+	PRIVATE Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
+
+	PUBLIC Graphics() {
+		int flags = 0;
+#if defined(DEBUG) || defined(_DEBUG)
+		flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+		D3D_DRIVER_TYPE driverTypes[] = {
+			D3D_DRIVER_TYPE_HARDWARE,
+			D3D_DRIVER_TYPE_WARP,
+			D3D_DRIVER_TYPE_REFERENCE,
+		};
+		int driverTypeCount = sizeof(driverTypes) / sizeof(driverTypes[0]);
+
+		D3D_FEATURE_LEVEL featureLevels[] = {
+			D3D_FEATURE_LEVEL_11_0,
+			D3D_FEATURE_LEVEL_10_1,
+			D3D_FEATURE_LEVEL_10_0,
+		};
+		int featureLevelCount = sizeof(featureLevels) / sizeof(featureLevels[0]);
+
+		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+		swapChainDesc.BufferCount = 2;
+		swapChainDesc.BufferDesc.Width = static_cast<UINT>(App::GetWindowSize().x);
+		swapChainDesc.BufferDesc.Height = static_cast<UINT>(App::GetWindowSize().y);
+		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
+		swapChainDesc.OutputWindow = App::GetWindowHandle();
+		swapChainDesc.SampleDesc.Count = 4;
+		swapChainDesc.SampleDesc.Quality = 0;
+		swapChainDesc.Windowed = true;
+
+		for (int i = 0; i < driverTypeCount; i++) {
+			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, swapChain.GetAddressOf(), device.GetAddressOf(), nullptr, context.GetAddressOf());
+
+			if (SUCCEEDED(result)) {
+				break;
+			}
+		}
+
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		Microsoft::WRL::ComPtr<ID3D11BlendState> blendState = nullptr;
+		D3D11_BLEND_DESC blendDesc = {};
+		blendDesc.AlphaToCoverageEnable = false;
+		blendDesc.IndependentBlendEnable = false;
+		blendDesc.RenderTarget[0].BlendEnable = true;
+		blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+		float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		device->CreateBlendState(&blendDesc, &blendState);
+		context->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
+	}
+	PUBLIC ~Graphics() {
+	}
+	PUBLIC ID3D11Device& GetDevice() {
+		return *device.Get();
+	}
+	PUBLIC IDXGISwapChain& GetMemory() {
+		return *swapChain.Get();
+	}
+	PUBLIC ID3D11DeviceContext& GetContext() {
+		return *context.Get();
+	}
+};
+
+class Audio {
+	PROTECTED Microsoft::WRL::ComPtr<IXAudio2> audioEngine;
+	PROTECTED IXAudio2MasteringVoice* masteringVoice = nullptr;
+
+	PUBLIC Audio() {
+		App::GetWindowHandle();
+
+		XAudio2Create(audioEngine.GetAddressOf());
+
+		audioEngine->CreateMasteringVoice(&masteringVoice);
+
+		MFStartup(MF_VERSION);
+	}
+	PUBLIC ~Audio() {
+		MFShutdown();
+
+		masteringVoice->DestroyVoice();
+		
+		audioEngine->StopEngine();
+	}
+	PUBLIC IXAudio2& GetAudioEngine() {
+		return *audioEngine.Get();
+	}
+};
+
+class Input {
+	PRIVATE Float2 mousePosition;
+	PRIVATE BYTE preKeyState[256];
+	PRIVATE BYTE keyState[256];
+	PRIVATE bool isShowCursor = true;
+
+	PUBLIC Input() {
+		Update();
+	}
+	PUBLIC ~Input() {
+	}
+	PUBLIC bool GetKey(int keyCode) {
+		return keyState[keyCode] & 0x80;
+	}
+	PUBLIC bool GetKeyUp(int keyCode) {
+		return !(keyState[keyCode] & 0x80) && (preKeyState[keyCode] & 0x80);
+	}
+	PUBLIC bool GetKeyDown(int keyCode) {
+		return (keyState[keyCode] & 0x80) && !(preKeyState[keyCode] & 0x80);
+	}
+	PUBLIC Float2 GetMousePosition() {
+		return mousePosition;
+	}
+	PUBLIC void SetMousePosition(float x, float y) {
+		if (GetActiveWindow() != App::GetWindowHandle()) {
+			return;
+		}
+
+		mousePosition.x = x;
+		mousePosition.y = y;
+		POINT point = { static_cast<int>(x), static_cast<int>(y) };
+		ClientToScreen(App::GetWindowHandle(), &point);
+		SetCursorPos(point.x, point.y);
+	}
+	PUBLIC void SetShowCursor(bool isShowCursor) {
+		if (this->isShowCursor == isShowCursor) {
+			return;
+		}
+
+		this->isShowCursor = isShowCursor;
+		ShowCursor(isShowCursor);
+	}
+	PUBLIC void Update() {
+		POINT point = {};
+		GetCursorPos(&point);
+
+		ScreenToClient(App::GetWindowHandle(), &point);
+		mousePosition = Float2(static_cast<float>(point.x), static_cast<float>(point.y));
+
+		for (int i = 0; i < 256; i++) {
+			preKeyState[i] = keyState[i];
+		}
+
+		GetKeyboardState(keyState);
+	}
+};
+
+class Timer {
+	PRIVATE float time = 0.0f;
+	PRIVATE float deltaTime = 0.0f;
+	PRIVATE int frameRate = 0;
+	PRIVATE float second = 0.0f;
+	PRIVATE int frameCount = 0;
+	LARGE_INTEGER preCount;
+	LARGE_INTEGER frequency;
+
+	PUBLIC Timer() {
+		preCount = GetCounter();
+		frequency = GetCountFrequency();
+	}
+	PUBLIC ~Timer() {
+	}
+	PUBLIC float GetTime() {
+		return time;
+	}
+	PUBLIC float GetDeltaTime() {
+		return deltaTime;
+	}
+	PUBLIC int GetFrameRate() {
+		return frameRate;
+	}
+	PUBLIC void Update() {
+
+		LARGE_INTEGER count = GetCounter();
+		deltaTime = (float)(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
+		preCount = GetCounter();
+
+		time += deltaTime;
+
+
+		frameCount++;
+		second += deltaTime;
+		if (second >= 1.0f) {
+			frameRate = frameCount;
+			frameCount = 0;
+			second -= 1.0f;
+		}
+	}
+	PRIVATE LARGE_INTEGER GetCounter() {
+		LARGE_INTEGER counter;
+		QueryPerformanceCounter(&counter);
+		return counter;
+	}
+	PRIVATE LARGE_INTEGER GetCountFrequency() {
+		LARGE_INTEGER frequency;
+		QueryPerformanceFrequency(&frequency);
+		return frequency;
+	}
+};
+
+
 	PUBLIC App() = delete;
-	PUBLIC static HWND GetWindowHandle();
-	PUBLIC static Float2 GetWindowSize();
-	PUBLIC static void SetWindowSize(float width, float height);
-	PUBLIC static wchar_t* GetTitle();
-	PUBLIC static void SetTitle(const wchar_t* title);
-	PUBLIC static void SetFullScreen(bool isFullscreen);
-	PUBLIC static void AddProcedure(Proceedable* const procedure);
-	PUBLIC static void RemoveProcedure(Proceedable* const procedure);
-	PUBLIC static ID3D11Device& GetGraphicsDevice();
-	PUBLIC static ID3D11DeviceContext& GetGraphicsContext();
-	PUBLIC static IDXGISwapChain& GetGraphicsMemory();
-	PUBLIC static IXAudio2& GetAudioEngine();
-	PUBLIC static bool GetKey(int VK_CODE);
-	PUBLIC static bool GetKeyUp(int VK_CODE);
-	PUBLIC static bool GetKeyDown(int VK_CODE);
-	PUBLIC static Float2 GetMousePosition();
-	PUBLIC static void SetMousePosition(Float2 position);
-	PUBLIC static void SetMousePosition(float x, float y);
-	PUBLIC static void SetShowCursor(bool isShowCursor);
-	PUBLIC static float GetTime();
-	PUBLIC static float GetDeltaTime();
-	PUBLIC static int GetFrameRate();
-	PUBLIC static void AddFont(const wchar_t* filePath);
-	PUBLIC static bool Refresh();
-	PRIVATE static Window& GetWindow();
-	PRIVATE static Graphics& GetGraphics();
-	PRIVATE static Audio& GetAudio();
-	PRIVATE static Input& GetInput();
-	PRIVATE static Timer& GetTimer();
+	PUBLIC static HWND GetWindowHandle() {
+		return GetWindow().GetHandle();
+	}
+	PUBLIC static Float2 GetWindowSize() {
+		return GetWindow().GetSize();
+	}
+	PUBLIC static void SetWindowSize(float width, float height) {
+		GetWindow().SetSize(width, height);
+	}
+	PUBLIC static wchar_t* GetTitle() {
+		return GetWindow().GetTitle();
+	}
+	PUBLIC static void SetTitle(const wchar_t* title) {
+		GetWindow().SetTitle(title);
+	}
+	PUBLIC static void SetFullScreen(bool isFullscreen) {
+		GetWindow().SetFullScreen(isFullscreen);
+	}
+	PUBLIC static void AddProcedure(Window::Proceedable* const procedure) {
+		GetWindow().AddProcedure(procedure);
+	}
+	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure) {
+		GetWindow().RemoveProcedure(procedure);
+	}
+	PUBLIC static ID3D11Device& GetGraphicsDevice() {
+		return GetGraphics().GetDevice();
+	}
+	PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
+		return GetGraphics().GetContext();
+	}
+	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
+		return GetGraphics().GetMemory();
+	}
+	PUBLIC static IXAudio2& GetAudioEngine() {
+		return GetAudio().GetAudioEngine();
+	}
+	PUBLIC static bool GetKey(int VK_CODE) {
+		return GetInput().GetKey(VK_CODE);
+	}
+	PUBLIC static bool GetKeyUp(int VK_CODE) {
+		return GetInput().GetKeyUp(VK_CODE);
+	}
+	PUBLIC static bool GetKeyDown(int VK_CODE) {
+		return GetInput().GetKeyDown(VK_CODE);
+	}
+	PUBLIC static Float2 GetMousePosition() {
+		return GetInput().GetMousePosition();
+	}
+	PUBLIC static void SetMousePosition(Float2 position) {
+		GetInput().SetMousePosition(position.x, position.y);
+	}
+	PUBLIC static void SetMousePosition(float x, float y) {
+		GetInput().SetMousePosition(x, y);
+	}
+	PUBLIC static void SetShowCursor(bool isShowCursor) {
+		GetInput().SetShowCursor(isShowCursor);
+	}
+	PUBLIC static float GetTime() {
+		return GetTimer().GetTime();
+	}
+	PUBLIC static float GetDeltaTime() {
+		return GetTimer().GetDeltaTime();
+	}
+	PUBLIC static int GetFrameRate() {
+		return GetTimer().GetFrameRate();
+	}
+	PUBLIC static void AddFont(const wchar_t* filePath) {
+		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
+	}
+	PUBLIC static bool Refresh() {
+		GetGraphicsMemory().Present(1, 0);
+
+		if (!GetWindow().Update()) return false;
+		GetInput().Update();
+		GetTimer().Update();
+
+		return true;
+	}
+	PRIVATE static Window& GetWindow() {
+		static std::unique_ptr<Window> window(new Window());
+		return *window.get();
+	}
+	PRIVATE static Graphics& GetGraphics() {
+		static std::unique_ptr<Graphics> graphics(new Graphics());
+		return *graphics.get();
+	}
+	PRIVATE static Audio& GetAudio() {
+		static std::unique_ptr<Audio> audio(new Audio());
+		return *audio.get();
+	}
+	PRIVATE static Input& GetInput() {
+		static std::unique_ptr<Input> input(new Input());
+		return *input.get();
+	}
+	PRIVATE static Timer& GetTimer() {
+		static std::unique_ptr<Timer> timer(new Timer());
+		return *timer.get();
+	}
 };
 
 class Texture {
@@ -629,7 +1022,7 @@ class Material {
 	}
 };
 
-class Camera : public Proceedable {
+class Camera : public App::Window::Proceedable {
 	PROTECTED struct Constant {
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;
@@ -721,7 +1114,7 @@ class Camera : public Proceedable {
 		this->farClip = farClip;
 		constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
 	}
-	PUBLIC virtual void Update(bool clear = true) {
+	PUBLIC virtual void Update() {
 		constant.view =
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
@@ -738,9 +1131,9 @@ class Camera : public Proceedable {
 
 		App::GetGraphicsContext().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
 		
-		static float color[4] = { 1.0f, 1.0f, 1.0f, 0.5f };
-		if (clear) App::GetGraphicsContext().ClearRenderTargetView(renderTargetView.Get(), color);
-		if (clear) App::GetGraphicsContext().ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		App::GetGraphicsContext().ClearRenderTargetView(renderTargetView.Get(), color);
+		App::GetGraphicsContext().ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override {
 		if (message != WM_SIZE) {
@@ -814,9 +1207,10 @@ class Mesh {
 			"};"
 			"VSOutput VS(float3 position : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD) {"
 			"    VSOutput output = (VSOutput)0;"
-			"    output.position = mul(_world, float4(position, 1.0));"
-			"    output.position = mul(_view, output.position);"
-			"    output.position = mul(_projection, output.position);"
+			//"    output.position = mul(_world, float4(position, 1.0));"
+			//"    output.position = mul(_view, output.position);"
+			//"    output.position = mul(_projection, output.position);"
+			"    output.position = float4(position, 1.0);"
 			"    output.normal = normalize(mul(_world, float4(normal, 1)));"
 			"    output.uv = uv;"
 			"    return output;"
@@ -1284,439 +1678,5 @@ class Voice : public IXAudio2VoiceCallback {
 	PRIVATE void _stdcall OnVoiceProcessingPassEnd() override {
 	}
 };
-
-
-class Window {
-	PRIVATE HWND handle;
-	PRIVATE const DWORD style = WS_OVERLAPPEDWINDOW;
-
-	PUBLIC Window() {
-		HINSTANCE instance = GetModuleHandleW(nullptr);
-
-		WNDCLASSEXW windowClass = {};
-		windowClass.cbSize = sizeof(WNDCLASSEXW);
-		windowClass.style = CS_HREDRAW | CS_VREDRAW;
-		windowClass.lpfnWndProc = Proceed;
-		windowClass.cbClsExtra = 0;
-		windowClass.cbWndExtra = 0;
-		windowClass.hInstance = instance;
-		windowClass.hIcon = nullptr;
-		windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
-		windowClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-		windowClass.lpszMenuName = nullptr;
-		windowClass.lpszClassName = App::name;
-		windowClass.hIconSm = nullptr;
-		RegisterClassExW(&windowClass);
-
-		handle = CreateWindowW(App::name, App::name, style, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
-
-		SetSize(1280.0f, 720.0f);
-		ShowWindow(handle, SW_SHOWNORMAL);
-	}
-	PUBLIC ~Window() {
-		UnregisterClassW(App::name, GetModuleHandleW(nullptr));
-	}
-	PUBLIC HWND GetHandle() {
-		return handle;
-	}
-	PUBLIC Float2 GetSize() {
-		RECT clientRect = {};
-		GetClientRect(handle, &clientRect);
-
-		return Float2(static_cast<float>(clientRect.right - clientRect.left), static_cast<float>(clientRect.bottom - clientRect.top));
-	}
-	PUBLIC void SetSize(float width, float height) {
-		RECT windowRect = {};
-		RECT clientRect = {};
-		GetWindowRect(handle, &windowRect);
-		GetClientRect(handle, &clientRect);
-
-		int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + static_cast<int>(width);
-		int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + static_cast<int>(height);
-
-		int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
-		int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
-
-		SetWindowPos(handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
-	}
-	PUBLIC wchar_t* GetTitle() {
-		wchar_t* title = nullptr;
-		GetWindowTextW(handle, title, GetWindowTextLengthW(handle));
-		return title;
-	}
-	PUBLIC void SetTitle(const wchar_t* title) {
-		SetWindowTextW(handle, title);
-	}
-	PUBLIC void SetFullScreen(bool isFullscreen) {
-		static Float2 size = GetSize();
-
-		if (isFullscreen) {
-			size = GetSize();
-			int w = GetSystemMetrics(SM_CXSCREEN);
-			int h = GetSystemMetrics(SM_CYSCREEN);
-			SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | WS_POPUP);
-			SetWindowPos(handle, HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
-		}
-		else {
-			SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | style);
-			SetWindowPos(handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
-			SetSize(size.x, size.y);
-		}
-	}
-	PUBLIC void AddProcedure(Proceedable* const procedure) {
-		GetProcedures().push_front(procedure);
-	}
-	PUBLIC void RemoveProcedure(Proceedable* const procedure) {
-		GetProcedures().remove(procedure);
-	}
-	PUBLIC bool Update() {
-		static MSG message = {};
-
-		while (message.message != WM_QUIT) {
-			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
-				TranslateMessage(&message);
-				DispatchMessageW(&message);
-			}
-			else {
-				return true;
-			}
-		}
-
-		return false;
-	}
-	PRIVATE static std::forward_list<Proceedable*>& GetProcedures() {
-		static std::forward_list<Proceedable*> procedures;
-		return procedures;
-	}
-	PRIVATE static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
-		for (Proceedable* procedure : GetProcedures()) {
-			procedure->OnProceed(handle, message, wParam, lParam);
-		}
-		switch (message) {
-		case WM_DESTROY:
-			PostQuitMessage(0);
-			break;
-		}
-		return DefWindowProcW(handle, message, wParam, lParam);
-	}
-};
-
-class Graphics {
-	//class Camera;
-
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
-	PRIVATE Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
-	//PRIVATE std::unique_ptr<Camera> camera = nullptr;
-
-	PUBLIC Graphics() {
-		int flags = 0;
-#if defined(DEBUG) || defined(_DEBUG)
-		flags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
-
-		D3D_DRIVER_TYPE driverTypes[] = {
-			D3D_DRIVER_TYPE_HARDWARE,
-			D3D_DRIVER_TYPE_WARP,
-			D3D_DRIVER_TYPE_REFERENCE,
-		};
-		int driverTypeCount = sizeof(driverTypes) / sizeof(driverTypes[0]);
-
-		D3D_FEATURE_LEVEL featureLevels[] = {
-			D3D_FEATURE_LEVEL_11_0,
-			D3D_FEATURE_LEVEL_10_1,
-			D3D_FEATURE_LEVEL_10_0,
-		};
-		int featureLevelCount = sizeof(featureLevels) / sizeof(featureLevels[0]);
-
-		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-		swapChainDesc.BufferCount = 2;
-		swapChainDesc.BufferDesc.Width = static_cast<UINT>(App::GetWindowSize().x);
-		swapChainDesc.BufferDesc.Height = static_cast<UINT>(App::GetWindowSize().y);
-		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
-		swapChainDesc.OutputWindow = App::GetWindowHandle();
-		swapChainDesc.SampleDesc.Count = 4;
-		swapChainDesc.SampleDesc.Quality = 0;
-		swapChainDesc.Windowed = true;
-
-		for (int i = 0; i < driverTypeCount; i++) {
-			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, swapChain.GetAddressOf(), device.GetAddressOf(), nullptr, context.GetAddressOf());
-
-			if (SUCCEEDED(result)) {
-				break;
-			}
-		}
-
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		Microsoft::WRL::ComPtr<ID3D11BlendState> blendState = nullptr;
-		D3D11_BLEND_DESC blendDesc = {};
-		blendDesc.AlphaToCoverageEnable = false;
-		blendDesc.IndependentBlendEnable = false;
-		blendDesc.RenderTarget[0].BlendEnable = true;
-		blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-		blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-		float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		device->CreateBlendState(&blendDesc, &blendState);
-		context->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
-
-		//camera = std::make_unique<Camera>(new Camera());
-	}
-	PUBLIC ~Graphics() {
-	}
-	PUBLIC ID3D11Device& GetDevice() {
-		return *device.Get();
-	}
-	PUBLIC IDXGISwapChain& GetMemory() {
-		return *swapChain.Get();
-	}
-	PUBLIC ID3D11DeviceContext& GetContext() {
-		return *context.Get();
-	}
-};
-
-class Audio {
-	PROTECTED Microsoft::WRL::ComPtr<IXAudio2> audioEngine;
-	PROTECTED IXAudio2MasteringVoice* masteringVoice = nullptr;
-
-	PUBLIC Audio() {
-		App::GetWindowHandle();
-
-		XAudio2Create(audioEngine.GetAddressOf());
-
-		audioEngine->CreateMasteringVoice(&masteringVoice);
-
-		MFStartup(MF_VERSION);
-	}
-	PUBLIC ~Audio() {
-		MFShutdown();
-
-		masteringVoice->DestroyVoice();
-		
-		audioEngine->StopEngine();
-	}
-	PUBLIC IXAudio2& GetAudioEngine() {
-		return *audioEngine.Get();
-	}
-};
-
-class Input {
-	PRIVATE Float2 mousePosition;
-	PRIVATE BYTE preKeyState[256];
-	PRIVATE BYTE keyState[256];
-	PRIVATE bool isShowCursor = true;
-
-	PUBLIC Input() {
-		Update();
-	}
-	PUBLIC ~Input() {
-	}
-	PUBLIC bool GetKey(int keyCode) {
-		return keyState[keyCode] & 0x80;
-	}
-	PUBLIC bool GetKeyUp(int keyCode) {
-		return !(keyState[keyCode] & 0x80) && (preKeyState[keyCode] & 0x80);
-	}
-	PUBLIC bool GetKeyDown(int keyCode) {
-		return (keyState[keyCode] & 0x80) && !(preKeyState[keyCode] & 0x80);
-	}
-	PUBLIC Float2 GetMousePosition() {
-		return mousePosition;
-	}
-	PUBLIC void SetMousePosition(float x, float y) {
-		if (GetActiveWindow() != App::GetWindowHandle()) {
-			return;
-		}
-
-		mousePosition.x = x;
-		mousePosition.y = y;
-		POINT point = { static_cast<int>(x), static_cast<int>(y) };
-		ClientToScreen(App::GetWindowHandle(), &point);
-		SetCursorPos(point.x, point.y);
-	}
-	PUBLIC void SetShowCursor(bool isShowCursor) {
-		if (this->isShowCursor == isShowCursor) {
-			return;
-		}
-
-		this->isShowCursor = isShowCursor;
-		ShowCursor(isShowCursor);
-	}
-	PUBLIC void Update() {
-		POINT point = {};
-		GetCursorPos(&point);
-
-		ScreenToClient(App::GetWindowHandle(), &point);
-		mousePosition = Float2(static_cast<float>(point.x), static_cast<float>(point.y));
-
-		for (int i = 0; i < 256; i++) {
-			preKeyState[i] = keyState[i];
-		}
-
-		GetKeyboardState(keyState);
-	}
-};
-
-class Timer {
-	PRIVATE float time = 0.0f;
-	PRIVATE float deltaTime = 0.0f;
-	PRIVATE int frameRate = 0;
-	PRIVATE float second = 0.0f;
-	PRIVATE int frameCount = 0;
-	LARGE_INTEGER preCount;
-	LARGE_INTEGER frequency;
-
-	PUBLIC Timer() {
-		preCount = GetCounter();
-		frequency = GetCountFrequency();
-	}
-	PUBLIC ~Timer() {
-	}
-	PUBLIC float GetTime() {
-		return time;
-	}
-	PUBLIC float GetDeltaTime() {
-		return deltaTime;
-	}
-	PUBLIC int GetFrameRate() {
-		return frameRate;
-	}
-	PUBLIC void Update() {
-
-		LARGE_INTEGER count = GetCounter();
-		deltaTime = (float)(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
-		preCount = GetCounter();
-
-		time += deltaTime;
-
-
-		frameCount++;
-		second += deltaTime;
-		if (second >= 1.0f) {
-			frameRate = frameCount;
-			frameCount = 0;
-			second -= 1.0f;
-		}
-	}
-	PRIVATE LARGE_INTEGER GetCounter() {
-		LARGE_INTEGER counter;
-		QueryPerformanceCounter(&counter);
-		return counter;
-	}
-	PRIVATE LARGE_INTEGER GetCountFrequency() {
-		LARGE_INTEGER frequency;
-		QueryPerformanceFrequency(&frequency);
-		return frequency;
-	}
-};
-
-
-HWND App::GetWindowHandle() {
-	return GetWindow().GetHandle();
-}
-Float2 App::GetWindowSize() {
-	return GetWindow().GetSize();
-}
-void App::SetWindowSize(float width, float height) {
-	GetWindow().SetSize(width, height);
-}
-wchar_t* App::GetTitle() {
-	return GetWindow().GetTitle();
-}
-void App::SetTitle(const wchar_t* title) {
-	GetWindow().SetTitle(title);
-}
-void App::SetFullScreen(bool isFullscreen) {
-	GetWindow().SetFullScreen(isFullscreen);
-}
-void App::AddProcedure(Proceedable* const procedure) {
-	GetWindow().AddProcedure(procedure);
-}
-void App::RemoveProcedure(Proceedable* const procedure) {
-	GetWindow().RemoveProcedure(procedure);
-}
-ID3D11Device& App::GetGraphicsDevice() {
-	return GetGraphics().GetDevice();
-}
-ID3D11DeviceContext& App::GetGraphicsContext() {
-	return GetGraphics().GetContext();
-}
-IDXGISwapChain& App::GetGraphicsMemory() {
-	return GetGraphics().GetMemory();
-}
-IXAudio2& App::GetAudioEngine() {
-	return GetAudio().GetAudioEngine();
-}
-bool App::GetKey(int VK_CODE) {
-	return GetInput().GetKey(VK_CODE);
-}
-bool App::GetKeyUp(int VK_CODE) {
-	return GetInput().GetKeyUp(VK_CODE);
-}
-bool App::GetKeyDown(int VK_CODE) {
-	return GetInput().GetKeyDown(VK_CODE);
-}
-Float2 App::GetMousePosition() {
-	return GetInput().GetMousePosition();
-}
-void App::SetMousePosition(Float2 position) {
-	GetInput().SetMousePosition(position.x, position.y);
-}
-void App::SetMousePosition(float x, float y) {
-	GetInput().SetMousePosition(x, y);
-}
-void App::SetShowCursor(bool isShowCursor) {
-	GetInput().SetShowCursor(isShowCursor);
-}
-float App::GetTime() {
-	return GetTimer().GetTime();
-}
-float App::GetDeltaTime() {
-	return GetTimer().GetDeltaTime();
-}
-int App::GetFrameRate() {
-	return GetTimer().GetFrameRate();
-}
-void App::AddFont(const wchar_t* filePath) {
-	AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
-}
-bool App::Refresh() {
-	GetGraphicsMemory().Present(1, 0);
-
-	if (!GetWindow().Update()) return false;
-	GetInput().Update();
-	GetTimer().Update();
-
-	return true;
-}
-Window& App::GetWindow() {
-	static std::unique_ptr<Window> window(new Window());
-	return *window.get();
-}
-Graphics& App::GetGraphics() {
-	static std::unique_ptr<Graphics> graphics(new Graphics());
-	return *graphics.get();
-}
-Audio& App::GetAudio() {
-	static std::unique_ptr<Audio> audio(new Audio());
-	return *audio.get();
-}
-Input& App::GetInput() {
-	static std::unique_ptr<Input> input(new Input());
-	return *input.get();
-}
-Timer& App::GetTimer() {
-	static std::unique_ptr<Timer> timer(new Timer());
-	return *timer.get();
-}
 
 }

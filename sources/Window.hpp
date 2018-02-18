@@ -1,4 +1,9 @@
 ﻿class Window {
+	PUBLIC class Proceedable {
+		PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
+		PUBLIC virtual ~Proceedable() {}
+	};
+
 	PRIVATE HWND handle;
 	PRIVATE const DWORD style = WS_OVERLAPPEDWINDOW;
 

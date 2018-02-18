@@ -22,16 +22,14 @@ int Main() {
 	mesh.material.SetTexture(0, &tex);
 
 	while (App::Refresh()) {
+		camera.Update();
+
 		mesh.angles.y += App::GetDeltaTime() * 50.0f;
 
-		camera.position = Float3(0.6f, 1.0f, -2.0f);
-		camera.Update(true);
-
+		mesh.position = Float3(0.6f, 0.0f, 0.0f);
 		mesh.Draw();
 
-		camera.position = Float3(-0.6f, 1.0f, -2.0f);
-		camera.Update(false);
-
+		mesh.position = Float3(-0.6f, 0.0f, 0.0f);
 		mesh.Draw();
 	}
 
