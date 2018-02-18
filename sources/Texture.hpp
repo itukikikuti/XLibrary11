@@ -5,6 +5,10 @@
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
+	PUBLIC Texture() {
+		std::unique_ptr<BYTE[]> buffer(new BYTE[4]{ 0xff, 0x00, 0xff, 0xff });
+		Create(1, 1, buffer.get());
+	}
 	PUBLIC Texture(const wchar_t* const filePath) {
 		Load(filePath);
 	}
