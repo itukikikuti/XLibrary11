@@ -3,6 +3,7 @@ class Audio {
 	PROTECTED IXAudio2MasteringVoice* masteringVoice = nullptr;
 
 	PUBLIC Audio() {
+		Initialize();
 	}
 	PUBLIC ~Audio() {
 		MFShutdown();
