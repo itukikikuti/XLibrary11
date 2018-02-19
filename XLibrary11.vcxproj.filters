@@ -18,9 +18,6 @@
     <ClInclude Include="sources\Material.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Math.hpp">
-      <Filter>sources</Filter>
-    </ClInclude>
     <ClInclude Include="sources\Mesh.hpp">
       <Filter>sources</Filter>
     </ClInclude>
@@ -46,6 +43,9 @@
       <Filter>sources</Filter>
     </ClInclude>
     <ClInclude Include="sources\Voice.hpp">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Geometry.hpp">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>

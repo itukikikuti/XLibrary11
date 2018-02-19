@@ -35,7 +35,7 @@ XLIBRARY_NAMESPACE_BEGIN
 #define PRIVATE private:
 #define PROTECTED protected:
 
-#include "Math.hpp"
+#include "Geometry.hpp"
 
 class App {
 	PUBLIC static constexpr wchar_t* name = L"XLibrary11";
