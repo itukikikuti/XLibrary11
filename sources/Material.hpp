@@ -1,6 +1,6 @@
 ﻿class Material {
-	PUBLIC void* cbuffer = nullptr;
-	PUBLIC Texture* textures[10];
+	PROTECTED void* cbuffer = nullptr;
+	PROTECTED Texture* textures[10];
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout = nullptr;
