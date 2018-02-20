@@ -62,8 +62,8 @@ class App {
 	PUBLIC static void SetTitle(const wchar_t* const title) {
 		GetWindow().SetTitle(title);
 	}
-	PUBLIC static void SetFullScreen(bool isFullscreen) {
-		GetWindow().SetFullScreen(isFullscreen);
+	PUBLIC static void SetFullScreen(bool isFullScreen) {
+		GetWindow().SetFullScreen(isFullScreen);
 	}
 	PUBLIC static void AddProcedure(Window::Proceedable* const procedure) {
 		GetWindow().AddProcedure(procedure);

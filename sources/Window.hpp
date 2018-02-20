@@ -67,10 +67,10 @@
 	PUBLIC void SetTitle(const wchar_t* const title) {
 		SetWindowTextW(handle, title);
 	}
-	PUBLIC void SetFullScreen(bool isFullscreen) {
+	PUBLIC void SetFullScreen(bool isFullScreen) {
 		static Float2 size = GetSize();
 
-		if (isFullscreen) {
+		if (isFullScreen) {
 			size = GetSize();
 			int w = GetSystemMetrics(SM_CXSCREEN);
 			int h = GetSystemMetrics(SM_CYSCREEN);

@@ -40,6 +40,8 @@ struct Float2 : public DirectX::XMFLOAT2 {
 	}
 	PUBLIC Float2(float x, float y) : DirectX::XMFLOAT2(x, y) {
 	}
+	PUBLIC Float2(float value) : DirectX::XMFLOAT2(value, value) {
+	}
 	PUBLIC Float2(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT2() {
 		DirectX::XMStoreFloat2(this, vector);
 	}
@@ -49,6 +51,12 @@ struct Float2 : public DirectX::XMFLOAT2 {
 	}
 	PUBLIC operator DirectX::XMVECTOR() const noexcept {
 		return DirectX::XMLoadFloat2(this);
+	}
+	PUBLIC Float2 operator+() const {
+		return Float2(this->x, this->y);
+	}
+	PUBLIC Float2 operator-() const {
+		return Float2(-this->x, -this->y);
 	}
 	PUBLIC Float2& operator=(const Float2& value) {
 		x = value.x;
@@ -132,6 +140,8 @@ struct Float3 : public DirectX::XMFLOAT3 {
 	}
 	PUBLIC Float3(float x, float y, float z) : DirectX::XMFLOAT3(x, y, z) {
 	}
+	PUBLIC Float3(float value) : DirectX::XMFLOAT3(value, value, value) {
+	}
 	PUBLIC Float3(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT3() {
 		DirectX::XMStoreFloat3(this, vector);
 	}
@@ -141,6 +151,12 @@ struct Float3 : public DirectX::XMFLOAT3 {
 	}
 	PUBLIC operator DirectX::XMVECTOR() const noexcept {
 		return DirectX::XMLoadFloat3(this);
+	}
+	PUBLIC Float3 operator+() const {
+		return Float3(this->x, this->y, this->z);
+	}
+	PUBLIC Float3 operator-() const {
+		return Float3(-this->x, -this->y, -this->z);
 	}
 	PUBLIC Float3& operator=(const Float3& value) {
 		x = value.x;
@@ -234,6 +250,8 @@ struct Float4 : public DirectX::XMFLOAT4 {
 	}
 	PUBLIC Float4(float x, float y, float z, float w) : DirectX::XMFLOAT4(x, y, z, w) {
 	}
+	PUBLIC Float4(float value) : DirectX::XMFLOAT4(value, value, value, value) {
+	}
 	PUBLIC Float4(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT4() {
 		DirectX::XMStoreFloat4(this, vector);
 	}
@@ -243,6 +261,12 @@ struct Float4 : public DirectX::XMFLOAT4 {
 	}
 	PUBLIC operator DirectX::XMVECTOR() const noexcept {
 		return DirectX::XMLoadFloat4(this);
+	}
+	PUBLIC Float4 operator+() const {
+		return Float4(this->x, this->y, this->z, this->w);
+	}
+	PUBLIC Float4 operator-() const {
+		return Float4(-this->x, -this->y, -this->z, -this->w);
 	}
 	PUBLIC Float4& operator=(const Float4& value) {
 		x = value.x;
@@ -418,18 +442,18 @@ class Window {
 
 		SetWindowPos(handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
 	}
-	PUBLIC wchar_t* GetTitle() {
+	PUBLIC wchar_t* const GetTitle() {
 		wchar_t* title = nullptr;
 		GetWindowTextW(handle, title, GetWindowTextLengthW(handle));
 		return title;
 	}
-	PUBLIC void SetTitle(const wchar_t* title) {
+	PUBLIC void SetTitle(const wchar_t* const title) {
 		SetWindowTextW(handle, title);
 	}
-	PUBLIC void SetFullScreen(bool isFullscreen) {
+	PUBLIC void SetFullScreen(bool isFullScreen) {
 		static Float2 size = GetSize();
 
-		if (isFullscreen) {
+		if (isFullScreen) {
 			size = GetSize();
 			int w = GetSystemMetrics(SM_CXSCREEN);
 			int h = GetSystemMetrics(SM_CYSCREEN);
@@ -589,13 +613,13 @@ class Graphics : public App::Window::Proceedable {
 		constant.view = DirectX::XMMatrixIdentity();
 		constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
 	}
-	PUBLIC ID3D11Device& GetDevice() {
+	PUBLIC ID3D11Device& const GetDevice() {
 		return *device.Get();
 	}
-	PUBLIC IDXGISwapChain& GetMemory() {
+	PUBLIC IDXGISwapChain& const GetMemory() {
 		return *swapChain.Get();
 	}
-	PUBLIC ID3D11DeviceContext& GetContext() {
+	PUBLIC ID3D11DeviceContext& const GetContext() {
 		return *context.Get();
 	}
 	PUBLIC void Update() {
@@ -638,6 +662,7 @@ class Audio {
 	PROTECTED IXAudio2MasteringVoice* masteringVoice = nullptr;
 
 	PUBLIC Audio() {
+		Initialize();
 	}
 	PUBLIC ~Audio() {
 		MFShutdown();
@@ -655,7 +680,7 @@ class Audio {
 
 		MFStartup(MF_VERSION);
 	}
-	PUBLIC IXAudio2& GetAudioEngine() {
+	PUBLIC IXAudio2& const GetEngine() {
 		return *audioEngine.Get();
 	}
 };
@@ -787,14 +812,14 @@ class Timer {
 	PUBLIC static void SetWindowSize(float width, float height) {
 		GetWindow().SetSize(width, height);
 	}
-	PUBLIC static wchar_t* GetTitle() {
+	PUBLIC static wchar_t* const GetTitle() {
 		return GetWindow().GetTitle();
 	}
-	PUBLIC static void SetTitle(const wchar_t* title) {
+	PUBLIC static void SetTitle(const wchar_t* const title) {
 		GetWindow().SetTitle(title);
 	}
-	PUBLIC static void SetFullScreen(bool isFullscreen) {
-		GetWindow().SetFullScreen(isFullscreen);
+	PUBLIC static void SetFullScreen(bool isFullScreen) {
+		GetWindow().SetFullScreen(isFullScreen);
 	}
 	PUBLIC static void AddProcedure(Window::Proceedable* const procedure) {
 		GetWindow().AddProcedure(procedure);
@@ -802,17 +827,17 @@ class Timer {
 	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure) {
 		GetWindow().RemoveProcedure(procedure);
 	}
-	PUBLIC static ID3D11Device& GetGraphicsDevice() {
+	PUBLIC static ID3D11Device& const GetGraphicsDevice() {
 		return GetGraphics().GetDevice();
 	}
-	PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
+	PUBLIC static ID3D11DeviceContext& const GetGraphicsContext() {
 		return GetGraphics().GetContext();
 	}
-	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
+	PUBLIC static IDXGISwapChain& const GetGraphicsMemory() {
 		return GetGraphics().GetMemory();
 	}
-	PUBLIC static IXAudio2& GetAudioEngine() {
-		return GetAudio().GetAudioEngine();
+	PUBLIC static IXAudio2& const GetAudioEngine() {
+		return GetAudio().GetEngine();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
 		return GetInput().GetKey(VK_CODE);
@@ -825,9 +850,6 @@ class Timer {
 	}
 	PUBLIC static Float2 GetMousePosition() {
 		return GetInput().GetMousePosition();
-	}
-	PUBLIC static void SetMousePosition(Float2 position) {
-		GetInput().SetMousePosition(position.x, position.y);
 	}
 	PUBLIC static void SetMousePosition(float x, float y) {
 		GetInput().SetMousePosition(x, y);
@@ -857,23 +879,23 @@ class Timer {
 
 		return true;
 	}
-	PRIVATE static Window& GetWindow() {
+	PRIVATE static Window& const GetWindow() {
 		static std::unique_ptr<Window> window(new Window());
 		return *window.get();
 	}
-	PRIVATE static Graphics& GetGraphics() {
+	PRIVATE static Graphics& const GetGraphics() {
 		static std::unique_ptr<Graphics> graphics(new Graphics());
 		return *graphics.get();
 	}
-	PRIVATE static Audio& GetAudio() {
+	PRIVATE static Audio& const GetAudio() {
 		static std::unique_ptr<Audio> audio(new Audio());
 		return *audio.get();
 	}
-	PRIVATE static Input& GetInput() {
+	PRIVATE static Input& const GetInput() {
 		static std::unique_ptr<Input> input(new Input());
 		return *input.get();
 	}
-	PRIVATE static Timer& GetTimer() {
+	PRIVATE static Timer& const GetTimer() {
 		static std::unique_ptr<Timer> timer(new Timer());
 		return *timer.get();
 	}
@@ -988,8 +1010,8 @@ class Texture {
 };
 
 class Material {
-	PUBLIC void* cbuffer = nullptr;
-	PUBLIC Texture* textures[10];
+	PROTECTED void* cbuffer = nullptr;
+	PROTECTED Texture* textures[10];
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout = nullptr;
@@ -1466,88 +1488,87 @@ class Sprite {
 	}
 };
 
-//class Text : public Sprite {
-//	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"") {
-//		if (text == L"") {
-//			text = L"\uFFFD";
-//		}
-//
-//		LOGFONTW logFont = {};
-//		logFont.lfHeight = 256;
-//		logFont.lfWidth = 0;
-//		logFont.lfEscapement = 0;
-//		logFont.lfOrientation = 0;
-//		logFont.lfWeight = 0;
-//		logFont.lfItalic = false;
-//		logFont.lfUnderline = false;
-//		logFont.lfStrikeOut = false;
-//		logFont.lfCharSet = SHIFTJIS_CHARSET;
-//		logFont.lfOutPrecision = OUT_TT_ONLY_PRECIS;
-//		logFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
-//		logFont.lfQuality = PROOF_QUALITY;
-//		logFont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
-//		StringCchCopyW(logFont.lfFaceName, 32, fontFamily);
-//		HFONT font = CreateFontIndirectW(&logFont);
-//
-//		HDC dc = GetDC(nullptr);
-//		HFONT oldFont = (HFONT)SelectObject(dc, font);
-//		UINT code = text[0];
-//
-//		TEXTMETRICW textMetrics = {};
-//		GetTextMetricsW(dc, &textMetrics);
-//		GLYPHMETRICS glyphMetrics = {};
-//		const MAT2 matrix = { { 0, 1 }, { 0, 0 }, { 0, 0 }, { 0, 1 } };
-//		DWORD size = GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
-//		BYTE* textureBuffer = new BYTE[size];
-//		GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, textureBuffer, &matrix);
-//
-//		SelectObject(dc, oldFont);
-//		DeleteObject(font);
-//		ReleaseDC(nullptr, dc);
-//
-//		width = glyphMetrics.gmCellIncX;
-//		height = textMetrics.tmHeight;
-//
-//		D3D11_TEXTURE2D_DESC textureDesc = {};
-//		textureDesc.Width = width;
-//		textureDesc.Height = height;
-//		textureDesc.MipLevels = 1;
-//		textureDesc.ArraySize = 1;
-//		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-//		textureDesc.SampleDesc.Count = 1;
-//		textureDesc.SampleDesc.Quality = 0;
-//		textureDesc.Usage = D3D11_USAGE_DYNAMIC;
-//		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-//		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-//		textureDesc.MiscFlags = 0;
-//
-//		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, nullptr, texture.GetAddressOf());
-//
-//		D3D11_MAPPED_SUBRESOURCE mapped;
-//		App::GetGraphicsContext().Map(texture.Get(), D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-//
-//		BYTE* bits = (BYTE*)mapped.pData;
-//		DirectX::XMINT2 origin;
-//		origin.x = glyphMetrics.gmptGlyphOrigin.x;
-//		origin.y = textMetrics.tmAscent - glyphMetrics.gmptGlyphOrigin.y;
-//		DirectX::XMINT2 bitmapSize;
-//		bitmapSize.x = glyphMetrics.gmBlackBoxX + (4 - (glyphMetrics.gmBlackBoxX % 4)) % 4;
-//		bitmapSize.y = glyphMetrics.gmBlackBoxY;
-//		const int LEVEL = 17;
-//		memset(bits, 0, mapped.RowPitch * textMetrics.tmHeight);
-//
-//		for (int y = origin.y; y < origin.y + bitmapSize.y; y++) {
-//			for (int x = origin.x; x < origin.x + bitmapSize.x; x++) {
-//				DWORD alpha = (255 * textureBuffer[x - origin.x + bitmapSize.x * (y - origin.y)]) / (LEVEL - 1);
-//				DWORD color = 0x00ffffff | (alpha << 24);
-//				memcpy((BYTE*)bits + mapped.RowPitch * y + 4 * x, &color, sizeof(DWORD));
-//			}
-//		}
-//
-//		App::GetGraphicsContext().Unmap(texture.Get(), D3D11CalcSubresource(0, 0, 1));
-//		delete[] textureBuffer;
-//	}
-//};
+class Text {
+	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"") {
+		//if (text == L"") {
+		//	text = L"\uFFFD";
+		//}
+
+		LOGFONTW logFont = {};
+		logFont.lfHeight = 256;
+		logFont.lfWidth = 0;
+		logFont.lfEscapement = 0;
+		logFont.lfOrientation = 0;
+		logFont.lfWeight = 0;
+		logFont.lfItalic = false;
+		logFont.lfUnderline = false;
+		logFont.lfStrikeOut = false;
+		logFont.lfCharSet = SHIFTJIS_CHARSET;
+		logFont.lfOutPrecision = OUT_TT_ONLY_PRECIS;
+		logFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+		logFont.lfQuality = PROOF_QUALITY;
+		logFont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
+		StringCchCopyW(logFont.lfFaceName, 32, fontFamily);
+		HFONT font = CreateFontIndirectW(&logFont);
+
+		HDC dc = GetDC(nullptr);
+		HFONT oldFont = (HFONT)SelectObject(dc, font);
+		UINT code = text[0];
+
+		TEXTMETRICW textMetrics = {};
+		GetTextMetricsW(dc, &textMetrics);
+		GLYPHMETRICS glyphMetrics = {};
+		const MAT2 matrix = { { 0, 1 }, { 0, 0 }, { 0, 0 }, { 0, 1 } };
+		DWORD size = GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
+		std::unique_ptr<BYTE[]> buffer(new BYTE[size]);
+		GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, buffer.get(), &matrix);
+
+		SelectObject(dc, oldFont);
+		DeleteObject(font);
+		ReleaseDC(nullptr, dc);
+
+		UINT width = glyphMetrics.gmCellIncX;
+		UINT height = textMetrics.tmHeight;
+
+		D3D11_TEXTURE2D_DESC textureDesc = {};
+		textureDesc.Width = width;
+		textureDesc.Height = height;
+		textureDesc.MipLevels = 1;
+		textureDesc.ArraySize = 1;
+		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		textureDesc.SampleDesc.Count = 1;
+		textureDesc.SampleDesc.Quality = 0;
+		textureDesc.Usage = D3D11_USAGE_DYNAMIC;
+		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		textureDesc.MiscFlags = 0;
+
+		//App::GetGraphicsDevice().CreateTexture2D(&textureDesc, nullptr, texture.GetAddressOf());
+
+		D3D11_MAPPED_SUBRESOURCE mapped;
+		//App::GetGraphicsContext().Map(texture.Get(), D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+
+		BYTE* bits = (BYTE*)mapped.pData;
+		DirectX::XMINT2 origin;
+		origin.x = glyphMetrics.gmptGlyphOrigin.x;
+		origin.y = textMetrics.tmAscent - glyphMetrics.gmptGlyphOrigin.y;
+		DirectX::XMINT2 bitmapSize;
+		bitmapSize.x = glyphMetrics.gmBlackBoxX + (4 - (glyphMetrics.gmBlackBoxX % 4)) % 4;
+		bitmapSize.y = glyphMetrics.gmBlackBoxY;
+		const int LEVEL = 17;
+		memset(bits, 0, mapped.RowPitch * textMetrics.tmHeight);
+
+		for (int y = origin.y; y < origin.y + bitmapSize.y; y++) {
+			for (int x = origin.x; x < origin.x + bitmapSize.x; x++) {
+				DWORD alpha = (255 * buffer[x - origin.x + bitmapSize.x * (y - origin.y)]) / (LEVEL - 1);
+				DWORD color = 0x00ffffff | (alpha << 24);
+				memcpy((BYTE*)bits + mapped.RowPitch * y + 4 * x, &color, sizeof(DWORD));
+			}
+		}
+
+		//App::GetGraphicsContext().Unmap(texture.Get(), D3D11CalcSubresource(0, 0, 1));
+	}
+};
 
 class Voice : public IXAudio2VoiceCallback {
 	PROTECTED Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
