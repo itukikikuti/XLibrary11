@@ -59,12 +59,12 @@
 
 		SetWindowPos(handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
 	}
-	PUBLIC wchar_t* GetTitle() {
+	PUBLIC wchar_t* const GetTitle() {
 		wchar_t* title = nullptr;
 		GetWindowTextW(handle, title, GetWindowTextLengthW(handle));
 		return title;
 	}
-	PUBLIC void SetTitle(const wchar_t* title) {
+	PUBLIC void SetTitle(const wchar_t* const title) {
 		SetWindowTextW(handle, title);
 	}
 	PUBLIC void SetFullScreen(bool isFullscreen) {

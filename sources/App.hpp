@@ -56,10 +56,10 @@ class App {
 	PUBLIC static void SetWindowSize(float width, float height) {
 		GetWindow().SetSize(width, height);
 	}
-	PUBLIC static wchar_t* GetTitle() {
+	PUBLIC static wchar_t* const GetTitle() {
 		return GetWindow().GetTitle();
 	}
-	PUBLIC static void SetTitle(const wchar_t* title) {
+	PUBLIC static void SetTitle(const wchar_t* const title) {
 		GetWindow().SetTitle(title);
 	}
 	PUBLIC static void SetFullScreen(bool isFullscreen) {
@@ -123,23 +123,23 @@ class App {
 
 		return true;
 	}
-	PRIVATE static Window& GetWindow() {
+	PRIVATE static Window& const GetWindow() {
 		static std::unique_ptr<Window> window(new Window());
 		return *window.get();
 	}
-	PRIVATE static Graphics& GetGraphics() {
+	PRIVATE static Graphics& const GetGraphics() {
 		static std::unique_ptr<Graphics> graphics(new Graphics());
 		return *graphics.get();
 	}
-	PRIVATE static Audio& GetAudio() {
+	PRIVATE static Audio& const GetAudio() {
 		static std::unique_ptr<Audio> audio(new Audio());
 		return *audio.get();
 	}
-	PRIVATE static Input& GetInput() {
+	PRIVATE static Input& const GetInput() {
 		static std::unique_ptr<Input> input(new Input());
 		return *input.get();
 	}
-	PRIVATE static Timer& GetTimer() {
+	PRIVATE static Timer& const GetTimer() {
 		static std::unique_ptr<Timer> timer(new Timer());
 		return *timer.get();
 	}
