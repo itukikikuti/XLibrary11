@@ -71,17 +71,17 @@ class App {
 	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure) {
 		GetWindow().RemoveProcedure(procedure);
 	}
-	PUBLIC static ID3D11Device& GetGraphicsDevice() {
+	PUBLIC static ID3D11Device& const GetGraphicsDevice() {
 		return GetGraphics().GetDevice();
 	}
-	PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
+	PUBLIC static ID3D11DeviceContext& const GetGraphicsContext() {
 		return GetGraphics().GetContext();
 	}
-	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
+	PUBLIC static IDXGISwapChain& const GetGraphicsMemory() {
 		return GetGraphics().GetMemory();
 	}
-	PUBLIC static IXAudio2& GetAudioEngine() {
-		return GetAudio().GetAudioEngine();
+	PUBLIC static IXAudio2& const GetAudioEngine() {
+		return GetAudio().GetEngine();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
 		return GetInput().GetKey(VK_CODE);

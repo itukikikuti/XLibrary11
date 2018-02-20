@@ -107,13 +107,13 @@
 		constant.view = DirectX::XMMatrixIdentity();
 		constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
 	}
-	PUBLIC ID3D11Device& GetDevice() {
+	PUBLIC ID3D11Device& const GetDevice() {
 		return *device.Get();
 	}
-	PUBLIC IDXGISwapChain& GetMemory() {
+	PUBLIC IDXGISwapChain& const GetMemory() {
 		return *swapChain.Get();
 	}
-	PUBLIC ID3D11DeviceContext& GetContext() {
+	PUBLIC ID3D11DeviceContext& const GetContext() {
 		return *context.Get();
 	}
 	PUBLIC void Update() {
