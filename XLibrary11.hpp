@@ -419,10 +419,10 @@ class Window {
 		SetSize(1280.0f, 720.0f);
 		ShowWindow(handle, SW_SHOWNORMAL);
 	}
-	PUBLIC HWND GetHandle() {
+	PUBLIC HWND GetHandle() const {
 		return handle;
 	}
-	PUBLIC Float2 GetSize() {
+	PUBLIC Float2 GetSize() const {
 		RECT clientRect = {};
 		GetClientRect(handle, &clientRect);
 
@@ -442,7 +442,7 @@ class Window {
 
 		SetWindowPos(handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
 	}
-	PUBLIC wchar_t* const GetTitle() {
+	PUBLIC wchar_t* const GetTitle() const {
 		wchar_t* title = nullptr;
 		GetWindowTextW(handle, title, GetWindowTextLengthW(handle));
 		return title;
@@ -613,13 +613,13 @@ class Graphics : public App::Window::Proceedable {
 		constant.view = DirectX::XMMatrixIdentity();
 		constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
 	}
-	PUBLIC ID3D11Device& const GetDevice() {
+	PUBLIC ID3D11Device& const GetDevice() const {
 		return *device.Get();
 	}
-	PUBLIC IDXGISwapChain& const GetMemory() {
+	PUBLIC IDXGISwapChain& const GetMemory() const {
 		return *swapChain.Get();
 	}
-	PUBLIC ID3D11DeviceContext& const GetContext() {
+	PUBLIC ID3D11DeviceContext& const GetContext() const {
 		return *context.Get();
 	}
 	PUBLIC void Update() {
@@ -680,7 +680,7 @@ class Audio {
 
 		MFStartup(MF_VERSION);
 	}
-	PUBLIC IXAudio2& const GetEngine() {
+	PUBLIC IXAudio2& const GetEngine() const {
 		return *audioEngine.Get();
 	}
 };
@@ -699,16 +699,16 @@ class Input {
 	PROTECTED virtual void Initialize() {
 		Update();
 	}
-	PUBLIC bool GetKey(int keyCode) {
+	PUBLIC bool GetKey(int keyCode) const {
 		return keyState[keyCode] & 0x80;
 	}
-	PUBLIC bool GetKeyUp(int keyCode) {
+	PUBLIC bool GetKeyUp(int keyCode) const {
 		return !(keyState[keyCode] & 0x80) && (preKeyState[keyCode] & 0x80);
 	}
-	PUBLIC bool GetKeyDown(int keyCode) {
+	PUBLIC bool GetKeyDown(int keyCode) const {
 		return (keyState[keyCode] & 0x80) && !(preKeyState[keyCode] & 0x80);
 	}
-	PUBLIC Float2 GetMousePosition() {
+	PUBLIC Float2 GetMousePosition() const {
 		return mousePosition;
 	}
 	PUBLIC void SetMousePosition(float x, float y) {
@@ -763,13 +763,13 @@ class Timer {
 		preCount = GetCounter();
 		frequency = GetCountFrequency();
 	}
-	PUBLIC float GetTime() {
+	PUBLIC float GetTime() const {
 		return time;
 	}
-	PUBLIC float GetDeltaTime() {
+	PUBLIC float GetDeltaTime() const {
 		return deltaTime;
 	}
-	PUBLIC int GetFrameRate() {
+	PUBLIC int GetFrameRate() const {
 		return frameRate;
 	}
 	PUBLIC void Update() {
@@ -789,12 +789,12 @@ class Timer {
 			second -= 1.0f;
 		}
 	}
-	PROTECTED LARGE_INTEGER GetCounter() {
+	PROTECTED LARGE_INTEGER GetCounter() const {
 		LARGE_INTEGER counter;
 		QueryPerformanceCounter(&counter);
 		return counter;
 	}
-	PROTECTED LARGE_INTEGER GetCountFrequency() {
+	PROTECTED LARGE_INTEGER GetCountFrequency() const {
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency;

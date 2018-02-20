@@ -16,13 +16,13 @@ class Timer {
 		preCount = GetCounter();
 		frequency = GetCountFrequency();
 	}
-	PUBLIC float GetTime() {
+	PUBLIC float GetTime() const {
 		return time;
 	}
-	PUBLIC float GetDeltaTime() {
+	PUBLIC float GetDeltaTime() const {
 		return deltaTime;
 	}
-	PUBLIC int GetFrameRate() {
+	PUBLIC int GetFrameRate() const {
 		return frameRate;
 	}
 	PUBLIC void Update() {
@@ -42,12 +42,12 @@ class Timer {
 			second -= 1.0f;
 		}
 	}
-	PROTECTED LARGE_INTEGER GetCounter() {
+	PROTECTED LARGE_INTEGER GetCounter() const {
 		LARGE_INTEGER counter;
 		QueryPerformanceCounter(&counter);
 		return counter;
 	}
-	PROTECTED LARGE_INTEGER GetCountFrequency() {
+	PROTECTED LARGE_INTEGER GetCountFrequency() const {
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency;

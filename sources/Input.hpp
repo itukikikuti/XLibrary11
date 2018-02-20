@@ -12,16 +12,16 @@ class Input {
 	PROTECTED virtual void Initialize() {
 		Update();
 	}
-	PUBLIC bool GetKey(int keyCode) {
+	PUBLIC bool GetKey(int keyCode) const {
 		return keyState[keyCode] & 0x80;
 	}
-	PUBLIC bool GetKeyUp(int keyCode) {
+	PUBLIC bool GetKeyUp(int keyCode) const {
 		return !(keyState[keyCode] & 0x80) && (preKeyState[keyCode] & 0x80);
 	}
-	PUBLIC bool GetKeyDown(int keyCode) {
+	PUBLIC bool GetKeyDown(int keyCode) const {
 		return (keyState[keyCode] & 0x80) && !(preKeyState[keyCode] & 0x80);
 	}
-	PUBLIC Float2 GetMousePosition() {
+	PUBLIC Float2 GetMousePosition() const {
 		return mousePosition;
 	}
 	PUBLIC void SetMousePosition(float x, float y) {

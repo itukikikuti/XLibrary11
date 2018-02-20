@@ -36,10 +36,10 @@
 		SetSize(1280.0f, 720.0f);
 		ShowWindow(handle, SW_SHOWNORMAL);
 	}
-	PUBLIC HWND GetHandle() {
+	PUBLIC HWND GetHandle() const {
 		return handle;
 	}
-	PUBLIC Float2 GetSize() {
+	PUBLIC Float2 GetSize() const {
 		RECT clientRect = {};
 		GetClientRect(handle, &clientRect);
 
@@ -59,7 +59,7 @@
 
 		SetWindowPos(handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
 	}
-	PUBLIC wchar_t* const GetTitle() {
+	PUBLIC wchar_t* const GetTitle() const {
 		wchar_t* title = nullptr;
 		GetWindowTextW(handle, title, GetWindowTextLengthW(handle));
 		return title;

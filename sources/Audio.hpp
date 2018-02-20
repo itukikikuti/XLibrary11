@@ -21,7 +21,7 @@ class Audio {
 
 		MFStartup(MF_VERSION);
 	}
-	PUBLIC IXAudio2& const GetEngine() {
+	PUBLIC IXAudio2& const GetEngine() const {
 		return *audioEngine.Get();
 	}
 };
