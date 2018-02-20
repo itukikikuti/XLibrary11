@@ -613,13 +613,13 @@ class Graphics : public App::Window::Proceedable {
 		constant.view = DirectX::XMMatrixIdentity();
 		constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
 	}
-	PUBLIC ID3D11Device& const GetDevice() const {
+	PUBLIC ID3D11Device& GetDevice() const {
 		return *device.Get();
 	}
-	PUBLIC IDXGISwapChain& const GetMemory() const {
+	PUBLIC IDXGISwapChain& GetMemory() const {
 		return *swapChain.Get();
 	}
-	PUBLIC ID3D11DeviceContext& const GetContext() const {
+	PUBLIC ID3D11DeviceContext& GetContext() const {
 		return *context.Get();
 	}
 	PUBLIC void Update() {
@@ -680,7 +680,7 @@ class Audio {
 
 		MFStartup(MF_VERSION);
 	}
-	PUBLIC IXAudio2& const GetEngine() const {
+	PUBLIC IXAudio2& GetEngine() const {
 		return *audioEngine.Get();
 	}
 };
@@ -827,16 +827,16 @@ class Timer {
 	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure) {
 		GetWindow().RemoveProcedure(procedure);
 	}
-	PUBLIC static ID3D11Device& const GetGraphicsDevice() {
+	PUBLIC static ID3D11Device& GetGraphicsDevice() {
 		return GetGraphics().GetDevice();
 	}
-	PUBLIC static ID3D11DeviceContext& const GetGraphicsContext() {
+	PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
 		return GetGraphics().GetContext();
 	}
-	PUBLIC static IDXGISwapChain& const GetGraphicsMemory() {
+	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
 		return GetGraphics().GetMemory();
 	}
-	PUBLIC static IXAudio2& const GetAudioEngine() {
+	PUBLIC static IXAudio2& GetAudioEngine() {
 		return GetAudio().GetEngine();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
@@ -879,23 +879,23 @@ class Timer {
 
 		return true;
 	}
-	PRIVATE static Window& const GetWindow() {
+	PRIVATE static Window& GetWindow() {
 		static std::unique_ptr<Window> window(new Window());
 		return *window.get();
 	}
-	PRIVATE static Graphics& const GetGraphics() {
+	PRIVATE static Graphics& GetGraphics() {
 		static std::unique_ptr<Graphics> graphics(new Graphics());
 		return *graphics.get();
 	}
-	PRIVATE static Audio& const GetAudio() {
+	PRIVATE static Audio& GetAudio() {
 		static std::unique_ptr<Audio> audio(new Audio());
 		return *audio.get();
 	}
-	PRIVATE static Input& const GetInput() {
+	PRIVATE static Input& GetInput() {
 		static std::unique_ptr<Input> input(new Input());
 		return *input.get();
 	}
-	PRIVATE static Timer& const GetTimer() {
+	PRIVATE static Timer& GetTimer() {
 		static std::unique_ptr<Timer> timer(new Timer());
 		return *timer.get();
 	}

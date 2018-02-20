@@ -71,16 +71,16 @@ class App {
 	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure) {
 		GetWindow().RemoveProcedure(procedure);
 	}
-	PUBLIC static ID3D11Device& const GetGraphicsDevice() {
+	PUBLIC static ID3D11Device& GetGraphicsDevice() {
 		return GetGraphics().GetDevice();
 	}
-	PUBLIC static ID3D11DeviceContext& const GetGraphicsContext() {
+	PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
 		return GetGraphics().GetContext();
 	}
-	PUBLIC static IDXGISwapChain& const GetGraphicsMemory() {
+	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
 		return GetGraphics().GetMemory();
 	}
-	PUBLIC static IXAudio2& const GetAudioEngine() {
+	PUBLIC static IXAudio2& GetAudioEngine() {
 		return GetAudio().GetEngine();
 	}
 	PUBLIC static bool GetKey(int VK_CODE) {
@@ -123,23 +123,23 @@ class App {
 
 		return true;
 	}
-	PRIVATE static Window& const GetWindow() {
+	PRIVATE static Window& GetWindow() {
 		static std::unique_ptr<Window> window(new Window());
 		return *window.get();
 	}
-	PRIVATE static Graphics& const GetGraphics() {
+	PRIVATE static Graphics& GetGraphics() {
 		static std::unique_ptr<Graphics> graphics(new Graphics());
 		return *graphics.get();
 	}
-	PRIVATE static Audio& const GetAudio() {
+	PRIVATE static Audio& GetAudio() {
 		static std::unique_ptr<Audio> audio(new Audio());
 		return *audio.get();
 	}
-	PRIVATE static Input& const GetInput() {
+	PRIVATE static Input& GetInput() {
 		static std::unique_ptr<Input> input(new Input());
 		return *input.get();
 	}
-	PRIVATE static Timer& const GetTimer() {
+	PRIVATE static Timer& GetTimer() {
 		static std::unique_ptr<Timer> timer(new Timer());
 		return *timer.get();
 	}
