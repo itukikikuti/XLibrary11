@@ -95,9 +95,6 @@ class App {
 	PUBLIC static Float2 GetMousePosition() {
 		return GetInput().GetMousePosition();
 	}
-	PUBLIC static void SetMousePosition(Float2 position) {
-		GetInput().SetMousePosition(position.x, position.y);
-	}
 	PUBLIC static void SetMousePosition(float x, float y) {
 		GetInput().SetMousePosition(x, y);
 	}
