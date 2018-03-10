@@ -97,8 +97,11 @@
 
 		Create(width, height, buffer.get());
 	}
-	PUBLIC Float2 GetSize() {
+	PUBLIC Float2 GetSize() const {
 		return Float2(static_cast<float>(width), static_cast<float>(height));
+	}
+	PUBLIC void SetSize(float width, float height) {
+
 	}
 	PUBLIC virtual void Attach(int slot) {
 		App::GetGraphicsContext().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
