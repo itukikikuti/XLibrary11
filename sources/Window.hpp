@@ -3,7 +3,6 @@
 	PUBLIC class Proceedable
 	{
 		PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
-		PUBLIC virtual ~Proceedable() {}
 	};
 
 	PROTECTED HWND handle;
@@ -25,7 +24,7 @@
 		WNDCLASSEXW windowClass = {};
 		windowClass.cbSize = sizeof(WNDCLASSEXW);
 		windowClass.style = CS_HREDRAW | CS_VREDRAW;
-		windowClass.lpfnWndProc = Proceed;
+		windowClass.lpfnWndProc = ProceedMessage;
 		windowClass.cbClsExtra = 0;
 		windowClass.cbWndExtra = 0;
 		windowClass.hInstance = instance;
@@ -107,40 +106,34 @@
 	}
 	PUBLIC bool Update()
 	{
-		static MSG message = {};
-
-		while (message.message != WM_QUIT)
+		MSG message = {};
+		
+		while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE))
 		{
-			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE))
-			{
-				TranslateMessage(&message);
-				DispatchMessageW(&message);
-			}
-			else
-			{
-				return true;
-			}
+			if (message.message == WM_QUIT)
+				return false;
+
+			TranslateMessage(&message);
+			DispatchMessageW(&message);
 		}
 
-		return false;
+		return true;
 	}
 	PROTECTED static std::forward_list<Proceedable*>& GetProcedures()
 	{
 		static std::forward_list<Proceedable*> procedures;
 		return procedures;
 	}
-	PROTECTED static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
+	PROTECTED static LRESULT CALLBACK ProceedMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		for (Proceedable* procedure : GetProcedures())
 		{
-			procedure->OnProceed(handle, message, wParam, lParam);
+			procedure->OnProceed(window, message, wParam, lParam);
 		}
-		switch (message)
-		{
-		case WM_DESTROY:
+
+		if (message == WM_DESTROY)
 			PostQuitMessage(0);
-			break;
-		}
-		return DefWindowProcW(handle, message, wParam, lParam);
+
+		return DefWindowProcW(window, message, wParam, lParam);
 	}
 };
