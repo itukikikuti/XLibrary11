@@ -12,9 +12,9 @@
 	PUBLIC std::vector<int> indices;
 	PUBLIC Material material;
 	PROTECTED Constant constant;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11Buffer> vertexBuffer = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
 
 	PUBLIC Mesh()
 	{
@@ -73,7 +73,7 @@
 	{
 		if (vertices.size() > 0)
 		{
-			vertexBuffer.Reset();
+			vertexBuffer.Release();
 			D3D11_BUFFER_DESC vertexBufferDesc = {};
 			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 			vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
@@ -81,12 +81,12 @@
 			vertexBufferDesc.CPUAccessFlags = 0;
 			D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
 			vertexSubresourceData.pSysMem = &vertices[0];
-			App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
+			App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
 		}
 
 		if (indices.size() > 0)
 		{
-			indexBuffer.Reset();
+			indexBuffer.Release();
 			D3D11_BUFFER_DESC indexBufferDesc = {};
 			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 			indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(int) * indices.size());
@@ -94,7 +94,7 @@
 			indexBufferDesc.CPUAccessFlags = 0;
 			D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
 			indexSubresourceData.pSysMem = &indices[0];
-			App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
+			App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
 		}
 
 		material.SetCBuffer(&constant, sizeof(Constant));
@@ -167,18 +167,18 @@
 			return;
 		}
 
-		App::GetGraphicsContext().RSSetState(rasterizerState.Get());
+		App::GetGraphicsContext().RSSetState(rasterizerState);
 
 		UINT stride = static_cast<UINT>(sizeof(Vertex));
 		UINT offset = 0;
-		App::GetGraphicsContext().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+		App::GetGraphicsContext().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
 
 		if (indexBuffer == nullptr)
 		{
 			App::GetGraphicsContext().Draw(static_cast<UINT>(vertices.size()), 0);
 		}
 		else {
-			App::GetGraphicsContext().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+			App::GetGraphicsContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 			App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
 		}
 	}

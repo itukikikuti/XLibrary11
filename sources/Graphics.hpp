@@ -7,12 +7,12 @@
 	};
 
 	PROTECTED Constant constant;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11Device> device = nullptr;
-	PROTECTED Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = nullptr;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTexture = nullptr;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11Device> device = nullptr;
+	PROTECTED ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11DeviceContext> context = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
 	PUBLIC Graphics()
 	{
@@ -62,7 +62,7 @@
 
 		for (int i = 0; i < driverTypeCount; i++)
 		{
-			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, swapChain.GetAddressOf(), device.GetAddressOf(), nullptr, context.GetAddressOf());
+			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device, nullptr, &context);
 
 			if (SUCCEEDED(result))
 			{
@@ -72,7 +72,7 @@
 
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		Microsoft::WRL::ComPtr<ID3D11BlendState> blendState = nullptr;
+		ATL::CComPtr<ID3D11BlendState> blendState = nullptr;
 		D3D11_BLEND_DESC blendDesc = {};
 		blendDesc.AlphaToCoverageEnable = false;
 		blendDesc.IndependentBlendEnable = false;
@@ -87,15 +87,15 @@
 
 		float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		device->CreateBlendState(&blendDesc, &blendState);
-		context->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
+		context->OMSetBlendState(blendState, blendFactor, 0xffffffff);
 
-		constantBuffer.Reset();
+		constantBuffer.Release();
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		device->CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
+		device->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
 		App::AddProcedure(this);
 	}
@@ -110,39 +110,41 @@
 		viewPort.TopLeftY = 0;
 		context->RSSetViewports(1, &viewPort);
 
-		renderTexture.Reset();
-		swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
-		renderTargetView.Reset();
-		device->CreateRenderTargetView(renderTexture.Get(), nullptr, renderTargetView.GetAddressOf());
+		renderTexture.Release();
+		swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
+		renderTargetView.Release();
+		device->CreateRenderTargetView(renderTexture, nullptr, &renderTargetView);
 
 		constant.view = DirectX::XMMatrixIdentity();
 		constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
 	}
 	PUBLIC ID3D11Device& GetDevice() const
 	{
-		return *device.Get();
+		return *device;
 	}
 	PUBLIC IDXGISwapChain& GetMemory() const
 	{
-		return *swapChain.Get();
+		return *swapChain;
 	}
 	PUBLIC ID3D11DeviceContext& GetContext() const
 	{
-		return *context.Get();
+		return *context;
 	}
 	PUBLIC void Update()
 	{
-		context->UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
-		context->VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		context->HSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		context->DSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		context->GSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		context->PSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		swapChain->Present(1, 0);
 
-		context->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
+		context->UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
+		context->VSSetConstantBuffers(1, 1, &constantBuffer.p);
+		context->HSSetConstantBuffers(1, 1, &constantBuffer.p);
+		context->DSSetConstantBuffers(1, 1, &constantBuffer.p);
+		context->GSSetConstantBuffers(1, 1, &constantBuffer.p);
+		context->PSSetConstantBuffers(1, 1, &constantBuffer.p);
+
+		context->OMSetRenderTargets(1, &renderTargetView.p, nullptr);
 
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		context->ClearRenderTargetView(renderTargetView.Get(), color);
+		context->ClearRenderTargetView(renderTargetView, color);
 	}
 	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
 	{
@@ -155,10 +157,10 @@
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		swapChain->GetDesc(&swapChainDesc);
 
-		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
-		context->OMSetRenderTargets(1, nullRenderTarget.GetAddressOf(), nullptr);
-		renderTargetView.Reset();
-		renderTexture.Reset();
+		ATL::CComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
+		context->OMSetRenderTargets(1, &nullRenderTarget, nullptr);
+		renderTargetView.Release();
+		renderTexture.Release();
 		context->Flush();
 		swapChain->ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
 

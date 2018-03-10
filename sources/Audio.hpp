@@ -1,6 +1,6 @@
 class Audio
 {
-	PROTECTED Microsoft::WRL::ComPtr<IXAudio2> audioEngine;
+	PROTECTED ATL::CComPtr<IXAudio2> audioEngine;
 	PROTECTED IXAudio2MasteringVoice* masteringVoice = nullptr;
 
 	PUBLIC Audio()
@@ -20,7 +20,7 @@ class Audio
 	{
 		App::GetWindowHandle();
 
-		XAudio2Create(audioEngine.GetAddressOf());
+		XAudio2Create(&audioEngine);
 
 		audioEngine->CreateMasteringVoice(&masteringVoice);
 
@@ -28,6 +28,6 @@ class Audio
 	}
 	PUBLIC IXAudio2& GetEngine() const
 	{
-		return *audioEngine.Get();
+		return *audioEngine;
 	}
 };

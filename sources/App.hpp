@@ -19,7 +19,7 @@
 #include <wincodec.h>
 #include <strsafe.h>
 #include <crtdbg.h>
-#include <wrl.h>
+#include <atlbase.h>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
@@ -36,7 +36,7 @@ XLIBRARY_NAMESPACE_BEGIN
 #define PRIVATE private:
 #define PROTECTED protected:
 
-#include "Math.hpp"
+#include "Utility.hpp"
 
 class App final
 {
@@ -51,8 +51,6 @@ class App final
 	PUBLIC App() = delete;
 	PUBLIC static bool Refresh()
 	{
-		GetGraphicsMemory().Present(1, 0);
-
 		GetGraphics().Update();
 		GetInput().Update();
 		GetTimer().Update();

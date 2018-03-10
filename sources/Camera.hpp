@@ -12,11 +12,11 @@ class Camera : public App::Window::Proceedable
 	PROTECTED float nearClip;
 	PROTECTED float farClip;
 	PROTECTED Constant constant;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView = nullptr;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTexture = nullptr;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> depthTexture = nullptr;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11DepthStencilView> depthStencilView = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11Texture2D> depthTexture = nullptr;
+	PROTECTED ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
 	PUBLIC Camera()
 	{
@@ -39,15 +39,15 @@ class Camera : public App::Window::Proceedable
 	}
 	PROTECTED virtual void Create()
 	{
-		renderTexture.Reset();
-		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
-		renderTargetView.Reset();
-		App::GetGraphicsDevice().CreateRenderTargetView(renderTexture.Get(), nullptr, renderTargetView.GetAddressOf());
+		renderTexture.Release();
+		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
+		renderTargetView.Release();
+		App::GetGraphicsDevice().CreateRenderTargetView(renderTexture, nullptr, &renderTargetView);
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		App::GetGraphicsMemory().GetDesc(&swapChainDesc);
 
-		depthTexture.Reset();
+		depthTexture.Release();
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = static_cast<UINT>(App::GetWindowSize().x);
 		textureDesc.Height = static_cast<UINT>(App::GetWindowSize().y);
@@ -60,9 +60,9 @@ class Camera : public App::Window::Proceedable
 		textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		textureDesc.CPUAccessFlags = 0;
 		textureDesc.MiscFlags = 0;
-		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, nullptr, depthTexture.GetAddressOf());
+		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, nullptr, &depthTexture);
 
-		depthStencilView.Reset();
+		depthStencilView.Release();
 		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
 		depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
 		if (swapChainDesc.SampleDesc.Count == 0)
@@ -74,15 +74,15 @@ class Camera : public App::Window::Proceedable
 		{
 			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
 		}
-		App::GetGraphicsDevice().CreateDepthStencilView(depthTexture.Get(), &depthStencilViewDesc, depthStencilView.GetAddressOf());
+		App::GetGraphicsDevice().CreateDepthStencilView(depthTexture, &depthStencilViewDesc, &depthStencilView);
 
-		constantBuffer.Reset();
+		constantBuffer.Release();
 		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
 		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		constantBufferDesc.CPUAccessFlags = 0;
-		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
+		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	}
 	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip)
 	{
@@ -100,18 +100,18 @@ class Camera : public App::Window::Proceedable
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		constant.view = DirectX::XMMatrixInverse(nullptr, constant.view);
 
-		App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().HSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().DSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().GSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
-		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, &constantBuffer.p);
+		App::GetGraphicsContext().HSSetConstantBuffers(1, 1, &constantBuffer.p);
+		App::GetGraphicsContext().DSSetConstantBuffers(1, 1, &constantBuffer.p);
+		App::GetGraphicsContext().GSSetConstantBuffers(1, 1, &constantBuffer.p);
+		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, &constantBuffer.p);
 
-		App::GetGraphicsContext().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+		App::GetGraphicsContext().OMSetRenderTargets(1, &renderTargetView.p, depthStencilView);
 		
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		App::GetGraphicsContext().ClearRenderTargetView(renderTargetView.Get(), color);
-		App::GetGraphicsContext().ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		App::GetGraphicsContext().ClearRenderTargetView(renderTargetView, color);
+		App::GetGraphicsContext().ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
 	{
@@ -124,13 +124,13 @@ class Camera : public App::Window::Proceedable
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		App::GetGraphicsMemory().GetDesc(&swapChainDesc);
 
-		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
-		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> nullDepthStencil = nullptr;
-		App::GetGraphicsContext().OMSetRenderTargets(1, nullRenderTarget.GetAddressOf(), nullDepthStencil.Get());
-		renderTargetView.Reset();
-		depthStencilView.Reset();
-		renderTexture.Reset();
-		depthTexture.Reset();
+		ATL::CComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
+		ATL::CComPtr<ID3D11DepthStencilView> nullDepthStencil = nullptr;
+		App::GetGraphicsContext().OMSetRenderTargets(1, &nullRenderTarget, nullDepthStencil);
+		renderTargetView.Release();
+		depthStencilView.Release();
+		renderTexture.Release();
+		depthTexture.Release();
 		App::GetGraphicsContext().Flush();
 		App::GetGraphicsMemory().ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
 

@@ -1,6 +1,6 @@
 class Voice : public IXAudio2VoiceCallback
 {
-	PROTECTED Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
+	PROTECTED ATL::CComPtr<IMFSourceReader> sourceReader;
 	PROTECTED IXAudio2SourceVoice* sourceVoice;
 
 	PUBLIC Voice(const wchar_t* const filePath)
@@ -16,30 +16,30 @@ class Voice : public IXAudio2VoiceCallback
 	{
 		App::GetAudioEngine();
 
-		Microsoft::WRL::ComPtr<IStream> stream;
-		SHCreateStreamOnFileW(filePath, STGM_READ, stream.GetAddressOf());
+		ATL::CComPtr<IStream> stream;
+		SHCreateStreamOnFileW(filePath, STGM_READ, &stream);
 
-		Microsoft::WRL::ComPtr<IMFByteStream> byteStream;
-		MFCreateMFByteStreamOnStream(stream.Get(), byteStream.GetAddressOf());
+		ATL::CComPtr<IMFByteStream> byteStream;
+		MFCreateMFByteStreamOnStream(stream, &byteStream);
 
-		Microsoft::WRL::ComPtr<IMFAttributes> attributes;
-		MFCreateAttributes(attributes.GetAddressOf(), 1);
+		ATL::CComPtr<IMFAttributes> attributes;
+		MFCreateAttributes(&attributes, 1);
 
-		MFCreateSourceReaderFromByteStream(byteStream.Get(), attributes.Get(), sourceReader.GetAddressOf());
+		MFCreateSourceReaderFromByteStream(byteStream, attributes, &sourceReader);
 
-		Microsoft::WRL::ComPtr<IMFMediaType> mediaType;
-		MFCreateMediaType(mediaType.GetAddressOf());
+		ATL::CComPtr<IMFMediaType> mediaType;
+		MFCreateMediaType(&mediaType);
 		mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
 		mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
 
-		sourceReader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType.Get());
+		sourceReader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType);
 
-		mediaType.Reset();
-		sourceReader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, mediaType.GetAddressOf());
+		mediaType.Release();
+		sourceReader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, &mediaType);
 
 		UINT32 waveFormatSize = 0;
 		WAVEFORMATEX* waveFormat;
-		MFCreateWaveFormatExFromMFMediaType(mediaType.Get(), &waveFormat, &waveFormatSize);
+		MFCreateWaveFormatExFromMFMediaType(mediaType, &waveFormat, &waveFormatSize);
 
 		App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
 	}
@@ -50,9 +50,9 @@ class Voice : public IXAudio2VoiceCallback
 	}
 	PROTECTED void SubmitBuffer()
 	{
-		Microsoft::WRL::ComPtr<IMFSample> sample;
+		ATL::CComPtr<IMFSample> sample;
 		DWORD flags = 0;
-		sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
+		sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
 
 		if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
 		{
@@ -61,12 +61,12 @@ class Voice : public IXAudio2VoiceCallback
 			position.hVal.QuadPart = 0;
 			sourceReader->SetCurrentPosition(GUID_NULL, position);
 
-			sample.Reset();
-			sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
+			sample.Release();
+			sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
 		}
 
-		Microsoft::WRL::ComPtr<IMFMediaBuffer> mediaBuffer;
-		sample->ConvertToContiguousBuffer(mediaBuffer.GetAddressOf());
+		ATL::CComPtr<IMFMediaBuffer> mediaBuffer;
+		sample->ConvertToContiguousBuffer(&mediaBuffer);
 
 		DWORD audioDataLength = 0;
 		BYTE* audioData;

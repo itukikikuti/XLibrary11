@@ -2,9 +2,9 @@
 {
 	PROTECTED int width;
 	PROTECTED int height;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
-	PROTECTED Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
+	PROTECTED ATL::CComPtr<ID3D11Texture2D> texture;
+	PROTECTED ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView;
+	PROTECTED ATL::CComPtr<ID3D11SamplerState> samplerState;
 
 	PUBLIC Texture()
 	{
@@ -30,7 +30,7 @@
 		this->width = width;
 		this->height = height;
 
-		texture.Reset();
+		texture.Release();
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = width;
 		textureDesc.Height = height;
@@ -48,16 +48,16 @@
 		textureSubresourceData.pSysMem = buffer;
 		textureSubresourceData.SysMemPitch = width * 4;
 		textureSubresourceData.SysMemSlicePitch = width * height * 4;
-		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, texture.GetAddressOf());
+		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
 
-		shaderResourceView.Reset();
+		shaderResourceView.Release();
 		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Texture2D.MipLevels = 1;
-		App::GetGraphicsDevice().CreateShaderResourceView(texture.Get(), &shaderResourceViewDesc, shaderResourceView.GetAddressOf());
+		App::GetGraphicsDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
 
-		samplerState.Reset();
+		samplerState.Release();
 		D3D11_SAMPLER_DESC samplerDesc = {};
 		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -72,20 +72,20 @@
 		samplerDesc.BorderColor[3] = 0.0f;
 		samplerDesc.MinLOD = 0.0f;
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
+		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, &samplerState);
 	}
 	PUBLIC void Load(const wchar_t* const filePath)
 	{
 		App::GetWindowHandle();
 
-		Microsoft::WRL::ComPtr<IWICImagingFactory> factory = nullptr;
-		CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(factory.GetAddressOf()));
+		ATL::CComPtr<IWICImagingFactory> factory = nullptr;
+		CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 
-		Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder = nullptr;
+		ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
 
-		factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, decoder.GetAddressOf());
-		Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frame = nullptr;
-		decoder->GetFrame(0, frame.GetAddressOf());
+		factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+		ATL::CComPtr<IWICBitmapFrameDecode> frame = nullptr;
+		decoder->GetFrame(0, &frame);
 		UINT width, height;
 		frame->GetSize(&width, &height);
 
@@ -95,10 +95,10 @@
 
 		if (pixelFormat != GUID_WICPixelFormat32bppRGBA)
 		{
-			Microsoft::WRL::ComPtr<IWICFormatConverter> formatConverter = nullptr;
-			factory->CreateFormatConverter(formatConverter.GetAddressOf());
+			ATL::CComPtr<IWICFormatConverter> formatConverter = nullptr;
+			factory->CreateFormatConverter(&formatConverter);
 
-			formatConverter->Initialize(frame.Get(), GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
+			formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
 
 			formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
 		}
@@ -119,7 +119,7 @@
 	}
 	PUBLIC virtual void Attach(int slot)
 	{
-		App::GetGraphicsContext().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
-		App::GetGraphicsContext().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
+		App::GetGraphicsContext().PSSetShaderResources(slot, 1, &shaderResourceView.p);
+		App::GetGraphicsContext().PSSetSamplers(slot, 1, &samplerState.p);
 	}
 };
