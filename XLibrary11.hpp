@@ -17,8 +17,6 @@
 #include <mfreadwrite.h>
 #include <Shlwapi.h>
 #include <wincodec.h>
-#include <strsafe.h>
-#include <crtdbg.h>
 #include <atlbase.h>
 
 #pragma comment(lib, "d3d11.lib")
@@ -472,7 +470,6 @@ class Window
 	PUBLIC class Proceedable
 	{
 		PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
-		PUBLIC virtual ~Proceedable() {}
 	};
 
 	PROTECTED HWND handle;
@@ -494,7 +491,7 @@ class Window
 		WNDCLASSEXW windowClass = {};
 		windowClass.cbSize = sizeof(WNDCLASSEXW);
 		windowClass.style = CS_HREDRAW | CS_VREDRAW;
-		windowClass.lpfnWndProc = Proceed;
+		windowClass.lpfnWndProc = ProceedMessage;
 		windowClass.cbClsExtra = 0;
 		windowClass.cbWndExtra = 0;
 		windowClass.hInstance = instance;
@@ -594,17 +591,17 @@ class Window
 		static std::forward_list<Proceedable*> procedures;
 		return procedures;
 	}
-	PROTECTED static LRESULT CALLBACK Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
+	PROTECTED static LRESULT CALLBACK ProceedMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		for (Proceedable* procedure : GetProcedures())
 		{
-			procedure->OnProceed(handle, message, wParam, lParam);
+			procedure->OnProceed(window, message, wParam, lParam);
 		}
 
 		if (message == WM_DESTROY)
 			PostQuitMessage(0);
 
-		return DefWindowProcW(handle, message, wParam, lParam);
+		return DefWindowProcW(window, message, wParam, lParam);
 	}
 };
 
@@ -1757,91 +1754,91 @@ class Sprite
 	}
 };
 
-class Text {
-	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"")
-	{
-		//if (text == L"")
-		//{
-		//	text = L"\uFFFD";
-		//}
-
-		LOGFONTW logFont = {};
-		logFont.lfHeight = 256;
-		logFont.lfWidth = 0;
-		logFont.lfEscapement = 0;
-		logFont.lfOrientation = 0;
-		logFont.lfWeight = 0;
-		logFont.lfItalic = false;
-		logFont.lfUnderline = false;
-		logFont.lfStrikeOut = false;
-		logFont.lfCharSet = SHIFTJIS_CHARSET;
-		logFont.lfOutPrecision = OUT_TT_ONLY_PRECIS;
-		logFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
-		logFont.lfQuality = PROOF_QUALITY;
-		logFont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
-		StringCchCopyW(logFont.lfFaceName, 32, fontFamily);
-		HFONT font = CreateFontIndirectW(&logFont);
-
-		HDC dc = GetDC(nullptr);
-		HFONT oldFont = (HFONT)SelectObject(dc, font);
-		UINT code = text[0];
-
-		TEXTMETRICW textMetrics = {};
-		GetTextMetricsW(dc, &textMetrics);
-		GLYPHMETRICS glyphMetrics = {};
-		const MAT2 matrix = { { 0, 1 }, { 0, 0 }, { 0, 0 }, { 0, 1 } };
-		DWORD size = GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
-		std::unique_ptr<BYTE[]> buffer(new BYTE[size]);
-		GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, buffer.get(), &matrix);
-
-		SelectObject(dc, oldFont);
-		DeleteObject(font);
-		ReleaseDC(nullptr, dc);
-
-		UINT width = glyphMetrics.gmCellIncX;
-		UINT height = textMetrics.tmHeight;
-
-		D3D11_TEXTURE2D_DESC textureDesc = {};
-		textureDesc.Width = width;
-		textureDesc.Height = height;
-		textureDesc.MipLevels = 1;
-		textureDesc.ArraySize = 1;
-		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		textureDesc.SampleDesc.Count = 1;
-		textureDesc.SampleDesc.Quality = 0;
-		textureDesc.Usage = D3D11_USAGE_DYNAMIC;
-		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		textureDesc.MiscFlags = 0;
-
-		//App::GetGraphicsDevice().CreateTexture2D(&textureDesc, nullptr, texture.GetAddressOf());
-
-		D3D11_MAPPED_SUBRESOURCE mapped;
-		//App::GetGraphicsContext().Map(texture.Get(), D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-
-		BYTE* bits = (BYTE*)mapped.pData;
-		DirectX::XMINT2 origin;
-		origin.x = glyphMetrics.gmptGlyphOrigin.x;
-		origin.y = textMetrics.tmAscent - glyphMetrics.gmptGlyphOrigin.y;
-		DirectX::XMINT2 bitmapSize;
-		bitmapSize.x = glyphMetrics.gmBlackBoxX + (4 - (glyphMetrics.gmBlackBoxX % 4)) % 4;
-		bitmapSize.y = glyphMetrics.gmBlackBoxY;
-		const int LEVEL = 17;
-		memset(bits, 0, mapped.RowPitch * textMetrics.tmHeight);
-
-		for (int y = origin.y; y < origin.y + bitmapSize.y; y++)
-		{
-			for (int x = origin.x; x < origin.x + bitmapSize.x; x++)
-			{
-				DWORD alpha = (255 * buffer[x - origin.x + bitmapSize.x * (y - origin.y)]) / (LEVEL - 1);
-				DWORD color = 0x00ffffff | (alpha << 24);
-				memcpy((BYTE*)bits + mapped.RowPitch * y + 4 * x, &color, sizeof(DWORD));
-			}
-		}
-
-		//App::GetGraphicsContext().Unmap(texture.Get(), D3D11CalcSubresource(0, 0, 1));
-	}
-};
+//class Text {
+//	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"")
+//	{
+//		if (text == L"")
+//		{
+//			text = L"\uFFFD";
+//		}
+//
+//		LOGFONTW logFont = {};
+//		logFont.lfHeight = 256;
+//		logFont.lfWidth = 0;
+//		logFont.lfEscapement = 0;
+//		logFont.lfOrientation = 0;
+//		logFont.lfWeight = 0;
+//		logFont.lfItalic = false;
+//		logFont.lfUnderline = false;
+//		logFont.lfStrikeOut = false;
+//		logFont.lfCharSet = SHIFTJIS_CHARSET;
+//		logFont.lfOutPrecision = OUT_TT_ONLY_PRECIS;
+//		logFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+//		logFont.lfQuality = PROOF_QUALITY;
+//		logFont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
+//		StringCchCopyW(logFont.lfFaceName, 32, fontFamily);
+//		HFONT font = CreateFontIndirectW(&logFont);
+//
+//		HDC dc = GetDC(nullptr);
+//		HFONT oldFont = (HFONT)SelectObject(dc, font);
+//		UINT code = text[0];
+//
+//		TEXTMETRICW textMetrics = {};
+//		GetTextMetricsW(dc, &textMetrics);
+//		GLYPHMETRICS glyphMetrics = {};
+//		const MAT2 matrix = { { 0, 1 }, { 0, 0 }, { 0, 0 }, { 0, 1 } };
+//		DWORD size = GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
+//		std::unique_ptr<BYTE[]> buffer(new BYTE[size]);
+//		GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, buffer.get(), &matrix);
+//
+//		SelectObject(dc, oldFont);
+//		DeleteObject(font);
+//		ReleaseDC(nullptr, dc);
+//
+//		UINT width = glyphMetrics.gmCellIncX;
+//		UINT height = textMetrics.tmHeight;
+//
+//		D3D11_TEXTURE2D_DESC textureDesc = {};
+//		textureDesc.Width = width;
+//		textureDesc.Height = height;
+//		textureDesc.MipLevels = 1;
+//		textureDesc.ArraySize = 1;
+//		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+//		textureDesc.SampleDesc.Count = 1;
+//		textureDesc.SampleDesc.Quality = 0;
+//		textureDesc.Usage = D3D11_USAGE_DYNAMIC;
+//		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+//		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+//		textureDesc.MiscFlags = 0;
+//
+//		App::GetGraphicsDevice().CreateTexture2D(&textureDesc, nullptr, texture.GetAddressOf());
+//
+//		D3D11_MAPPED_SUBRESOURCE mapped;
+//		App::GetGraphicsContext().Map(texture.Get(), D3D11CalcSubresource(0, 0, 1), D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+//
+//		BYTE* bits = (BYTE*)mapped.pData;
+//		DirectX::XMINT2 origin;
+//		origin.x = glyphMetrics.gmptGlyphOrigin.x;
+//		origin.y = textMetrics.tmAscent - glyphMetrics.gmptGlyphOrigin.y;
+//		DirectX::XMINT2 bitmapSize;
+//		bitmapSize.x = glyphMetrics.gmBlackBoxX + (4 - (glyphMetrics.gmBlackBoxX % 4)) % 4;
+//		bitmapSize.y = glyphMetrics.gmBlackBoxY;
+//		const int LEVEL = 17;
+//		memset(bits, 0, mapped.RowPitch * textMetrics.tmHeight);
+//
+//		for (int y = origin.y; y < origin.y + bitmapSize.y; y++)
+//		{
+//			for (int x = origin.x; x < origin.x + bitmapSize.x; x++)
+//			{
+//				DWORD alpha = (255 * buffer[x - origin.x + bitmapSize.x * (y - origin.y)]) / (LEVEL - 1);
+//				DWORD color = 0x00ffffff | (alpha << 24);
+//				memcpy((BYTE*)bits + mapped.RowPitch * y + 4 * x, &color, sizeof(DWORD));
+//			}
+//		}
+//
+//		App::GetGraphicsContext().Unmap(texture.Get(), D3D11CalcSubresource(0, 0, 1));
+//	}
+//};
 
 class Voice : public IXAudio2VoiceCallback
 {

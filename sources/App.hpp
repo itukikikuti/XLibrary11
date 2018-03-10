@@ -8,26 +8,24 @@
 #include <memory>
 #include <vector>
 #include <windows.h>
+#include <atlbase.h>
 #include <d3d11.h>
-#include <DirectXMath.h>
 #include <d3dcompiler.h>
-#include <xaudio2.h>
+#include <DirectXMath.h>
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
 #include <Shlwapi.h>
 #include <wincodec.h>
-#include <strsafe.h>
-#include <crtdbg.h>
-#include <atlbase.h>
+#include <xaudio2.h>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
-#pragma comment(lib, "xaudio2.lib")
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mfuuid.lib")
 #pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "xaudio2.lib")
 
 XLIBRARY_NAMESPACE_BEGIN
 
