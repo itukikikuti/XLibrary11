@@ -2,31 +2,31 @@
 #pragma once
 
 #define OEMRESOURCE
-#include <windows.h>
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <wincodec.h>
-#include <xaudio2.h>
-#include <mfapi.h>
-#include <DirectXMath.h>
-#include <wrl.h>
-#include <memory>
-#include <vector>
 #include <forward_list>
 #include <fstream>
 #include <functional>
-#include <strsafe.h>
-#include <Shlwapi.h>
+#include <memory>
+#include <vector>
+#include <windows.h>
+#include <d3d11.h>
+#include <DirectXMath.h>
+#include <d3dcompiler.h>
+#include <xaudio2.h>
+#include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
+#include <Shlwapi.h>
+#include <wincodec.h>
+#include <strsafe.h>
+#include <wrl.h>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "xaudio2.lib")
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mfuuid.lib")
 #pragma comment(lib, "Shlwapi.lib")
-#pragma comment(lib, "xaudio2.lib")
 
 XLIBRARY_NAMESPACE_BEGIN
 
