@@ -1,14 +1,18 @@
-class Voice : public IXAudio2VoiceCallback {
+class Voice : public IXAudio2VoiceCallback
+{
 	PROTECTED Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
 	PROTECTED IXAudio2SourceVoice* sourceVoice;
 
-	PUBLIC Voice(const wchar_t* const filePath) {
+	PUBLIC Voice(const wchar_t* const filePath)
+	{
 		Load(filePath);
 	}
-	PUBLIC ~Voice() {
+	PUBLIC ~Voice()
+	{
 		sourceVoice->DestroyVoice();
 	}
-	PUBLIC void Load(const wchar_t* const filePath) {
+	PUBLIC void Load(const wchar_t* const filePath)
+	{
 		App::GetAudioEngine();
 
 		Microsoft::WRL::ComPtr<IStream> stream;
@@ -38,16 +42,19 @@ class Voice : public IXAudio2VoiceCallback {
 
 		App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
 	}
-	PUBLIC virtual void Play() {
+	PUBLIC virtual void Play()
+	{
 		sourceVoice->Start();
 		SubmitBuffer();
 	}
-	PROTECTED void SubmitBuffer() {
+	PROTECTED void SubmitBuffer()
+	{
 		Microsoft::WRL::ComPtr<IMFSample> sample;
 		DWORD flags = 0;
 		sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
 
-		if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
+		if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
+		{
 			PROPVARIANT position = {};
 			position.vt = VT_I8;
 			position.hVal.QuadPart = 0;
@@ -70,19 +77,26 @@ class Voice : public IXAudio2VoiceCallback {
 		audioBuffer.pAudioData = audioData;
 		sourceVoice->SubmitSourceBuffer(&audioBuffer);
 	}
-	PROTECTED void _stdcall OnBufferEnd(void*) override {
+	PROTECTED void _stdcall OnBufferEnd(void*) override
+	{
 		SubmitBuffer();
 	}
-	PRIVATE void _stdcall OnBufferStart(void*) override {
+	PRIVATE void _stdcall OnBufferStart(void*) override
+	{
 	}
-	PRIVATE void _stdcall OnLoopEnd(void*) override {
+	PRIVATE void _stdcall OnLoopEnd(void*) override
+	{
 	}
-	PRIVATE void _stdcall OnStreamEnd() override {
+	PRIVATE void _stdcall OnStreamEnd() override
+	{
 	}
-	PRIVATE void _stdcall OnVoiceError(void*, HRESULT) override {
+	PRIVATE void _stdcall OnVoiceError(void*, HRESULT) override
+	{
 	}
-	PRIVATE void _stdcall OnVoiceProcessingPassStart(UINT32) override {
+	PRIVATE void _stdcall OnVoiceProcessingPassStart(UINT32) override
+	{
 	}
-	PRIVATE void _stdcall OnVoiceProcessingPassEnd() override {
+	PRIVATE void _stdcall OnVoiceProcessingPassEnd() override
+	{
 	}
 };

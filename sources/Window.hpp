@@ -1,5 +1,7 @@
-﻿class Window {
-	PUBLIC class Proceedable {
+﻿class Window
+{
+	PUBLIC class Proceedable
+	{
 		PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
 		PUBLIC virtual ~Proceedable() {}
 	};
@@ -7,13 +9,16 @@
 	PROTECTED HWND handle;
 	PROTECTED const DWORD style = WS_OVERLAPPEDWINDOW;
 
-	PUBLIC Window() {
+	PUBLIC Window()
+	{
 		Initialize();
 	}
-	PUBLIC ~Window() {
+	PUBLIC ~Window()
+	{
 		UnregisterClassW(App::NAME, GetModuleHandleW(nullptr));
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		HINSTANCE instance = GetModuleHandleW(nullptr);
 
 		WNDCLASSEXW windowClass = {};
@@ -36,16 +41,19 @@
 		SetSize(1280.0f, 720.0f);
 		ShowWindow(handle, SW_SHOWNORMAL);
 	}
-	PUBLIC HWND GetHandle() const {
+	PUBLIC HWND GetHandle() const
+	{
 		return handle;
 	}
-	PUBLIC DirectX::XMINT2 GetSize() const {
+	PUBLIC DirectX::XMINT2 GetSize() const
+	{
 		RECT clientRect = {};
 		GetClientRect(handle, &clientRect);
 
 		return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 	}
-	PUBLIC void SetSize(int width, int height) {
+	PUBLIC void SetSize(int width, int height)
+	{
 		RECT windowRect = {};
 		RECT clientRect = {};
 		GetWindowRect(handle, &windowRect);
@@ -59,60 +67,75 @@
 
 		SetWindowPos(handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
 	}
-	PUBLIC wchar_t* const GetTitle() const {
+	PUBLIC wchar_t* const GetTitle() const
+	{
 		wchar_t* title = nullptr;
 		GetWindowTextW(handle, title, GetWindowTextLengthW(handle));
 		return title;
 	}
-	PUBLIC void SetTitle(const wchar_t* const title) {
+	PUBLIC void SetTitle(const wchar_t* const title)
+	{
 		SetWindowTextW(handle, title);
 	}
-	PUBLIC void SetFullScreen(bool isFullScreen) {
+	PUBLIC void SetFullScreen(bool isFullScreen)
+	{
 		static DirectX::XMINT2 size = GetSize();
 
-		if (isFullScreen) {
+		if (isFullScreen)
+		{
 			size = GetSize();
 			int w = GetSystemMetrics(SM_CXSCREEN);
 			int h = GetSystemMetrics(SM_CYSCREEN);
 			SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | WS_POPUP);
 			SetWindowPos(handle, HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
 		}
-		else {
+		else
+		{
 			SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | style);
 			SetWindowPos(handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 			SetSize(size.x, size.y);
 		}
 	}
-	PUBLIC void AddProcedure(Proceedable* const procedure) {
+	PUBLIC void AddProcedure(Proceedable* const procedure)
+	{
 		GetProcedures().push_front(procedure);
 	}
-	PUBLIC void RemoveProcedure(Proceedable* const procedure) {
+	PUBLIC void RemoveProcedure(Proceedable* const procedure)
+	{
 		GetProcedures().remove(procedure);
 	}
-	PUBLIC bool Update() {
+	PUBLIC bool Update()
+	{
 		static MSG message = {};
 
-		while (message.message != WM_QUIT) {
-			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
+		while (message.message != WM_QUIT)
+		{
+			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE))
+			{
 				TranslateMessage(&message);
 				DispatchMessageW(&message);
 			}
-			else {
+			else
+			{
 				return true;
 			}
 		}
 
 		return false;
 	}
-	PROTECTED static std::forward_list<Proceedable*>& GetProcedures() {
+	PROTECTED static std::forward_list<Proceedable*>& GetProcedures()
+	{
 		static std::forward_list<Proceedable*> procedures;
 		return procedures;
 	}
-	PROTECTED static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
-		for (Proceedable* procedure : GetProcedures()) {
+	PROTECTED static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		for (Proceedable* procedure : GetProcedures())
+		{
 			procedure->OnProceed(handle, message, wParam, lParam);
 		}
-		switch (message) {
+		switch (message)
+		{
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			break;

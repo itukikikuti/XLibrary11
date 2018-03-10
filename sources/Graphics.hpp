@@ -1,5 +1,7 @@
-﻿class Graphics : public App::Window::Proceedable {
-	PROTECTED struct Constant {
+﻿class Graphics : public App::Window::Proceedable
+{
+	PROTECTED struct Constant
+	{
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;
 	};
@@ -12,27 +14,32 @@
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTexture = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-	PUBLIC Graphics() {
+	PUBLIC Graphics()
+	{
 		Initialize();
 		Create();
 	}
-	PUBLIC ~Graphics() {
+	PUBLIC ~Graphics()
+	{
 		App::RemoveProcedure(this);
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		int flags = 0;
 #if defined(DEBUG) || defined(_DEBUG)
 		flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-		D3D_DRIVER_TYPE driverTypes[] = {
+		D3D_DRIVER_TYPE driverTypes[] =
+		{
 			D3D_DRIVER_TYPE_HARDWARE,
 			D3D_DRIVER_TYPE_WARP,
 			D3D_DRIVER_TYPE_REFERENCE,
 		};
 		int driverTypeCount = sizeof(driverTypes) / sizeof(driverTypes[0]);
 
-		D3D_FEATURE_LEVEL featureLevels[] = {
+		D3D_FEATURE_LEVEL featureLevels[] =
+		{
 			D3D_FEATURE_LEVEL_11_0,
 			D3D_FEATURE_LEVEL_10_1,
 			D3D_FEATURE_LEVEL_10_0,
@@ -52,10 +59,12 @@
 		swapChainDesc.SampleDesc.Quality = 0;
 		swapChainDesc.Windowed = true;
 
-		for (int i = 0; i < driverTypeCount; i++) {
+		for (int i = 0; i < driverTypeCount; i++)
+		{
 			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, swapChain.GetAddressOf(), device.GetAddressOf(), nullptr, context.GetAddressOf());
 
-			if (SUCCEEDED(result)) {
+			if (SUCCEEDED(result))
+			{
 				break;
 			}
 		}
@@ -89,7 +98,8 @@
 
 		App::AddProcedure(this);
 	}
-	PROTECTED virtual void Create() {
+	PROTECTED virtual void Create()
+	{
 		D3D11_VIEWPORT viewPort = {};
 		viewPort.Width = App::GetWindowSize().x;
 		viewPort.Height = App::GetWindowSize().y;
@@ -107,16 +117,20 @@
 		constant.view = DirectX::XMMatrixIdentity();
 		constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
 	}
-	PUBLIC ID3D11Device& GetDevice() const {
+	PUBLIC ID3D11Device& GetDevice() const
+	{
 		return *device.Get();
 	}
-	PUBLIC IDXGISwapChain& GetMemory() const {
+	PUBLIC IDXGISwapChain& GetMemory() const
+	{
 		return *swapChain.Get();
 	}
-	PUBLIC ID3D11DeviceContext& GetContext() const {
+	PUBLIC ID3D11DeviceContext& GetContext() const
+	{
 		return *context.Get();
 	}
-	PUBLIC void Update() {
+	PUBLIC void Update()
+	{
 		context->UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
 		context->VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
 		context->HSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
@@ -129,13 +143,13 @@
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 		context->ClearRenderTargetView(renderTargetView.Get(), color);
 	}
-	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override {
-		if (message != WM_SIZE) {
+	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
+	{
+		if (message != WM_SIZE)
 			return;
-		}
-		if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f) {
+		
+		if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
 			return;
-		}
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		swapChain->GetDesc(&swapChainDesc);

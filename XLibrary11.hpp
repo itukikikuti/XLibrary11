@@ -18,6 +18,7 @@
 #include <Shlwapi.h>
 #include <wincodec.h>
 #include <strsafe.h>
+#include <crtdbg.h>
 #include <wrl.h>
 
 #pragma comment(lib, "d3d11.lib")
@@ -28,191 +29,238 @@
 #pragma comment(lib, "mfuuid.lib")
 #pragma comment(lib, "Shlwapi.lib")
 
-namespace XLibrary11 {
+namespace XLibrary11
+{
 
 #define Main() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 #define PUBLIC public:
 #define PRIVATE private:
 #define PROTECTED protected:
 
-struct Float2 : public DirectX::XMFLOAT2 {
-	PUBLIC Float2() : DirectX::XMFLOAT2() {
+struct Float2 : public DirectX::XMFLOAT2
+{
+	PUBLIC Float2() : DirectX::XMFLOAT2()
+	{
 	}
-	PUBLIC Float2(float x, float y) : DirectX::XMFLOAT2(x, y) {
+	PUBLIC Float2(float x, float y) : DirectX::XMFLOAT2(x, y)
+	{
 	}
-	PUBLIC Float2(float value) : DirectX::XMFLOAT2(value, value) {
+	PUBLIC Float2(float value) : DirectX::XMFLOAT2(value, value)
+	{
 	}
-	PUBLIC Float2(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT2() {
+	PUBLIC Float2(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT2()
+	{
 		DirectX::XMStoreFloat2(this, vector);
 	}
-	PUBLIC Float2& operator=(const DirectX::XMVECTOR& vector) {
+	PUBLIC Float2& operator=(const DirectX::XMVECTOR& vector)
+	{
 		DirectX::XMStoreFloat2(this, vector);
 		return *this;
 	}
-	PUBLIC operator DirectX::XMVECTOR() const noexcept {
+	PUBLIC operator DirectX::XMVECTOR() const noexcept
+	{
 		return DirectX::XMLoadFloat2(this);
 	}
-	PUBLIC Float2 operator+() const {
+	PUBLIC Float2 operator+() const
+	{
 		return Float2(this->x, this->y);
 	}
-	PUBLIC Float2 operator-() const {
+	PUBLIC Float2 operator-() const
+	{
 		return Float2(-this->x, -this->y);
 	}
-	PUBLIC Float2& operator=(const Float2& value) {
+	PUBLIC Float2& operator=(const Float2& value)
+	{
 		x = value.x;
 		y = value.y;
 		return *this;
 	}
-	PUBLIC Float2& operator=(const float& value) {
+	PUBLIC Float2& operator=(const float& value)
+	{
 		x = value;
 		y = value;
 		return *this;
 	}
-	PUBLIC Float2& operator+=(const Float2& value) {
+	PUBLIC Float2& operator+=(const Float2& value)
+	{
 		x += value.x;
 		y += value.y;
 		return *this;
 	}
-	PUBLIC Float2& operator+=(const float& value) {
+	PUBLIC Float2& operator+=(const float& value)
+	{
 		x += value;
 		y += value;
 		return *this;
 	}
-	PUBLIC Float2& operator-=(const Float2& value) {
+	PUBLIC Float2& operator-=(const Float2& value)
+	{
 		x -= value.x;
 		y -= value.y;
 		return *this;
 	}
-	PUBLIC Float2& operator-=(const float& value) {
+	PUBLIC Float2& operator-=(const float& value)
+	{
 		x -= value;
 		y -= value;
 		return *this;
 	}
-	PUBLIC Float2& operator*=(const Float2& value) {
+	PUBLIC Float2& operator*=(const Float2& value)
+	{
 		x *= value.x;
 		y *= value.y;
 		return *this;
 	}
-	PUBLIC Float2& operator*=(const float& value) {
+	PUBLIC Float2& operator*=(const float& value)
+	{
 		x *= value;
 		y *= value;
 		return *this;
 	}
-	PUBLIC Float2& operator/=(const Float2& value) {
+	PUBLIC Float2& operator/=(const Float2& value)
+	{
 		x /= value.x;
 		y /= value.y;
 		return *this;
 	}
-	PUBLIC Float2& operator/=(const float& value) {
+	PUBLIC Float2& operator/=(const float& value)
+	{
 		x /= value;
 		y /= value;
 		return *this;
 	}
 };
 
-Float2 operator+(const Float2& t1, const Float2& t2) {
+Float2 operator+(const Float2& t1, const Float2& t2)
+{
 	return Float2(t1) += t2;
 }
-Float2 operator+(const Float2& t1, const float& t2) {
+Float2 operator+(const Float2& t1, const float& t2)
+{
 	return Float2(t1) += t2;
 }
-Float2 operator-(const Float2& t1, const Float2& t2) {
+Float2 operator-(const Float2& t1, const Float2& t2)
+{
 	return Float2(t1) -= t2;
 }
-Float2 operator-(const Float2& t1, const float& t2) {
+Float2 operator-(const Float2& t1, const float& t2)
+{
 	return Float2(t1) -= t2;
 }
-Float2 operator*(const Float2& t1, const Float2& t2) {
+Float2 operator*(const Float2& t1, const Float2& t2)
+{
 	return Float2(t1) *= t2;
 }
-Float2 operator*(const Float2& t1, const float& t2) {
+Float2 operator*(const Float2& t1, const float& t2)
+{
 	return Float2(t1) *= t2;
 }
-Float2 operator/(const Float2& t1, const Float2& t2) {
+Float2 operator/(const Float2& t1, const Float2& t2)
+{
 	return Float2(t1) /= t2;
 }
-Float2 operator/(const Float2& t1, const float& t2) {
+Float2 operator/(const Float2& t1, const float& t2)
+{
 	return Float2(t1) /= t2;
 }
 
-struct Float3 : public DirectX::XMFLOAT3 {
-	PUBLIC Float3() : DirectX::XMFLOAT3() {
+struct Float3 : public DirectX::XMFLOAT3
+{
+	PUBLIC Float3() : DirectX::XMFLOAT3()
+	{
 	}
-	PUBLIC Float3(float x, float y, float z) : DirectX::XMFLOAT3(x, y, z) {
+	PUBLIC Float3(float x, float y, float z) : DirectX::XMFLOAT3(x, y, z)
+	{
 	}
-	PUBLIC Float3(float value) : DirectX::XMFLOAT3(value, value, value) {
+	PUBLIC Float3(float value) : DirectX::XMFLOAT3(value, value, value)
+	{
 	}
-	PUBLIC Float3(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT3() {
+	PUBLIC Float3(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT3()
+	{
 		DirectX::XMStoreFloat3(this, vector);
 	}
-	PUBLIC Float3& operator=(const DirectX::XMVECTOR& vector) {
+	PUBLIC Float3& operator=(const DirectX::XMVECTOR& vector)
+	{
 		DirectX::XMStoreFloat3(this, vector);
 		return *this;
 	}
-	PUBLIC operator DirectX::XMVECTOR() const noexcept {
+	PUBLIC operator DirectX::XMVECTOR() const noexcept
+	{
 		return DirectX::XMLoadFloat3(this);
 	}
-	PUBLIC Float3 operator+() const {
+	PUBLIC Float3 operator+() const
+	{
 		return Float3(this->x, this->y, this->z);
 	}
-	PUBLIC Float3 operator-() const {
+	PUBLIC Float3 operator-() const
+	{
 		return Float3(-this->x, -this->y, -this->z);
 	}
-	PUBLIC Float3& operator=(const Float3& value) {
+	PUBLIC Float3& operator=(const Float3& value)
+	{
 		x = value.x;
 		y = value.y;
 		z = value.z;
 		return *this;
 	}
-	PUBLIC Float3& operator=(const float& value) {
+	PUBLIC Float3& operator=(const float& value)
+	{
 		x = value;
 		y = value;
 		z = value;
 		return *this;
 	}
-	PUBLIC Float3& operator+=(const Float3& value) {
+	PUBLIC Float3& operator+=(const Float3& value)
+	{
 		x += value.x;
 		y += value.y;
 		z += value.z;
 		return *this;
 	}
-	PUBLIC Float3& operator+=(const float& value) {
+	PUBLIC Float3& operator+=(const float& value)
+	{
 		x += value;
 		y += value;
 		z += value;
 		return *this;
 	}
-	PUBLIC Float3& operator-=(const Float3& value) {
+	PUBLIC Float3& operator-=(const Float3& value)
+	{
 		x -= value.x;
 		y -= value.y;
 		z -= value.z;
 		return *this;
 	}
-	PUBLIC Float3& operator-=(const float& value) {
+	PUBLIC Float3& operator-=(const float& value)
+	{
 		x -= value;
 		y -= value;
 		z -= value;
 		return *this;
 	}
-	PUBLIC Float3& operator*=(const Float3& value) {
+	PUBLIC Float3& operator*=(const Float3& value)
+	{
 		x *= value.x;
 		y *= value.y;
 		z *= value.z;
 		return *this;
 	}
-	PUBLIC Float3& operator*=(const float& value) {
+	PUBLIC Float3& operator*=(const float& value)
+	{
 		x *= value;
 		y *= value;
 		z *= value;
 		return *this;
 	}
-	PUBLIC Float3& operator/=(const Float3& value) {
+	PUBLIC Float3& operator/=(const Float3& value)
+	{
 		x /= value.x;
 		y /= value.y;
 		z /= value.z;
 		return *this;
 	}
-	PUBLIC Float3& operator/=(const float& value) {
+	PUBLIC Float3& operator/=(const float& value)
+	{
 		x /= value;
 		y /= value;
 		z /= value;
@@ -220,118 +268,145 @@ struct Float3 : public DirectX::XMFLOAT3 {
 	}
 };
 
-Float3 operator+(const Float3& t1, const Float3& t2) {
+Float3 operator+(const Float3& t1, const Float3& t2)
+{
 	return Float3(t1) += t2;
 }
-Float3 operator+(const Float3& t1, const float& t2) {
+Float3 operator+(const Float3& t1, const float& t2)
+{
 	return Float3(t1) += t2;
 }
-Float3 operator-(const Float3& t1, const Float3& t2) {
+Float3 operator-(const Float3& t1, const Float3& t2)
+{
 	return Float3(t1) -= t2;
 }
-Float3 operator-(const Float3& t1, const float& t2) {
+Float3 operator-(const Float3& t1, const float& t2)
+{
 	return Float3(t1) -= t2;
 }
-Float3 operator*(const Float3& t1, const Float3& t2) {
+Float3 operator*(const Float3& t1, const Float3& t2)
+{
 	return Float3(t1) *= t2;
 }
-Float3 operator*(const Float3& t1, const float& t2) {
+Float3 operator*(const Float3& t1, const float& t2)
+{
 	return Float3(t1) *= t2;
 }
-Float3 operator/(const Float3& t1, const Float3& t2) {
+Float3 operator/(const Float3& t1, const Float3& t2)
+{
 	return Float3(t1) /= t2;
 }
-Float3 operator/(const Float3& t1, const float& t2) {
+Float3 operator/(const Float3& t1, const float& t2)
+{
 	return Float3(t1) /= t2;
 }
 
-struct Float4 : public DirectX::XMFLOAT4 {
-	PUBLIC Float4() : DirectX::XMFLOAT4() {
+struct Float4 : public DirectX::XMFLOAT4
+{
+	PUBLIC Float4() : DirectX::XMFLOAT4()
+	{
 	}
-	PUBLIC Float4(float x, float y, float z, float w) : DirectX::XMFLOAT4(x, y, z, w) {
+	PUBLIC Float4(float x, float y, float z, float w) : DirectX::XMFLOAT4(x, y, z, w)
+	{
 	}
-	PUBLIC Float4(float value) : DirectX::XMFLOAT4(value, value, value, value) {
+	PUBLIC Float4(float value) : DirectX::XMFLOAT4(value, value, value, value)
+	{
 	}
-	PUBLIC Float4(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT4() {
+	PUBLIC Float4(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT4()
+	{
 		DirectX::XMStoreFloat4(this, vector);
 	}
-	PUBLIC Float4& operator=(const DirectX::XMVECTOR& vector) {
+	PUBLIC Float4& operator=(const DirectX::XMVECTOR& vector)
+	{
 		DirectX::XMStoreFloat4(this, vector);
 		return *this;
 	}
-	PUBLIC operator DirectX::XMVECTOR() const noexcept {
+	PUBLIC operator DirectX::XMVECTOR() const noexcept
+	{
 		return DirectX::XMLoadFloat4(this);
 	}
-	PUBLIC Float4 operator+() const {
+	PUBLIC Float4 operator+() const
+	{
 		return Float4(this->x, this->y, this->z, this->w);
 	}
-	PUBLIC Float4 operator-() const {
+	PUBLIC Float4 operator-() const
+	{
 		return Float4(-this->x, -this->y, -this->z, -this->w);
 	}
-	PUBLIC Float4& operator=(const Float4& value) {
+	PUBLIC Float4& operator=(const Float4& value)
+	{
 		x = value.x;
 		y = value.y;
 		z = value.z;
 		w = value.w;
 		return *this;
 	}
-	PUBLIC Float4& operator=(const float& value) {
+	PUBLIC Float4& operator=(const float& value)
+	{
 		x = value;
 		y = value;
 		z = value;
 		w = value;
 		return *this;
 	}
-	PUBLIC Float4& operator+=(const Float4& value) {
+	PUBLIC Float4& operator+=(const Float4& value)
+	{
 		x += value.x;
 		y += value.y;
 		z += value.z;
 		w += value.w;
 		return *this;
 	}
-	PUBLIC Float4& operator+=(const float& value) {
+	PUBLIC Float4& operator+=(const float& value)
+	{
 		x += value;
 		y += value;
 		z += value;
 		w += value;
 		return *this;
 	}
-	PUBLIC Float4& operator-=(const Float4& value) {
+	PUBLIC Float4& operator-=(const Float4& value)
+	{
 		x -= value.x;
 		y -= value.y;
 		z -= value.z;
 		w -= value.w;
 		return *this;
 	}
-	PUBLIC Float4& operator-=(const float& value) {
+	PUBLIC Float4& operator-=(const float& value)
+	{
 		x -= value;
 		y -= value;
 		z -= value;
 		w -= value;
 		return *this;
 	}
-	PUBLIC Float4& operator*=(const Float4& value) {
+	PUBLIC Float4& operator*=(const Float4& value)
+	{
 		x *= value.x;
 		y *= value.y;
 		z *= value.z;
 		w *= value.w;
 		return *this;
 	}
-	PUBLIC Float4& operator*=(const float& value) {
+	PUBLIC Float4& operator*=(const float& value)
+	{
 		x *= value;
 		y *= value;
 		z *= value;
 		w *= value;
 		return *this;
 	}
-	PUBLIC Float4& operator/=(const Float4& value) {
+	PUBLIC Float4& operator/=(const Float4& value)
+	{
 		x /= value.x;
 		y /= value.y;
 		z /= value.z;
 		w /= value.w;
 		return *this;
 	}
-	PUBLIC Float4& operator/=(const float& value) {
+	PUBLIC Float4& operator/=(const float& value)
+	{
 		x /= value;
 		y /= value;
 		z /= value;
@@ -340,37 +415,47 @@ struct Float4 : public DirectX::XMFLOAT4 {
 	}
 };
 
-Float4 operator+(const Float4& t1, const Float4& t2) {
+Float4 operator+(const Float4& t1, const Float4& t2)
+{
 	return Float4(t1) += t2;
 }
-Float4 operator+(const Float4& t1, const float& t2) {
+Float4 operator+(const Float4& t1, const float& t2)
+{
 	return Float4(t1) += t2;
 }
-Float4 operator-(const Float4& t1, const Float4& t2) {
+Float4 operator-(const Float4& t1, const Float4& t2)
+{
 	return Float4(t1) -= t2;
 }
-Float4 operator-(const Float4& t1, const float& t2) {
+Float4 operator-(const Float4& t1, const float& t2)
+{
 	return Float4(t1) -= t2;
 }
-Float4 operator*(const Float4& t1, const Float4& t2) {
+Float4 operator*(const Float4& t1, const Float4& t2)
+{
 	return Float4(t1) *= t2;
 }
-Float4 operator*(const Float4& t1, const float& t2) {
+Float4 operator*(const Float4& t1, const float& t2)
+{
 	return Float4(t1) *= t2;
 }
-Float4 operator/(const Float4& t1, const Float4& t2) {
+Float4 operator/(const Float4& t1, const Float4& t2)
+{
 	return Float4(t1) /= t2;
 }
-Float4 operator/(const Float4& t1, const float& t2) {
+Float4 operator/(const Float4& t1, const float& t2)
+{
 	return Float4(t1) /= t2;
 }
 
-struct Vertex {
+struct Vertex
+{
 	PUBLIC Float3 position;
 	PUBLIC Float3 normal;
 	PUBLIC Float2 uv;
 
-	PUBLIC Vertex(Float3 position, Float3 normal, Float2 uv) {
+	PUBLIC Vertex(Float3 position, Float3 normal, Float2 uv)
+	{
 		this->position = position;
 		this->normal = normal;
 		this->uv = uv;
@@ -378,11 +463,14 @@ struct Vertex {
 };
 
 
-class App {
+class App final
+{
 	PUBLIC static constexpr wchar_t* NAME = L"XLibrary11";
 
-class Window {
-	PUBLIC class Proceedable {
+class Window
+{
+	PUBLIC class Proceedable
+	{
 		PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
 		PUBLIC virtual ~Proceedable() {}
 	};
@@ -390,13 +478,16 @@ class Window {
 	PROTECTED HWND handle;
 	PROTECTED const DWORD style = WS_OVERLAPPEDWINDOW;
 
-	PUBLIC Window() {
+	PUBLIC Window()
+	{
 		Initialize();
 	}
-	PUBLIC ~Window() {
+	PUBLIC ~Window()
+	{
 		UnregisterClassW(App::NAME, GetModuleHandleW(nullptr));
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		HINSTANCE instance = GetModuleHandleW(nullptr);
 
 		WNDCLASSEXW windowClass = {};
@@ -419,83 +510,101 @@ class Window {
 		SetSize(1280.0f, 720.0f);
 		ShowWindow(handle, SW_SHOWNORMAL);
 	}
-	PUBLIC HWND GetHandle() const {
+	PUBLIC HWND GetHandle() const
+	{
 		return handle;
 	}
-	PUBLIC Float2 GetSize() const {
+	PUBLIC DirectX::XMINT2 GetSize() const
+	{
 		RECT clientRect = {};
 		GetClientRect(handle, &clientRect);
 
-		return Float2(static_cast<float>(clientRect.right - clientRect.left), static_cast<float>(clientRect.bottom - clientRect.top));
+		return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 	}
-	PUBLIC void SetSize(float width, float height) {
+	PUBLIC void SetSize(int width, int height)
+	{
 		RECT windowRect = {};
 		RECT clientRect = {};
 		GetWindowRect(handle, &windowRect);
 		GetClientRect(handle, &clientRect);
 
-		int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + static_cast<int>(width);
-		int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + static_cast<int>(height);
+		int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + width;
+		int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + height;
 
 		int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
 		int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
 
 		SetWindowPos(handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
 	}
-	PUBLIC wchar_t* const GetTitle() const {
+	PUBLIC wchar_t* const GetTitle() const
+	{
 		wchar_t* title = nullptr;
 		GetWindowTextW(handle, title, GetWindowTextLengthW(handle));
 		return title;
 	}
-	PUBLIC void SetTitle(const wchar_t* const title) {
+	PUBLIC void SetTitle(const wchar_t* const title)
+	{
 		SetWindowTextW(handle, title);
 	}
-	PUBLIC void SetFullScreen(bool isFullScreen) {
-		static Float2 size = GetSize();
+	PUBLIC void SetFullScreen(bool isFullScreen)
+	{
+		static DirectX::XMINT2 size = GetSize();
 
-		if (isFullScreen) {
+		if (isFullScreen)
+		{
 			size = GetSize();
 			int w = GetSystemMetrics(SM_CXSCREEN);
 			int h = GetSystemMetrics(SM_CYSCREEN);
 			SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | WS_POPUP);
 			SetWindowPos(handle, HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
 		}
-		else {
+		else
+		{
 			SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | style);
 			SetWindowPos(handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 			SetSize(size.x, size.y);
 		}
 	}
-	PUBLIC void AddProcedure(Proceedable* const procedure) {
+	PUBLIC void AddProcedure(Proceedable* const procedure)
+	{
 		GetProcedures().push_front(procedure);
 	}
-	PUBLIC void RemoveProcedure(Proceedable* const procedure) {
+	PUBLIC void RemoveProcedure(Proceedable* const procedure)
+	{
 		GetProcedures().remove(procedure);
 	}
-	PUBLIC bool Update() {
+	PUBLIC bool Update()
+	{
 		static MSG message = {};
 
-		while (message.message != WM_QUIT) {
-			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
+		while (message.message != WM_QUIT)
+		{
+			if (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE))
+			{
 				TranslateMessage(&message);
 				DispatchMessageW(&message);
 			}
-			else {
+			else
+			{
 				return true;
 			}
 		}
 
 		return false;
 	}
-	PROTECTED static std::forward_list<Proceedable*>& GetProcedures() {
+	PROTECTED static std::forward_list<Proceedable*>& GetProcedures()
+	{
 		static std::forward_list<Proceedable*> procedures;
 		return procedures;
 	}
-	PROTECTED static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) {
-		for (Proceedable* procedure : GetProcedures()) {
+	PROTECTED static LRESULT WINAPI Proceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		for (Proceedable* procedure : GetProcedures())
+		{
 			procedure->OnProceed(handle, message, wParam, lParam);
 		}
-		switch (message) {
+		switch (message)
+		{
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			break;
@@ -504,8 +613,10 @@ class Window {
 	}
 };
 
-class Graphics : public App::Window::Proceedable {
-	PROTECTED struct Constant {
+class Graphics : public App::Window::Proceedable
+{
+	PROTECTED struct Constant
+	{
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;
 	};
@@ -518,27 +629,32 @@ class Graphics : public App::Window::Proceedable {
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTexture = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-	PUBLIC Graphics() {
+	PUBLIC Graphics()
+	{
 		Initialize();
 		Create();
 	}
-	PUBLIC ~Graphics() {
+	PUBLIC ~Graphics()
+	{
 		App::RemoveProcedure(this);
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		int flags = 0;
 #if defined(DEBUG) || defined(_DEBUG)
 		flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-		D3D_DRIVER_TYPE driverTypes[] = {
+		D3D_DRIVER_TYPE driverTypes[] =
+		{
 			D3D_DRIVER_TYPE_HARDWARE,
 			D3D_DRIVER_TYPE_WARP,
 			D3D_DRIVER_TYPE_REFERENCE,
 		};
 		int driverTypeCount = sizeof(driverTypes) / sizeof(driverTypes[0]);
 
-		D3D_FEATURE_LEVEL featureLevels[] = {
+		D3D_FEATURE_LEVEL featureLevels[] =
+		{
 			D3D_FEATURE_LEVEL_11_0,
 			D3D_FEATURE_LEVEL_10_1,
 			D3D_FEATURE_LEVEL_10_0,
@@ -558,10 +674,12 @@ class Graphics : public App::Window::Proceedable {
 		swapChainDesc.SampleDesc.Quality = 0;
 		swapChainDesc.Windowed = true;
 
-		for (int i = 0; i < driverTypeCount; i++) {
+		for (int i = 0; i < driverTypeCount; i++)
+		{
 			HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, featureLevels, featureLevelCount, D3D11_SDK_VERSION, &swapChainDesc, swapChain.GetAddressOf(), device.GetAddressOf(), nullptr, context.GetAddressOf());
 
-			if (SUCCEEDED(result)) {
+			if (SUCCEEDED(result))
+			{
 				break;
 			}
 		}
@@ -595,7 +713,8 @@ class Graphics : public App::Window::Proceedable {
 
 		App::AddProcedure(this);
 	}
-	PROTECTED virtual void Create() {
+	PROTECTED virtual void Create()
+	{
 		D3D11_VIEWPORT viewPort = {};
 		viewPort.Width = App::GetWindowSize().x;
 		viewPort.Height = App::GetWindowSize().y;
@@ -613,16 +732,20 @@ class Graphics : public App::Window::Proceedable {
 		constant.view = DirectX::XMMatrixIdentity();
 		constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
 	}
-	PUBLIC ID3D11Device& GetDevice() const {
+	PUBLIC ID3D11Device& GetDevice() const
+	{
 		return *device.Get();
 	}
-	PUBLIC IDXGISwapChain& GetMemory() const {
+	PUBLIC IDXGISwapChain& GetMemory() const
+	{
 		return *swapChain.Get();
 	}
-	PUBLIC ID3D11DeviceContext& GetContext() const {
+	PUBLIC ID3D11DeviceContext& GetContext() const
+	{
 		return *context.Get();
 	}
-	PUBLIC void Update() {
+	PUBLIC void Update()
+	{
 		context->UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
 		context->VSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
 		context->HSSetConstantBuffers(1, 1, constantBuffer.GetAddressOf());
@@ -635,13 +758,13 @@ class Graphics : public App::Window::Proceedable {
 		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 		context->ClearRenderTargetView(renderTargetView.Get(), color);
 	}
-	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override {
-		if (message != WM_SIZE) {
+	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
+	{
+		if (message != WM_SIZE)
 			return;
-		}
-		if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f) {
+		
+		if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
 			return;
-		}
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		swapChain->GetDesc(&swapChainDesc);
@@ -657,21 +780,25 @@ class Graphics : public App::Window::Proceedable {
 	}
 };
 
-class Audio {
+class Audio
+{
 	PROTECTED Microsoft::WRL::ComPtr<IXAudio2> audioEngine;
 	PROTECTED IXAudio2MasteringVoice* masteringVoice = nullptr;
 
-	PUBLIC Audio() {
+	PUBLIC Audio()
+	{
 		Initialize();
 	}
-	PUBLIC ~Audio() {
+	PUBLIC ~Audio()
+	{
 		MFShutdown();
 
 		masteringVoice->DestroyVoice();
 		
 		audioEngine->StopEngine();
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		App::GetWindowHandle();
 
 		XAudio2Create(audioEngine.GetAddressOf());
@@ -680,41 +807,50 @@ class Audio {
 
 		MFStartup(MF_VERSION);
 	}
-	PUBLIC IXAudio2& GetEngine() const {
+	PUBLIC IXAudio2& GetEngine() const
+	{
 		return *audioEngine.Get();
 	}
 };
 
-class Input {
+class Input
+{
 	PROTECTED Float2 mousePosition;
 	PROTECTED BYTE preKeyState[256];
 	PROTECTED BYTE keyState[256];
 	PROTECTED bool isShowCursor = true;
 
-	PUBLIC Input() {
+	PUBLIC Input()
+	{
 		Initialize();
 	}
-	PUBLIC ~Input() {
+	PUBLIC ~Input()
+	{
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		Update();
 	}
-	PUBLIC bool GetKey(int keyCode) const {
+	PUBLIC bool GetKey(int keyCode) const
+	{
 		return keyState[keyCode] & 0x80;
 	}
-	PUBLIC bool GetKeyUp(int keyCode) const {
+	PUBLIC bool GetKeyUp(int keyCode) const
+	{
 		return !(keyState[keyCode] & 0x80) && (preKeyState[keyCode] & 0x80);
 	}
-	PUBLIC bool GetKeyDown(int keyCode) const {
+	PUBLIC bool GetKeyDown(int keyCode) const
+	{
 		return (keyState[keyCode] & 0x80) && !(preKeyState[keyCode] & 0x80);
 	}
-	PUBLIC Float2 GetMousePosition() const {
+	PUBLIC Float2 GetMousePosition() const
+	{
 		return mousePosition;
 	}
-	PUBLIC void SetMousePosition(float x, float y) {
-		if (GetActiveWindow() != App::GetWindowHandle()) {
+	PUBLIC void SetMousePosition(float x, float y)
+	{
+		if (GetActiveWindow() != App::GetWindowHandle())
 			return;
-		}
 
 		mousePosition.x = x;
 		mousePosition.y = y;
@@ -722,22 +858,24 @@ class Input {
 		ClientToScreen(App::GetWindowHandle(), &point);
 		SetCursorPos(point.x, point.y);
 	}
-	PUBLIC void SetShowCursor(bool isShowCursor) {
-		if (this->isShowCursor == isShowCursor) {
+	PUBLIC void SetShowCursor(bool isShowCursor)
+	{
+		if (this->isShowCursor == isShowCursor)
 			return;
-		}
 
 		this->isShowCursor = isShowCursor;
 		ShowCursor(isShowCursor);
 	}
-	PUBLIC void Update() {
+	PUBLIC void Update()
+	{
 		POINT point = {};
 		GetCursorPos(&point);
 
 		ScreenToClient(App::GetWindowHandle(), &point);
 		mousePosition = Float2(static_cast<float>(point.x), static_cast<float>(point.y));
 
-		for (int i = 0; i < 256; i++) {
+		for (int i = 0; i < 256; i++)
+		{
 			preKeyState[i] = keyState[i];
 		}
 
@@ -745,7 +883,8 @@ class Input {
 	}
 };
 
-class Timer {
+class Timer
+{
 	PROTECTED float time = 0.0f;
 	PROTECTED float deltaTime = 0.0f;
 	PROTECTED int frameRate = 0;
@@ -754,26 +893,32 @@ class Timer {
 	LARGE_INTEGER preCount;
 	LARGE_INTEGER frequency;
 
-	PUBLIC Timer() {
+	PUBLIC Timer()
+	{
 		Initialize();
 	}
-	PUBLIC ~Timer() {
+	PUBLIC ~Timer()
+	{
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		preCount = GetCounter();
 		frequency = GetCountFrequency();
 	}
-	PUBLIC float GetTime() const {
+	PUBLIC float GetTime() const
+	{
 		return time;
 	}
-	PUBLIC float GetDeltaTime() const {
+	PUBLIC float GetDeltaTime() const
+	{
 		return deltaTime;
 	}
-	PUBLIC int GetFrameRate() const {
+	PUBLIC int GetFrameRate() const
+	{
 		return frameRate;
 	}
-	PUBLIC void Update() {
-
+	PUBLIC void Update()
+	{
 		LARGE_INTEGER count = GetCounter();
 		deltaTime = (float)(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
 		preCount = GetCounter();
@@ -789,12 +934,14 @@ class Timer {
 			second -= 1.0f;
 		}
 	}
-	PROTECTED LARGE_INTEGER GetCounter() const {
+	PROTECTED LARGE_INTEGER GetCounter() const
+	{
 		LARGE_INTEGER counter;
 		QueryPerformanceCounter(&counter);
 		return counter;
 	}
-	PROTECTED LARGE_INTEGER GetCountFrequency() const {
+	PROTECTED LARGE_INTEGER GetCountFrequency() const
+	{
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency;
@@ -803,124 +950,167 @@ class Timer {
 
 
 	PUBLIC App() = delete;
-	PUBLIC static bool Refresh() {
+	PUBLIC static bool Refresh()
+	{
 		GetGraphicsMemory().Present(1, 0);
 
-		if (!GetWindow().Update()) return false;
 		GetGraphics().Update();
 		GetInput().Update();
 		GetTimer().Update();
-
-		return true;
+		return GetWindow().Update();
 	}
-	PUBLIC static HWND GetWindowHandle() {
+	PUBLIC static void Initialize()
+	{
+		static bool isInitialized = false;
+
+		if (!isInitialized)
+		{
+			CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+			isInitialized = true;
+		}
+	}
+	PUBLIC static HWND GetWindowHandle()
+	{
 		return GetWindow().GetHandle();
 	}
-	PUBLIC static Float2 GetWindowSize() {
+	PUBLIC static DirectX::XMINT2 GetWindowSize()
+	{
 		return GetWindow().GetSize();
 	}
-	PUBLIC static void SetWindowSize(float width, float height) {
+	PUBLIC static void SetWindowSize(int width, int height)
+	{
 		GetWindow().SetSize(width, height);
 	}
-	PUBLIC static wchar_t* const GetTitle() {
+	PUBLIC static wchar_t* const GetTitle()
+	{
 		return GetWindow().GetTitle();
 	}
-	PUBLIC static void SetTitle(const wchar_t* const title) {
+	PUBLIC static void SetTitle(const wchar_t* const title)
+	{
 		GetWindow().SetTitle(title);
 	}
-	PUBLIC static void SetFullScreen(bool isFullScreen) {
+	PUBLIC static void SetFullScreen(bool isFullScreen)
+	{
 		GetWindow().SetFullScreen(isFullScreen);
 	}
-	PUBLIC static void AddProcedure(Window::Proceedable* const procedure) {
+	PUBLIC static void AddProcedure(Window::Proceedable* const procedure)
+	{
 		GetWindow().AddProcedure(procedure);
 	}
-	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure) {
+	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure)
+	{
 		GetWindow().RemoveProcedure(procedure);
 	}
-	PUBLIC static ID3D11Device& GetGraphicsDevice() {
+	PUBLIC static ID3D11Device& GetGraphicsDevice()
+	{
 		return GetGraphics().GetDevice();
 	}
-	PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
+	PUBLIC static ID3D11DeviceContext& GetGraphicsContext()
+	{
 		return GetGraphics().GetContext();
 	}
-	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
+	PUBLIC static IDXGISwapChain& GetGraphicsMemory()
+	{
 		return GetGraphics().GetMemory();
 	}
-	PUBLIC static IXAudio2& GetAudioEngine() {
+	PUBLIC static IXAudio2& GetAudioEngine()
+	{
 		return GetAudio().GetEngine();
 	}
-	PUBLIC static bool GetKey(int VK_CODE) {
+	PUBLIC static bool GetKey(int VK_CODE)
+	{
 		return GetInput().GetKey(VK_CODE);
 	}
-	PUBLIC static bool GetKeyUp(int VK_CODE) {
+	PUBLIC static bool GetKeyUp(int VK_CODE)
+	{
 		return GetInput().GetKeyUp(VK_CODE);
 	}
-	PUBLIC static bool GetKeyDown(int VK_CODE) {
+	PUBLIC static bool GetKeyDown(int VK_CODE)
+	{
 		return GetInput().GetKeyDown(VK_CODE);
 	}
-	PUBLIC static Float2 GetMousePosition() {
+	PUBLIC static Float2 GetMousePosition()
+	{
 		return GetInput().GetMousePosition();
 	}
-	PUBLIC static void SetMousePosition(float x, float y) {
+	PUBLIC static void SetMousePosition(float x, float y)
+	{
 		GetInput().SetMousePosition(x, y);
 	}
-	PUBLIC static void SetShowCursor(bool isShowCursor) {
+	PUBLIC static void SetShowCursor(bool isShowCursor)
+	{
 		GetInput().SetShowCursor(isShowCursor);
 	}
-	PUBLIC static float GetTime() {
+	PUBLIC static float GetTime()
+	{
 		return GetTimer().GetTime();
 	}
-	PUBLIC static float GetDeltaTime() {
+	PUBLIC static float GetDeltaTime()
+	{
 		return GetTimer().GetDeltaTime();
 	}
-	PUBLIC static int GetFrameRate() {
+	PUBLIC static int GetFrameRate()
+	{
 		return GetTimer().GetFrameRate();
 	}
-	PUBLIC static void AddFont(const wchar_t* filePath) {
+	PUBLIC static void AddFont(const wchar_t* filePath)
+	{
 		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
 	}
-	PRIVATE static Window& GetWindow() {
+	PRIVATE static Window& GetWindow()
+	{
 		static std::unique_ptr<Window> window(new Window());
 		return *window.get();
 	}
-	PRIVATE static Graphics& GetGraphics() {
+	PRIVATE static Graphics& GetGraphics()
+	{
 		static std::unique_ptr<Graphics> graphics(new Graphics());
 		return *graphics.get();
 	}
-	PRIVATE static Audio& GetAudio() {
+	PRIVATE static Audio& GetAudio()
+	{
 		static std::unique_ptr<Audio> audio(new Audio());
 		return *audio.get();
 	}
-	PRIVATE static Input& GetInput() {
+	PRIVATE static Input& GetInput()
+	{
 		static std::unique_ptr<Input> input(new Input());
 		return *input.get();
 	}
-	PRIVATE static Timer& GetTimer() {
+	PRIVATE static Timer& GetTimer()
+	{
 		static std::unique_ptr<Timer> timer(new Timer());
 		return *timer.get();
 	}
 };
 
-class Texture {
+class Texture
+{
 	PROTECTED int width;
 	PROTECTED int height;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
-	PUBLIC Texture() {
+	PUBLIC Texture()
+	{
 		std::unique_ptr<BYTE[]> buffer(new BYTE[4]{ 0xff, 0x00, 0xff, 0xff });
 		Create(1, 1, buffer.get());
 	}
-	PUBLIC Texture(const wchar_t* const filePath) {
+	PUBLIC Texture(const wchar_t* const filePath)
+	{
 		Load(filePath);
 	}
-	PUBLIC Texture(int width, int height, BYTE* buffer) {
+	PUBLIC Texture(int width, int height, BYTE* buffer)
+	{
 		Create(width, height, buffer);
 	}
-	PUBLIC virtual ~Texture() {
+	PUBLIC virtual ~Texture()
+	{
 	}
-	PROTECTED virtual void Create(int width, int height, const BYTE* const buffer) {
+	PROTECTED virtual void Create(int width, int height, const BYTE* const buffer)
+	{
 		this->width = width;
 		this->height = height;
 
@@ -968,7 +1158,8 @@ class Texture {
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
 	}
-	PUBLIC void Load(const wchar_t* const filePath) {
+	PUBLIC void Load(const wchar_t* const filePath)
+	{
 		App::GetWindowHandle();
 
 		Microsoft::WRL::ComPtr<IWICImagingFactory> factory = nullptr;
@@ -986,7 +1177,8 @@ class Texture {
 		frame->GetPixelFormat(&pixelFormat);
 		std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
 
-		if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
+		if (pixelFormat != GUID_WICPixelFormat32bppRGBA)
+		{
 			Microsoft::WRL::ComPtr<IWICFormatConverter> formatConverter = nullptr;
 			factory->CreateFormatConverter(formatConverter.GetAddressOf());
 
@@ -994,25 +1186,30 @@ class Texture {
 
 			formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
 		}
-		else {
+		else
+		{
 			frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
 		}
 
 		Create(width, height, buffer.get());
 	}
-	PUBLIC Float2 GetSize() const {
+	PUBLIC Float2 GetSize() const
+	{
 		return Float2(static_cast<float>(width), static_cast<float>(height));
 	}
-	PUBLIC void SetSize(float width, float height) {
+	PUBLIC void SetSize(float width, float height)
+	{
 
 	}
-	PUBLIC virtual void Attach(int slot) {
+	PUBLIC virtual void Attach(int slot)
+	{
 		App::GetGraphicsContext().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
 		App::GetGraphicsContext().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
 	}
 };
 
-class Material {
+class Material
+{
 	PROTECTED void* cbuffer = nullptr;
 	PROTECTED Texture* textures[10];
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader = nullptr;
@@ -1020,45 +1217,55 @@ class Material {
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-	PUBLIC Material() {
+	PUBLIC Material()
+	{
 		char* source =
-			"cbuffer Object : register(b0) {"
+			"cbuffer Object : register(b0)"
+			"{"
 			"    matrix _world;"
 			"};"
-			"cbuffer Camera : register(b1) {"
+			"cbuffer Camera : register(b1)"
+			"{"
 			"    matrix _view;"
 			"    matrix _projection;"
 			"};"
-			"float4 VS(float4 vertex : POSITION) : SV_POSITION {"
+			"float4 VS(float4 vertex : POSITION) : SV_POSITION"
+			"{"
 			"    float4 output = vertex;"
 			"    output = mul(_world, output);"
 			"    output = mul(_view, output);"
 			"    output = mul(_projection, output);"
 			"    return output;"
 			"}"
-			"float4 PS(float4 position : SV_POSITION) : SV_TARGET {"
+			"float4 PS(float4 position : SV_POSITION) : SV_TARGET"
+			"{"
 			"    return float4(1, 0, 1, 1);"
 			"}";
 
 		Initialize();
 		Create(source);
 	}
-	PUBLIC Material(char* source) {
+	PUBLIC Material(char* source)
+	{
 		Initialize();
 		Create(source);
 	}
-	PUBLIC Material(const wchar_t* const filePath) {
+	PUBLIC Material(const wchar_t* const filePath)
+	{
 		Initialize();
 		Load(filePath);
 	}
-	PUBLIC virtual ~Material() {
+	PUBLIC virtual ~Material()
+	{
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		for (int i = 0; i < 10; i++) {
 			textures[i] = nullptr;
 		}
 	}
-	PROTECTED virtual void Create(const char* source) {
+	PROTECTED virtual void Create(const char* source)
+	{
 		vertexShader.Reset();
 		Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
 		CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
@@ -1077,7 +1284,8 @@ class Material {
 
 		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
 	}
-	PUBLIC void Load(const wchar_t* const filePath) {
+	PUBLIC void Load(const wchar_t* const filePath)
+	{
 		std::ifstream sourceFile(filePath);
 		std::istreambuf_iterator<char> iterator(sourceFile);
 		std::istreambuf_iterator<char> last;
@@ -1086,7 +1294,8 @@ class Material {
 
 		Create(source.c_str());
 	}
-	PUBLIC void SetCBuffer(void* cbuffer, size_t size) {
+	PUBLIC void SetCBuffer(void* cbuffer, size_t size)
+	{
 		this->cbuffer = cbuffer;
 
 		constantBuffer.Reset();
@@ -1097,15 +1306,18 @@ class Material {
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
-	PUBLIC void SetTexture(int slot, Texture* texture) {
+	PUBLIC void SetTexture(int slot, Texture* texture)
+	{
 		textures[slot] = texture;
 	}
-	PUBLIC virtual void Attach() {
+	PUBLIC virtual void Attach()
+	{
 		App::GetGraphicsContext().VSSetShader(vertexShader.Get(), nullptr, 0);
 		App::GetGraphicsContext().PSSetShader(pixelShader.Get(), nullptr, 0);
 		App::GetGraphicsContext().IASetInputLayout(inputLayout.Get());
 
-		if (cbuffer != nullptr) {
+		if (cbuffer != nullptr)
+		{
 			App::GetGraphicsContext().UpdateSubresource(constantBuffer.Get(), 0, nullptr, cbuffer, 0, 0);
 			App::GetGraphicsContext().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 			App::GetGraphicsContext().HSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
@@ -1115,14 +1327,17 @@ class Material {
 		}
 
 		int i = 0;
-		for (Texture* texture : textures) {
-			if (texture != nullptr) {
+		for (Texture* texture : textures)
+		{
+			if (texture != nullptr)
+			{
 				texture->Attach(i);
 			}
 			i++;
 		}
 	}
-	PROTECTED static void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out) {
+	PROTECTED static void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out)
+	{
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(DEBUG) || defined(_DEBUG)
 		shaderFlags |= D3DCOMPILE_DEBUG;
@@ -1131,15 +1346,18 @@ class Material {
 		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
 		D3DCompile(source, strlen(source), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 
-		if (errorBlob != nullptr) {
+		if (errorBlob != nullptr)
+		{
 			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
 			MessageBoxA(App::GetWindowHandle(), (char*)errorBlob->GetBufferPointer(), "Shader Error", MB_OK);
 		}
 	}
 };
 
-class Camera : public App::Window::Proceedable {
-	PROTECTED struct Constant {
+class Camera : public App::Window::Proceedable
+{
+	PROTECTED struct Constant
+	{
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX projection;
 	};
@@ -1156,14 +1374,17 @@ class Camera : public App::Window::Proceedable {
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> depthTexture = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-	PUBLIC Camera() {
+	PUBLIC Camera()
+	{
 		Initialize();
 		Create();
 	}
-	PUBLIC virtual ~Camera() {
+	PUBLIC virtual ~Camera()
+	{
 		App::RemoveProcedure(this);
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		position = Float3(0.0f, 0.0f, -5.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
 
@@ -1171,7 +1392,8 @@ class Camera : public App::Window::Proceedable {
 
 		App::AddProcedure(this);
 	}
-	PROTECTED virtual void Create() {
+	PROTECTED virtual void Create()
+	{
 		renderTexture.Reset();
 		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
 		renderTargetView.Reset();
@@ -1198,11 +1420,13 @@ class Camera : public App::Window::Proceedable {
 		depthStencilView.Reset();
 		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
 		depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
-		if (swapChainDesc.SampleDesc.Count == 0) {
+		if (swapChainDesc.SampleDesc.Count == 0)
+		{
 			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 			depthStencilViewDesc.Texture2D.MipSlice = 0;
 		}
-		else {
+		else
+		{
 			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
 		}
 		App::GetGraphicsDevice().CreateDepthStencilView(depthTexture.Get(), &depthStencilViewDesc, depthStencilView.GetAddressOf());
@@ -1215,13 +1439,15 @@ class Camera : public App::Window::Proceedable {
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
 	}
-	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip) {
+	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip)
+	{
 		this->fieldOfView = fieldOfView;
 		this->nearClip = nearClip;
 		this->farClip = farClip;
 		constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
 	}
-	PUBLIC virtual void Update() {
+	PUBLIC virtual void Update()
+	{
 		constant.view =
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
@@ -1242,13 +1468,13 @@ class Camera : public App::Window::Proceedable {
 		App::GetGraphicsContext().ClearRenderTargetView(renderTargetView.Get(), color);
 		App::GetGraphicsContext().ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
-	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override {
-		if (message != WM_SIZE) {
+	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
+	{
+		if (message != WM_SIZE)
 			return;
-		}
-		if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f) {
+
+		if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
 			return;
-		}
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		App::GetGraphicsMemory().GetDesc(&swapChainDesc);
@@ -1269,7 +1495,8 @@ class Camera : public App::Window::Proceedable {
 };
 
 class Mesh {
-	PROTECTED struct Constant {
+	PROTECTED struct Constant
+	{
 		DirectX::XMMATRIX world;
 		Float3 lightDirection;
 	};
@@ -1285,34 +1512,41 @@ class Mesh {
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
 
-	PUBLIC Mesh() {
+	PUBLIC Mesh()
+	{
 		Initialize();
 		Create();
 	}
-	PUBLIC virtual ~Mesh() {
+	PUBLIC virtual ~Mesh()
+	{
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		position = Float3(0.0f, 0.0f, 0.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
 		scale = Float3(1.0f, 1.0f, 1.0f);
 
 		material = Material(
-			"cbuffer Object : register(b0) {"
+			"cbuffer Object : register(b0)"
+			"{"
 			"    matrix _world;"
 			"    float3 _lightDirection;"
 			"};"
-			"cbuffer Camera : register(b1) {"
+			"cbuffer Camera : register(b1)"
+			"{"
 			"    matrix _view;"
 			"    matrix _projection;"
 			"};"
 			"Texture2D tex : register(t0);"
 			"SamplerState samp: register(s0);"
-			"struct VSOutput {"
+			"struct VSOutput"
+			"{"
 			"    float4 position : SV_POSITION;"
 			"    float4 normal : NORMAL;"
 			"    float2 uv : TEXCOORD;"
 			"};"
-			"VSOutput VS(float3 position : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD) {"
+			"VSOutput VS(float3 position : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD)"
+			"{"
 			"    VSOutput output = (VSOutput)0;"
 			"    output.position = mul(_world, float4(position, 1.0));"
 			"    output.position = mul(_view, output.position);"
@@ -1321,7 +1555,8 @@ class Mesh {
 			"    output.uv = uv;"
 			"    return output;"
 			"}"
-			"float4 PS(VSOutput pixel) : SV_TARGET {"
+			"float4 PS(VSOutput pixel) : SV_TARGET"
+			"{"
 			"    float diffuse = dot(-_lightDirection, normalize(pixel.normal).xyz) + 0.25;"
 			"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
 			"}"
@@ -1329,8 +1564,10 @@ class Mesh {
 
 		SetCullingMode(D3D11_CULL_BACK);
 	}
-	PROTECTED virtual void Create() {
-		if (vertices.size() > 0) {
+	PROTECTED virtual void Create()
+	{
+		if (vertices.size() > 0)
+		{
 			vertexBuffer.Reset();
 			D3D11_BUFFER_DESC vertexBufferDesc = {};
 			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -1342,7 +1579,8 @@ class Mesh {
 			App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
 		}
 
-		if (indices.size() > 0) {
+		if (indices.size() > 0)
+		{
 			indexBuffer.Reset();
 			D3D11_BUFFER_DESC indexBufferDesc = {};
 			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -1356,8 +1594,10 @@ class Mesh {
 
 		material.SetCBuffer(&constant, sizeof(Constant));
 	}
-	PUBLIC void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f)) {
-		if (shouldClear) {
+	PUBLIC void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f))
+	{
+		if (shouldClear)
+		{
 			vertices.clear();
 			indices.clear();
 		}
@@ -1379,8 +1619,10 @@ class Mesh {
 		indices.push_back(indexOffset + 2);
 		indices.push_back(indexOffset + 1);
 	}
-	PUBLIC void CreateCube(bool shouldClear = true) {
-		if (shouldClear) {
+	PUBLIC void CreateCube(bool shouldClear = true)
+	{
+		if (shouldClear)
+		{
 			vertices.clear();
 			indices.clear();
 		}
@@ -1392,16 +1634,19 @@ class Mesh {
 		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));		// up
 		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
 	}
-	PUBLIC void SetCullingMode(D3D11_CULL_MODE cullingMode) {
+	PUBLIC void SetCullingMode(D3D11_CULL_MODE cullingMode)
+	{
 		D3D11_RASTERIZER_DESC rasterizerDesc = {};
 		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 		rasterizerDesc.CullMode = cullingMode;
 		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
 	}
-	PUBLIC void Apply() {
+	PUBLIC void Apply()
+	{
 		Create();
 	}
-	PUBLIC virtual void Draw() {
+	PUBLIC virtual void Draw()
+	{
 		material.Attach();
 
 		constant.world =
@@ -1412,7 +1657,8 @@ class Mesh {
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		constant.lightDirection = DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f));
 
-		if (vertexBuffer == nullptr) {
+		if (vertexBuffer == nullptr)
+		{
 			return;
 		}
 
@@ -1422,7 +1668,8 @@ class Mesh {
 		UINT offset = 0;
 		App::GetGraphicsContext().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 
-		if (indexBuffer == nullptr) {
+		if (indexBuffer == nullptr)
+		{
 			App::GetGraphicsContext().Draw(static_cast<UINT>(vertices.size()), 0);
 		}
 		else {
@@ -1432,39 +1679,47 @@ class Mesh {
 	}
 };
 
-class Sprite {
+class Sprite
+{
 	PUBLIC Float3 position;
 	PUBLIC Float3 angles;
 	PUBLIC Float3 scale;
 	PUBLIC Texture texture;
 	PROTECTED Mesh mesh;
 
-	PUBLIC Sprite(const wchar_t* const filePath) {
+	PUBLIC Sprite(const wchar_t* const filePath)
+	{
 		Initialize();
 		Load(filePath);
 	}
-	PUBLIC ~Sprite() {
+	PUBLIC ~Sprite()
+	{
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		position = Float3(0.0f, 0.0f, 0.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
 		scale = Float3(1.0f, 1.0f, 1.0f);
 
 		mesh.material = Material(
-			"cbuffer Object : register(b0) {"
+			"cbuffer Object : register(b0)"
+			"{"
 			"    matrix _world;"
 			"};"
-			"cbuffer Camera : register(b1) {"
+			"cbuffer Camera : register(b1)"
+			"{"
 			"    matrix _view;"
 			"    matrix _projection;"
 			"};"
 			"Texture2D tex : register(t0);"
 			"SamplerState samp: register(s0);"
-			"struct VSOutput {"
+			"struct VSOutput"
+			"{"
 			"    float4 position : SV_POSITION;"
 			"    float2 uv : TEXCOORD;"
 			"};"
-			"VSOutput VS(float3 position : POSITION, float2 uv : TEXCOORD) {"
+			"VSOutput VS(float3 position : POSITION, float2 uv : TEXCOORD)"
+			"{"
 			"    VSOutput output = (VSOutput)0;"
 			"    output.position = mul(_world, float4(position, 1.0));"
 			"    output.position = mul(_view, output.position);"
@@ -1472,18 +1727,21 @@ class Sprite {
 			"    output.uv = uv;"
 			"    return output;"
 			"}"
-			"float4 PS(VSOutput pixel) : SV_TARGET {"
+			"float4 PS(VSOutput pixel) : SV_TARGET"
+			"{"
 			"    return max(0, tex.Sample(samp, pixel.uv));"
 			"}"
 		);
 	}
-	PUBLIC void Load(const wchar_t* const filePath) {
+	PUBLIC void Load(const wchar_t* const filePath)
+	{
 		texture.Load(filePath);
 		mesh.material.SetTexture(0, &texture);
 		mesh.CreateQuad(texture.GetSize() / 2.0f);
 		mesh.Apply();
 	}
-	PUBLIC virtual void Draw() {
+	PUBLIC virtual void Draw()
+	{
 		mesh.position = position;
 		mesh.angles = angles;
 		mesh.scale = scale;
@@ -1492,8 +1750,10 @@ class Sprite {
 };
 
 class Text {
-	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"") {
-		//if (text == L"") {
+	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"")
+	{
+		//if (text == L"")
+		//{
 		//	text = L"\uFFFD";
 		//}
 
@@ -1561,8 +1821,10 @@ class Text {
 		const int LEVEL = 17;
 		memset(bits, 0, mapped.RowPitch * textMetrics.tmHeight);
 
-		for (int y = origin.y; y < origin.y + bitmapSize.y; y++) {
-			for (int x = origin.x; x < origin.x + bitmapSize.x; x++) {
+		for (int y = origin.y; y < origin.y + bitmapSize.y; y++)
+		{
+			for (int x = origin.x; x < origin.x + bitmapSize.x; x++)
+			{
 				DWORD alpha = (255 * buffer[x - origin.x + bitmapSize.x * (y - origin.y)]) / (LEVEL - 1);
 				DWORD color = 0x00ffffff | (alpha << 24);
 				memcpy((BYTE*)bits + mapped.RowPitch * y + 4 * x, &color, sizeof(DWORD));
@@ -1573,17 +1835,21 @@ class Text {
 	}
 };
 
-class Voice : public IXAudio2VoiceCallback {
+class Voice : public IXAudio2VoiceCallback
+{
 	PROTECTED Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
 	PROTECTED IXAudio2SourceVoice* sourceVoice;
 
-	PUBLIC Voice(const wchar_t* const filePath) {
+	PUBLIC Voice(const wchar_t* const filePath)
+	{
 		Load(filePath);
 	}
-	PUBLIC ~Voice() {
+	PUBLIC ~Voice()
+	{
 		sourceVoice->DestroyVoice();
 	}
-	PUBLIC void Load(const wchar_t* const filePath) {
+	PUBLIC void Load(const wchar_t* const filePath)
+	{
 		App::GetAudioEngine();
 
 		Microsoft::WRL::ComPtr<IStream> stream;
@@ -1613,16 +1879,19 @@ class Voice : public IXAudio2VoiceCallback {
 
 		App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
 	}
-	PUBLIC virtual void Play() {
+	PUBLIC virtual void Play()
+	{
 		sourceVoice->Start();
 		SubmitBuffer();
 	}
-	PROTECTED void SubmitBuffer() {
+	PROTECTED void SubmitBuffer()
+	{
 		Microsoft::WRL::ComPtr<IMFSample> sample;
 		DWORD flags = 0;
 		sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
 
-		if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
+		if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
+		{
 			PROPVARIANT position = {};
 			position.vt = VT_I8;
 			position.hVal.QuadPart = 0;
@@ -1645,20 +1914,27 @@ class Voice : public IXAudio2VoiceCallback {
 		audioBuffer.pAudioData = audioData;
 		sourceVoice->SubmitSourceBuffer(&audioBuffer);
 	}
-	PROTECTED void _stdcall OnBufferEnd(void*) override {
+	PROTECTED void _stdcall OnBufferEnd(void*) override
+	{
 		SubmitBuffer();
 	}
-	PRIVATE void _stdcall OnBufferStart(void*) override {
+	PRIVATE void _stdcall OnBufferStart(void*) override
+	{
 	}
-	PRIVATE void _stdcall OnLoopEnd(void*) override {
+	PRIVATE void _stdcall OnLoopEnd(void*) override
+	{
 	}
-	PRIVATE void _stdcall OnStreamEnd() override {
+	PRIVATE void _stdcall OnStreamEnd() override
+	{
 	}
-	PRIVATE void _stdcall OnVoiceError(void*, HRESULT) override {
+	PRIVATE void _stdcall OnVoiceError(void*, HRESULT) override
+	{
 	}
-	PRIVATE void _stdcall OnVoiceProcessingPassStart(UINT32) override {
+	PRIVATE void _stdcall OnVoiceProcessingPassStart(UINT32) override
+	{
 	}
-	PRIVATE void _stdcall OnVoiceProcessingPassEnd() override {
+	PRIVATE void _stdcall OnVoiceProcessingPassEnd() override
+	{
 	}
 };
 

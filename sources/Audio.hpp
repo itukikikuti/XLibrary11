@@ -1,18 +1,22 @@
-class Audio {
+class Audio
+{
 	PROTECTED Microsoft::WRL::ComPtr<IXAudio2> audioEngine;
 	PROTECTED IXAudio2MasteringVoice* masteringVoice = nullptr;
 
-	PUBLIC Audio() {
+	PUBLIC Audio()
+	{
 		Initialize();
 	}
-	PUBLIC ~Audio() {
+	PUBLIC ~Audio()
+	{
 		MFShutdown();
 
 		masteringVoice->DestroyVoice();
 		
 		audioEngine->StopEngine();
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		App::GetWindowHandle();
 
 		XAudio2Create(audioEngine.GetAddressOf());
@@ -21,7 +25,8 @@ class Audio {
 
 		MFStartup(MF_VERSION);
 	}
-	PUBLIC IXAudio2& GetEngine() const {
+	PUBLIC IXAudio2& GetEngine() const
+	{
 		return *audioEngine.Get();
 	}
 };

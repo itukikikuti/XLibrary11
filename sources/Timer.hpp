@@ -1,4 +1,5 @@
-class Timer {
+class Timer
+{
 	PROTECTED float time = 0.0f;
 	PROTECTED float deltaTime = 0.0f;
 	PROTECTED int frameRate = 0;
@@ -7,26 +8,32 @@ class Timer {
 	LARGE_INTEGER preCount;
 	LARGE_INTEGER frequency;
 
-	PUBLIC Timer() {
+	PUBLIC Timer()
+	{
 		Initialize();
 	}
-	PUBLIC ~Timer() {
+	PUBLIC ~Timer()
+	{
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		preCount = GetCounter();
 		frequency = GetCountFrequency();
 	}
-	PUBLIC float GetTime() const {
+	PUBLIC float GetTime() const
+	{
 		return time;
 	}
-	PUBLIC float GetDeltaTime() const {
+	PUBLIC float GetDeltaTime() const
+	{
 		return deltaTime;
 	}
-	PUBLIC int GetFrameRate() const {
+	PUBLIC int GetFrameRate() const
+	{
 		return frameRate;
 	}
-	PUBLIC void Update() {
-
+	PUBLIC void Update()
+	{
 		LARGE_INTEGER count = GetCounter();
 		deltaTime = (float)(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
 		preCount = GetCounter();
@@ -42,12 +49,14 @@ class Timer {
 			second -= 1.0f;
 		}
 	}
-	PROTECTED LARGE_INTEGER GetCounter() const {
+	PROTECTED LARGE_INTEGER GetCounter() const
+	{
 		LARGE_INTEGER counter;
 		QueryPerformanceCounter(&counter);
 		return counter;
 	}
-	PROTECTED LARGE_INTEGER GetCountFrequency() const {
+	PROTECTED LARGE_INTEGER GetCountFrequency() const
+	{
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency;

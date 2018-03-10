@@ -1,6 +1,8 @@
 ﻿class Text {
-	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"") {
-		//if (text == L"") {
+	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"")
+	{
+		//if (text == L"")
+		//{
 		//	text = L"\uFFFD";
 		//}
 
@@ -68,8 +70,10 @@
 		const int LEVEL = 17;
 		memset(bits, 0, mapped.RowPitch * textMetrics.tmHeight);
 
-		for (int y = origin.y; y < origin.y + bitmapSize.y; y++) {
-			for (int x = origin.x; x < origin.x + bitmapSize.x; x++) {
+		for (int y = origin.y; y < origin.y + bitmapSize.y; y++)
+		{
+			for (int x = origin.x; x < origin.x + bitmapSize.x; x++)
+			{
 				DWORD alpha = (255 * buffer[x - origin.x + bitmapSize.x * (y - origin.y)]) / (LEVEL - 1);
 				DWORD color = 0x00ffffff | (alpha << 24);
 				memcpy((BYTE*)bits + mapped.RowPitch * y + 4 * x, &color, sizeof(DWORD));

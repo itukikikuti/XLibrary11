@@ -6,12 +6,14 @@
 using namespace std;
 using namespace DirectX;
 
-int Main() {
+int Main()
+{
 	Library::Generate(L"sources/App.hpp", L"XLibrary11.hpp");
 
 	Sprite sprite(L"assets/box.jpg");
 
-	while (App::Refresh()) {
+	while (App::Refresh())
+	{
 		sprite.Draw();
 	}
 

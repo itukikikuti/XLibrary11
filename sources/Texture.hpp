@@ -1,23 +1,29 @@
-﻿class Texture {
+﻿class Texture
+{
 	PROTECTED int width;
 	PROTECTED int height;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
-	PUBLIC Texture() {
+	PUBLIC Texture()
+	{
 		std::unique_ptr<BYTE[]> buffer(new BYTE[4]{ 0xff, 0x00, 0xff, 0xff });
 		Create(1, 1, buffer.get());
 	}
-	PUBLIC Texture(const wchar_t* const filePath) {
+	PUBLIC Texture(const wchar_t* const filePath)
+	{
 		Load(filePath);
 	}
-	PUBLIC Texture(int width, int height, BYTE* buffer) {
+	PUBLIC Texture(int width, int height, BYTE* buffer)
+	{
 		Create(width, height, buffer);
 	}
-	PUBLIC virtual ~Texture() {
+	PUBLIC virtual ~Texture()
+	{
 	}
-	PROTECTED virtual void Create(int width, int height, const BYTE* const buffer) {
+	PROTECTED virtual void Create(int width, int height, const BYTE* const buffer)
+	{
 		this->width = width;
 		this->height = height;
 
@@ -65,7 +71,8 @@
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
 	}
-	PUBLIC void Load(const wchar_t* const filePath) {
+	PUBLIC void Load(const wchar_t* const filePath)
+	{
 		App::GetWindowHandle();
 
 		Microsoft::WRL::ComPtr<IWICImagingFactory> factory = nullptr;
@@ -83,7 +90,8 @@
 		frame->GetPixelFormat(&pixelFormat);
 		std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
 
-		if (pixelFormat != GUID_WICPixelFormat32bppRGBA) {
+		if (pixelFormat != GUID_WICPixelFormat32bppRGBA)
+		{
 			Microsoft::WRL::ComPtr<IWICFormatConverter> formatConverter = nullptr;
 			factory->CreateFormatConverter(formatConverter.GetAddressOf());
 
@@ -91,19 +99,23 @@
 
 			formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
 		}
-		else {
+		else
+		{
 			frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
 		}
 
 		Create(width, height, buffer.get());
 	}
-	PUBLIC Float2 GetSize() const {
+	PUBLIC Float2 GetSize() const
+	{
 		return Float2(static_cast<float>(width), static_cast<float>(height));
 	}
-	PUBLIC void SetSize(float width, float height) {
+	PUBLIC void SetSize(float width, float height)
+	{
 
 	}
-	PUBLIC virtual void Attach(int slot) {
+	PUBLIC virtual void Attach(int slot)
+	{
 		App::GetGraphicsContext().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
 		App::GetGraphicsContext().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
 	}

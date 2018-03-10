@@ -38,7 +38,8 @@ XLIBRARY_NAMESPACE_BEGIN
 
 #include "Math.hpp"
 
-class App final {
+class App final
+{
 	PUBLIC static constexpr wchar_t* NAME = L"XLibrary11";
 
 #include "Window.hpp"
@@ -48,7 +49,8 @@ class App final {
 #include "Timer.hpp"
 
 	PUBLIC App() = delete;
-	PUBLIC static bool Refresh() {
+	PUBLIC static bool Refresh()
+	{
 		GetGraphicsMemory().Present(1, 0);
 
 		GetGraphics().Update();
@@ -56,98 +58,127 @@ class App final {
 		GetTimer().Update();
 		return GetWindow().Update();
 	}
-	PUBLIC static void Initialize() {
+	PUBLIC static void Initialize()
+	{
 		static bool isInitialized = false;
 
-		if (!isInitialized) {
+		if (!isInitialized)
+		{
 			CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 			isInitialized = true;
 		}
 	}
-	PUBLIC static HWND GetWindowHandle() {
+	PUBLIC static HWND GetWindowHandle()
+	{
 		return GetWindow().GetHandle();
 	}
-	PUBLIC static DirectX::XMINT2 GetWindowSize() {
+	PUBLIC static DirectX::XMINT2 GetWindowSize()
+	{
 		return GetWindow().GetSize();
 	}
-	PUBLIC static void SetWindowSize(int width, int height) {
+	PUBLIC static void SetWindowSize(int width, int height)
+	{
 		GetWindow().SetSize(width, height);
 	}
-	PUBLIC static wchar_t* const GetTitle() {
+	PUBLIC static wchar_t* const GetTitle()
+	{
 		return GetWindow().GetTitle();
 	}
-	PUBLIC static void SetTitle(const wchar_t* const title) {
+	PUBLIC static void SetTitle(const wchar_t* const title)
+	{
 		GetWindow().SetTitle(title);
 	}
-	PUBLIC static void SetFullScreen(bool isFullScreen) {
+	PUBLIC static void SetFullScreen(bool isFullScreen)
+	{
 		GetWindow().SetFullScreen(isFullScreen);
 	}
-	PUBLIC static void AddProcedure(Window::Proceedable* const procedure) {
+	PUBLIC static void AddProcedure(Window::Proceedable* const procedure)
+	{
 		GetWindow().AddProcedure(procedure);
 	}
-	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure) {
+	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure)
+	{
 		GetWindow().RemoveProcedure(procedure);
 	}
-	PUBLIC static ID3D11Device& GetGraphicsDevice() {
+	PUBLIC static ID3D11Device& GetGraphicsDevice()
+	{
 		return GetGraphics().GetDevice();
 	}
-	PUBLIC static ID3D11DeviceContext& GetGraphicsContext() {
+	PUBLIC static ID3D11DeviceContext& GetGraphicsContext()
+	{
 		return GetGraphics().GetContext();
 	}
-	PUBLIC static IDXGISwapChain& GetGraphicsMemory() {
+	PUBLIC static IDXGISwapChain& GetGraphicsMemory()
+	{
 		return GetGraphics().GetMemory();
 	}
-	PUBLIC static IXAudio2& GetAudioEngine() {
+	PUBLIC static IXAudio2& GetAudioEngine()
+	{
 		return GetAudio().GetEngine();
 	}
-	PUBLIC static bool GetKey(int VK_CODE) {
+	PUBLIC static bool GetKey(int VK_CODE)
+	{
 		return GetInput().GetKey(VK_CODE);
 	}
-	PUBLIC static bool GetKeyUp(int VK_CODE) {
+	PUBLIC static bool GetKeyUp(int VK_CODE)
+	{
 		return GetInput().GetKeyUp(VK_CODE);
 	}
-	PUBLIC static bool GetKeyDown(int VK_CODE) {
+	PUBLIC static bool GetKeyDown(int VK_CODE)
+	{
 		return GetInput().GetKeyDown(VK_CODE);
 	}
-	PUBLIC static Float2 GetMousePosition() {
+	PUBLIC static Float2 GetMousePosition()
+	{
 		return GetInput().GetMousePosition();
 	}
-	PUBLIC static void SetMousePosition(float x, float y) {
+	PUBLIC static void SetMousePosition(float x, float y)
+	{
 		GetInput().SetMousePosition(x, y);
 	}
-	PUBLIC static void SetShowCursor(bool isShowCursor) {
+	PUBLIC static void SetShowCursor(bool isShowCursor)
+	{
 		GetInput().SetShowCursor(isShowCursor);
 	}
-	PUBLIC static float GetTime() {
+	PUBLIC static float GetTime()
+	{
 		return GetTimer().GetTime();
 	}
-	PUBLIC static float GetDeltaTime() {
+	PUBLIC static float GetDeltaTime()
+	{
 		return GetTimer().GetDeltaTime();
 	}
-	PUBLIC static int GetFrameRate() {
+	PUBLIC static int GetFrameRate()
+	{
 		return GetTimer().GetFrameRate();
 	}
-	PUBLIC static void AddFont(const wchar_t* filePath) {
+	PUBLIC static void AddFont(const wchar_t* filePath)
+	{
 		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
 	}
-	PRIVATE static Window& GetWindow() {
+	PRIVATE static Window& GetWindow()
+	{
 		static std::unique_ptr<Window> window(new Window());
 		return *window.get();
 	}
-	PRIVATE static Graphics& GetGraphics() {
+	PRIVATE static Graphics& GetGraphics()
+	{
 		static std::unique_ptr<Graphics> graphics(new Graphics());
 		return *graphics.get();
 	}
-	PRIVATE static Audio& GetAudio() {
+	PRIVATE static Audio& GetAudio()
+	{
 		static std::unique_ptr<Audio> audio(new Audio());
 		return *audio.get();
 	}
-	PRIVATE static Input& GetInput() {
+	PRIVATE static Input& GetInput()
+	{
 		static std::unique_ptr<Input> input(new Input());
 		return *input.get();
 	}
-	PRIVATE static Timer& GetTimer() {
+	PRIVATE static Timer& GetTimer()
+	{
 		static std::unique_ptr<Timer> timer(new Timer());
 		return *timer.get();
 	}

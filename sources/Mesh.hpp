@@ -1,5 +1,6 @@
 ﻿class Mesh {
-	PROTECTED struct Constant {
+	PROTECTED struct Constant
+	{
 		DirectX::XMMATRIX world;
 		Float3 lightDirection;
 	};
@@ -15,34 +16,41 @@
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer = nullptr;
 	PROTECTED Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
 
-	PUBLIC Mesh() {
+	PUBLIC Mesh()
+	{
 		Initialize();
 		Create();
 	}
-	PUBLIC virtual ~Mesh() {
+	PUBLIC virtual ~Mesh()
+	{
 	}
-	PROTECTED virtual void Initialize() {
+	PROTECTED virtual void Initialize()
+	{
 		position = Float3(0.0f, 0.0f, 0.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
 		scale = Float3(1.0f, 1.0f, 1.0f);
 
 		material = Material(
-			"cbuffer Object : register(b0) {"
+			"cbuffer Object : register(b0)"
+			"{"
 			"    matrix _world;"
 			"    float3 _lightDirection;"
 			"};"
-			"cbuffer Camera : register(b1) {"
+			"cbuffer Camera : register(b1)"
+			"{"
 			"    matrix _view;"
 			"    matrix _projection;"
 			"};"
 			"Texture2D tex : register(t0);"
 			"SamplerState samp: register(s0);"
-			"struct VSOutput {"
+			"struct VSOutput"
+			"{"
 			"    float4 position : SV_POSITION;"
 			"    float4 normal : NORMAL;"
 			"    float2 uv : TEXCOORD;"
 			"};"
-			"VSOutput VS(float3 position : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD) {"
+			"VSOutput VS(float3 position : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD)"
+			"{"
 			"    VSOutput output = (VSOutput)0;"
 			"    output.position = mul(_world, float4(position, 1.0));"
 			"    output.position = mul(_view, output.position);"
@@ -51,7 +59,8 @@
 			"    output.uv = uv;"
 			"    return output;"
 			"}"
-			"float4 PS(VSOutput pixel) : SV_TARGET {"
+			"float4 PS(VSOutput pixel) : SV_TARGET"
+			"{"
 			"    float diffuse = dot(-_lightDirection, normalize(pixel.normal).xyz) + 0.25;"
 			"    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
 			"}"
@@ -59,8 +68,10 @@
 
 		SetCullingMode(D3D11_CULL_BACK);
 	}
-	PROTECTED virtual void Create() {
-		if (vertices.size() > 0) {
+	PROTECTED virtual void Create()
+	{
+		if (vertices.size() > 0)
+		{
 			vertexBuffer.Reset();
 			D3D11_BUFFER_DESC vertexBufferDesc = {};
 			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -72,7 +83,8 @@
 			App::GetGraphicsDevice().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
 		}
 
-		if (indices.size() > 0) {
+		if (indices.size() > 0)
+		{
 			indexBuffer.Reset();
 			D3D11_BUFFER_DESC indexBufferDesc = {};
 			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -86,8 +98,10 @@
 
 		material.SetCBuffer(&constant, sizeof(Constant));
 	}
-	PUBLIC void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f)) {
-		if (shouldClear) {
+	PUBLIC void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f))
+	{
+		if (shouldClear)
+		{
 			vertices.clear();
 			indices.clear();
 		}
@@ -109,8 +123,10 @@
 		indices.push_back(indexOffset + 2);
 		indices.push_back(indexOffset + 1);
 	}
-	PUBLIC void CreateCube(bool shouldClear = true) {
-		if (shouldClear) {
+	PUBLIC void CreateCube(bool shouldClear = true)
+	{
+		if (shouldClear)
+		{
 			vertices.clear();
 			indices.clear();
 		}
@@ -122,16 +138,19 @@
 		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));		// up
 		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
 	}
-	PUBLIC void SetCullingMode(D3D11_CULL_MODE cullingMode) {
+	PUBLIC void SetCullingMode(D3D11_CULL_MODE cullingMode)
+	{
 		D3D11_RASTERIZER_DESC rasterizerDesc = {};
 		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 		rasterizerDesc.CullMode = cullingMode;
 		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
 	}
-	PUBLIC void Apply() {
+	PUBLIC void Apply()
+	{
 		Create();
 	}
-	PUBLIC virtual void Draw() {
+	PUBLIC virtual void Draw()
+	{
 		material.Attach();
 
 		constant.world =
@@ -142,7 +161,8 @@
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		constant.lightDirection = DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f));
 
-		if (vertexBuffer == nullptr) {
+		if (vertexBuffer == nullptr)
+		{
 			return;
 		}
 
@@ -152,7 +172,8 @@
 		UINT offset = 0;
 		App::GetGraphicsContext().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 
-		if (indexBuffer == nullptr) {
+		if (indexBuffer == nullptr)
+		{
 			App::GetGraphicsContext().Draw(static_cast<UINT>(vertices.size()), 0);
 		}
 		else {
