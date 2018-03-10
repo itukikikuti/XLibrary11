@@ -18,6 +18,7 @@
 #include <Shlwapi.h>
 #include <wincodec.h>
 #include <strsafe.h>
+#include <crtdbg.h>
 #include <wrl.h>
 
 #pragma comment(lib, "d3d11.lib")
@@ -30,15 +31,15 @@
 
 XLIBRARY_NAMESPACE_BEGIN
 
-#define Main() WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+#define Main() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 #define PUBLIC public:
 #define PRIVATE private:
 #define PROTECTED protected:
 
-#include "Geometry.hpp"
+#include "Math.hpp"
 
-class App {
-	PUBLIC static constexpr wchar_t* name = L"XLibrary11";
+class App final {
+	PUBLIC static constexpr wchar_t* NAME = L"XLibrary11";
 
 #include "Window.hpp"
 #include "Graphics.hpp"
@@ -47,13 +48,30 @@ class App {
 #include "Timer.hpp"
 
 	PUBLIC App() = delete;
+	PUBLIC static bool Refresh() {
+		GetGraphicsMemory().Present(1, 0);
+
+		GetGraphics().Update();
+		GetInput().Update();
+		GetTimer().Update();
+		return GetWindow().Update();
+	}
+	PUBLIC static void Initialize() {
+		static bool isInitialized = false;
+
+		if (!isInitialized) {
+			CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+			_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+			isInitialized = true;
+		}
+	}
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindow().GetHandle();
 	}
-	PUBLIC static Float2 GetWindowSize() {
+	PUBLIC static DirectX::XMINT2 GetWindowSize() {
 		return GetWindow().GetSize();
 	}
-	PUBLIC static void SetWindowSize(float width, float height) {
+	PUBLIC static void SetWindowSize(int width, int height) {
 		GetWindow().SetSize(width, height);
 	}
 	PUBLIC static wchar_t* const GetTitle() {
@@ -112,16 +130,6 @@ class App {
 	}
 	PUBLIC static void AddFont(const wchar_t* filePath) {
 		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
-	}
-	PUBLIC static bool Refresh() {
-		GetGraphicsMemory().Present(1, 0);
-
-		if (!GetWindow().Update()) return false;
-		GetGraphics().Update();
-		GetInput().Update();
-		GetTimer().Update();
-
-		return true;
 	}
 	PRIVATE static Window& GetWindow() {
 		static std::unique_ptr<Window> window(new Window());

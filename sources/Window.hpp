@@ -11,7 +11,7 @@
 		Initialize();
 	}
 	PUBLIC ~Window() {
-		UnregisterClassW(App::name, GetModuleHandleW(nullptr));
+		UnregisterClassW(App::NAME, GetModuleHandleW(nullptr));
 	}
 	PROTECTED virtual void Initialize() {
 		HINSTANCE instance = GetModuleHandleW(nullptr);
@@ -27,11 +27,11 @@
 		windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
 		windowClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 		windowClass.lpszMenuName = nullptr;
-		windowClass.lpszClassName = App::name;
+		windowClass.lpszClassName = App::NAME;
 		windowClass.hIconSm = nullptr;
 		RegisterClassExW(&windowClass);
 
-		handle = CreateWindowW(App::name, App::name, style, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
+		handle = CreateWindowW(App::NAME, App::NAME, style, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
 
 		SetSize(1280.0f, 720.0f);
 		ShowWindow(handle, SW_SHOWNORMAL);
@@ -39,20 +39,20 @@
 	PUBLIC HWND GetHandle() const {
 		return handle;
 	}
-	PUBLIC Float2 GetSize() const {
+	PUBLIC DirectX::XMINT2 GetSize() const {
 		RECT clientRect = {};
 		GetClientRect(handle, &clientRect);
 
-		return Float2(static_cast<float>(clientRect.right - clientRect.left), static_cast<float>(clientRect.bottom - clientRect.top));
+		return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 	}
-	PUBLIC void SetSize(float width, float height) {
+	PUBLIC void SetSize(int width, int height) {
 		RECT windowRect = {};
 		RECT clientRect = {};
 		GetWindowRect(handle, &windowRect);
 		GetClientRect(handle, &clientRect);
 
-		int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + static_cast<int>(width);
-		int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + static_cast<int>(height);
+		int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + width;
+		int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + height;
 
 		int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
 		int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
@@ -68,7 +68,7 @@
 		SetWindowTextW(handle, title);
 	}
 	PUBLIC void SetFullScreen(bool isFullScreen) {
-		static Float2 size = GetSize();
+		static DirectX::XMINT2 size = GetSize();
 
 		if (isFullScreen) {
 			size = GetSize();

@@ -2,35 +2,35 @@
 #pragma once
 
 #define OEMRESOURCE
-#include <windows.h>
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <wincodec.h>
-#include <xaudio2.h>
-#include <mfapi.h>
-#include <DirectXMath.h>
-#include <wrl.h>
-#include <memory>
-#include <vector>
 #include <forward_list>
 #include <fstream>
 #include <functional>
-#include <strsafe.h>
-#include <Shlwapi.h>
+#include <memory>
+#include <vector>
+#include <windows.h>
+#include <d3d11.h>
+#include <DirectXMath.h>
+#include <d3dcompiler.h>
+#include <xaudio2.h>
+#include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
+#include <Shlwapi.h>
+#include <wincodec.h>
+#include <strsafe.h>
+#include <wrl.h>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "xaudio2.lib")
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mfuuid.lib")
 #pragma comment(lib, "Shlwapi.lib")
-#pragma comment(lib, "xaudio2.lib")
 
 namespace XLibrary11 {
 
-#define Main() WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+#define Main() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 #define PUBLIC public:
 #define PRIVATE private:
 #define PROTECTED protected:
@@ -379,7 +379,7 @@ struct Vertex {
 
 
 class App {
-	PUBLIC static constexpr wchar_t* name = L"XLibrary11";
+	PUBLIC static constexpr wchar_t* NAME = L"XLibrary11";
 
 class Window {
 	PUBLIC class Proceedable {
@@ -394,7 +394,7 @@ class Window {
 		Initialize();
 	}
 	PUBLIC ~Window() {
-		UnregisterClassW(App::name, GetModuleHandleW(nullptr));
+		UnregisterClassW(App::NAME, GetModuleHandleW(nullptr));
 	}
 	PROTECTED virtual void Initialize() {
 		HINSTANCE instance = GetModuleHandleW(nullptr);
@@ -410,11 +410,11 @@ class Window {
 		windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
 		windowClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 		windowClass.lpszMenuName = nullptr;
-		windowClass.lpszClassName = App::name;
+		windowClass.lpszClassName = App::NAME;
 		windowClass.hIconSm = nullptr;
 		RegisterClassExW(&windowClass);
 
-		handle = CreateWindowW(App::name, App::name, style, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
+		handle = CreateWindowW(App::NAME, App::NAME, style, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
 
 		SetSize(1280.0f, 720.0f);
 		ShowWindow(handle, SW_SHOWNORMAL);
@@ -803,6 +803,16 @@ class Timer {
 
 
 	PUBLIC App() = delete;
+	PUBLIC static bool Refresh() {
+		GetGraphicsMemory().Present(1, 0);
+
+		if (!GetWindow().Update()) return false;
+		GetGraphics().Update();
+		GetInput().Update();
+		GetTimer().Update();
+
+		return true;
+	}
 	PUBLIC static HWND GetWindowHandle() {
 		return GetWindow().GetHandle();
 	}
@@ -868,16 +878,6 @@ class Timer {
 	}
 	PUBLIC static void AddFont(const wchar_t* filePath) {
 		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
-	}
-	PUBLIC static bool Refresh() {
-		GetGraphicsMemory().Present(1, 0);
-
-		if (!GetWindow().Update()) return false;
-		GetGraphics().Update();
-		GetInput().Update();
-		GetTimer().Update();
-
-		return true;
 	}
 	PRIVATE static Window& GetWindow() {
 		static std::unique_ptr<Window> window(new Window());

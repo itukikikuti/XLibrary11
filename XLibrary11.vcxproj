@@ -119,7 +119,7 @@
     <ClInclude Include="sources\Graphics.hpp" />
     <ClInclude Include="sources\Input.hpp" />
     <ClInclude Include="sources\Material.hpp" />
-    <ClInclude Include="sources\Geometry.hpp" />
+    <ClInclude Include="sources\Math.hpp" />
     <ClInclude Include="sources\Mesh.hpp" />
     <ClInclude Include="sources\Sprite.hpp" />
     <ClInclude Include="sources\Text.hpp" />

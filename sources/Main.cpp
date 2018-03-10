@@ -2,14 +2,12 @@
 #define XLIBRARY_NAMESPACE_END
 #include "App.hpp"
 #include "Library.cpp"
-#include <crtdbg.h>
 
 using namespace std;
 using namespace DirectX;
 
 int Main() {
 	Library::Generate(L"sources/App.hpp", L"XLibrary11.hpp");
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	Sprite sprite(L"assets/box.jpg");
 

@@ -45,7 +45,7 @@
     <ClInclude Include="sources\Voice.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Geometry.hpp">
+    <ClInclude Include="sources\Math.hpp">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>
