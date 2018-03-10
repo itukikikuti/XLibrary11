@@ -8,6 +8,7 @@
 
 	PUBLIC Sprite(const wchar_t* const filePath)
 	{
+		App::Initialize();
 		Initialize();
 		Load(filePath);
 	}

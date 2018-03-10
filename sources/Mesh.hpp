@@ -18,6 +18,7 @@
 
 	PUBLIC Mesh()
 	{
+		App::Initialize();
 		Initialize();
 		Create();
 	}

@@ -11,6 +11,7 @@
 
 	PUBLIC Window()
 	{
+		App::Initialize();
 		Initialize();
 	}
 	PUBLIC ~Window()

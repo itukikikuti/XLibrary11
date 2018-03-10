@@ -20,6 +20,7 @@ class Camera : public App::Window::Proceedable
 
 	PUBLIC Camera()
 	{
+		App::Initialize();
 		Initialize();
 		Create();
 	}

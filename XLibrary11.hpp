@@ -480,6 +480,7 @@ class Window
 
 	PUBLIC Window()
 	{
+		App::Initialize();
 		Initialize();
 	}
 	PUBLIC ~Window()
@@ -631,6 +632,7 @@ class Graphics : public App::Window::Proceedable
 
 	PUBLIC Graphics()
 	{
+		App::Initialize();
 		Initialize();
 		Create();
 	}
@@ -787,6 +789,7 @@ class Audio
 
 	PUBLIC Audio()
 	{
+		App::Initialize();
 		Initialize();
 	}
 	PUBLIC ~Audio()
@@ -822,6 +825,7 @@ class Input
 
 	PUBLIC Input()
 	{
+		App::Initialize();
 		Initialize();
 	}
 	PUBLIC ~Input()
@@ -895,6 +899,7 @@ class Timer
 
 	PUBLIC Timer()
 	{
+		App::Initialize();
 		Initialize();
 	}
 	PUBLIC ~Timer()
@@ -1095,15 +1100,18 @@ class Texture
 
 	PUBLIC Texture()
 	{
+		App::Initialize();
 		std::unique_ptr<BYTE[]> buffer(new BYTE[4]{ 0xff, 0x00, 0xff, 0xff });
 		Create(1, 1, buffer.get());
 	}
 	PUBLIC Texture(const wchar_t* const filePath)
 	{
+		App::Initialize();
 		Load(filePath);
 	}
 	PUBLIC Texture(int width, int height, BYTE* buffer)
 	{
+		App::Initialize();
 		Create(width, height, buffer);
 	}
 	PUBLIC virtual ~Texture()
@@ -1219,6 +1227,7 @@ class Material
 
 	PUBLIC Material()
 	{
+		App::Initialize();
 		char* source =
 			"cbuffer Object : register(b0)"
 			"{"
@@ -1247,11 +1256,13 @@ class Material
 	}
 	PUBLIC Material(char* source)
 	{
+		App::Initialize();
 		Initialize();
 		Create(source);
 	}
 	PUBLIC Material(const wchar_t* const filePath)
 	{
+		App::Initialize();
 		Initialize();
 		Load(filePath);
 	}
@@ -1376,6 +1387,7 @@ class Camera : public App::Window::Proceedable
 
 	PUBLIC Camera()
 	{
+		App::Initialize();
 		Initialize();
 		Create();
 	}
@@ -1514,6 +1526,7 @@ class Mesh {
 
 	PUBLIC Mesh()
 	{
+		App::Initialize();
 		Initialize();
 		Create();
 	}
@@ -1689,6 +1702,7 @@ class Sprite
 
 	PUBLIC Sprite(const wchar_t* const filePath)
 	{
+		App::Initialize();
 		Initialize();
 		Load(filePath);
 	}
@@ -1842,6 +1856,7 @@ class Voice : public IXAudio2VoiceCallback
 
 	PUBLIC Voice(const wchar_t* const filePath)
 	{
+		App::Initialize();
 		Load(filePath);
 	}
 	PUBLIC ~Voice()

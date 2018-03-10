@@ -16,6 +16,7 @@
 
 	PUBLIC Graphics()
 	{
+		App::Initialize();
 		Initialize();
 		Create();
 	}

@@ -7,6 +7,7 @@ class Input
 
 	PUBLIC Input()
 	{
+		App::Initialize();
 		Initialize();
 	}
 	PUBLIC ~Input()

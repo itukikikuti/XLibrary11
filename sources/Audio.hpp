@@ -5,6 +5,7 @@ class Audio
 
 	PUBLIC Audio()
 	{
+		App::Initialize();
 		Initialize();
 	}
 	PUBLIC ~Audio()

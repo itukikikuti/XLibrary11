@@ -8,15 +8,18 @@
 
 	PUBLIC Texture()
 	{
+		App::Initialize();
 		std::unique_ptr<BYTE[]> buffer(new BYTE[4]{ 0xff, 0x00, 0xff, 0xff });
 		Create(1, 1, buffer.get());
 	}
 	PUBLIC Texture(const wchar_t* const filePath)
 	{
+		App::Initialize();
 		Load(filePath);
 	}
 	PUBLIC Texture(int width, int height, BYTE* buffer)
 	{
+		App::Initialize();
 		Create(width, height, buffer);
 	}
 	PUBLIC virtual ~Texture()

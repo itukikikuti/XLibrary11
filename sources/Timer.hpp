@@ -10,6 +10,7 @@ class Timer
 
 	PUBLIC Timer()
 	{
+		App::Initialize();
 		Initialize();
 	}
 	PUBLIC ~Timer()

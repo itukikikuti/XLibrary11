@@ -9,6 +9,7 @@
 
 	PUBLIC Material()
 	{
+		App::Initialize();
 		char* source =
 			"cbuffer Object : register(b0)"
 			"{"
@@ -37,11 +38,13 @@
 	}
 	PUBLIC Material(char* source)
 	{
+		App::Initialize();
 		Initialize();
 		Create(source);
 	}
 	PUBLIC Material(const wchar_t* const filePath)
 	{
+		App::Initialize();
 		Initialize();
 		Load(filePath);
 	}

@@ -5,6 +5,7 @@ class Voice : public IXAudio2VoiceCallback
 
 	PUBLIC Voice(const wchar_t* const filePath)
 	{
+		App::Initialize();
 		Load(filePath);
 	}
 	PUBLIC ~Voice()
