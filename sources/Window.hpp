@@ -10,35 +10,24 @@ public:
     Window()
     {
         App::Initialize();
-        Initialize();
+
+        HINSTANCE instance = GetModuleHandleW(nullptr);
+
+        WNDCLASSW windowClass = {};
+        windowClass.lpfnWndProc = ProceedMessage;
+        windowClass.hInstance = instance;
+        windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED);
+        windowClass.lpszClassName = App::NAME;
+        RegisterClassW(&windowClass);
+
+        handle = CreateWindowW(App::NAME, App::NAME, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, instance, nullptr);
+
+        SetSize(1280, 720);
+        ShowWindow(handle, SW_SHOWNORMAL);
     }
     ~Window()
     {
         UnregisterClassW(App::NAME, GetModuleHandleW(nullptr));
-    }
-    void Initialize()
-    {
-        HINSTANCE instance = GetModuleHandleW(nullptr);
-
-        WNDCLASSEXW windowClass = {};
-        windowClass.cbSize = sizeof(WNDCLASSEXW);
-        windowClass.style = CS_HREDRAW | CS_VREDRAW;
-        windowClass.lpfnWndProc = ProceedMessage;
-        windowClass.cbClsExtra = 0;
-        windowClass.cbWndExtra = 0;
-        windowClass.hInstance = instance;
-        windowClass.hIcon = nullptr;
-        windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
-        windowClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-        windowClass.lpszMenuName = nullptr;
-        windowClass.lpszClassName = App::NAME;
-        windowClass.hIconSm = nullptr;
-        RegisterClassExW(&windowClass);
-
-        handle = CreateWindowW(App::NAME, App::NAME, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
-
-        SetSize(1280.0f, 720.0f);
-        ShowWindow(handle, SW_SHOWNORMAL);
     }
     HWND GetHandle() const
     {
@@ -60,7 +49,6 @@ public:
 
         int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + width;
         int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + height;
-
         int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
         int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
 

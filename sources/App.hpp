@@ -1,6 +1,6 @@
 ﻿// © 2017 itukikikuti
 // https://github.com/itukikikuti/XLibrary11
-// GNU General Public License v3.0
+// MIT License
 #pragma once
 
 #define OEMRESOURCE
