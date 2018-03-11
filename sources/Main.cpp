@@ -8,14 +8,14 @@ using namespace DirectX;
 
 int MAIN()
 {
-	Library::Generate(L"sources/App.hpp", L"XLibrary11.hpp");
+    Library::Generate(L"sources/App.hpp", L"XLibrary11.hpp");
 
-	Sprite sprite(L"assets/box.jpg");
+    Sprite sprite(L"assets/box.jpg");
 
-	while (App::Refresh())
-	{
-		sprite.Draw();
-	}
+    while (App::Refresh())
+    {
+        sprite.Draw();
+    }
 
-	return 0;
+    return 0;
 }

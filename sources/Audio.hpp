@@ -1,36 +1,36 @@
 class Audio
 {
 public:
-	Audio()
-	{
-		App::Initialize();
-		Initialize();
-	}
-	~Audio()
-	{
-		MFShutdown();
+    Audio()
+    {
+        App::Initialize();
+        Initialize();
+    }
+    ~Audio()
+    {
+        MFShutdown();
 
-		masteringVoice->DestroyVoice();
+        masteringVoice->DestroyVoice();
 
-		audioEngine->StopEngine();
-	}
-	IXAudio2& GetEngine() const
-	{
-		return *audioEngine;
-	}
+        audioEngine->StopEngine();
+    }
+    IXAudio2& GetEngine() const
+    {
+        return *audioEngine;
+    }
 
 private:
-	ATL::CComPtr<IXAudio2> audioEngine;
-	IXAudio2MasteringVoice* masteringVoice = nullptr;
+    ATL::CComPtr<IXAudio2> audioEngine;
+    IXAudio2MasteringVoice* masteringVoice = nullptr;
 
-	virtual void Initialize()
-	{
-		App::GetWindowHandle();
+    virtual void Initialize()
+    {
+        App::GetWindowHandle();
 
-		XAudio2Create(&audioEngine);
+        XAudio2Create(&audioEngine);
 
-		audioEngine->CreateMasteringVoice(&masteringVoice);
+        audioEngine->CreateMasteringVoice(&masteringVoice);
 
-		MFStartup(MF_VERSION);
-	}
+        MFStartup(MF_VERSION);
+    }
 };
