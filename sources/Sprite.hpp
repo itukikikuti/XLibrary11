@@ -1,21 +1,38 @@
 ﻿class Sprite
 {
-	PUBLIC Float3 position;
-	PUBLIC Float3 angles;
-	PUBLIC Float3 scale;
-	PUBLIC Texture texture;
-	PROTECTED Mesh mesh;
+public:
+	Float3 position;
+	Float3 angles;
+	Float3 scale;
+	Texture texture;
 
-	PUBLIC Sprite(const wchar_t* const filePath)
+	Sprite(const wchar_t* const filePath)
 	{
 		App::Initialize();
 		Initialize();
 		Load(filePath);
 	}
-	PUBLIC ~Sprite()
+	~Sprite()
 	{
 	}
-	PROTECTED virtual void Initialize()
+	void Load(const wchar_t* const filePath)
+	{
+		texture.Load(filePath);
+		mesh.material.SetTexture(0, &texture);
+		mesh.CreateQuad(texture.GetSize() / 2.0f);
+		mesh.Apply();
+	}
+	virtual void Draw()
+	{
+		mesh.position = position;
+		mesh.angles = angles;
+		mesh.scale = scale;
+		mesh.Draw();
+	}
+private:
+	Mesh mesh;
+
+	virtual void Initialize()
 	{
 		position = Float3(0.0f, 0.0f, 0.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
@@ -52,19 +69,5 @@
 			"    return max(0, tex.Sample(samp, pixel.uv));"
 			"}"
 		);
-	}
-	PUBLIC void Load(const wchar_t* const filePath)
-	{
-		texture.Load(filePath);
-		mesh.material.SetTexture(0, &texture);
-		mesh.CreateQuad(texture.GetSize() / 2.0f);
-		mesh.Apply();
-	}
-	PUBLIC virtual void Draw()
-	{
-		mesh.position = position;
-		mesh.angles = angles;
-		mesh.scale = scale;
-		mesh.Draw();
 	}
 };

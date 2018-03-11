@@ -1,39 +1,27 @@
 class Timer
 {
-	PROTECTED float time = 0.0f;
-	PROTECTED float deltaTime = 0.0f;
-	PROTECTED int frameRate = 0;
-	PROTECTED float second = 0.0f;
-	PROTECTED int frameCount = 0;
-	LARGE_INTEGER preCount;
-	LARGE_INTEGER frequency;
-
-	PUBLIC Timer()
+public:
+	Timer()
 	{
 		App::Initialize();
 		Initialize();
 	}
-	PUBLIC ~Timer()
+	~Timer()
 	{
 	}
-	PROTECTED virtual void Initialize()
-	{
-		preCount = GetCounter();
-		frequency = GetCountFrequency();
-	}
-	PUBLIC float GetTime() const
+	float GetTime() const
 	{
 		return time;
 	}
-	PUBLIC float GetDeltaTime() const
+	float GetDeltaTime() const
 	{
 		return deltaTime;
 	}
-	PUBLIC int GetFrameRate() const
+	int GetFrameRate() const
 	{
 		return frameRate;
 	}
-	PUBLIC void Update()
+	void Update()
 	{
 		LARGE_INTEGER count = GetCounter();
 		deltaTime = (float)(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
@@ -50,13 +38,28 @@ class Timer
 			second -= 1.0f;
 		}
 	}
-	PROTECTED LARGE_INTEGER GetCounter() const
+
+private:
+	float time = 0.0f;
+	float deltaTime = 0.0f;
+	int frameRate = 0;
+	float second = 0.0f;
+	int frameCount = 0;
+	LARGE_INTEGER preCount;
+	LARGE_INTEGER frequency;
+
+	virtual void Initialize()
+	{
+		preCount = GetCounter();
+		frequency = GetCountFrequency();
+	}
+	LARGE_INTEGER GetCounter() const
 	{
 		LARGE_INTEGER counter;
 		QueryPerformanceCounter(&counter);
 		return counter;
 	}
-	PROTECTED LARGE_INTEGER GetCountFrequency() const
+	LARGE_INTEGER GetCountFrequency() const
 	{
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);

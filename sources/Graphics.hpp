@@ -1,30 +1,61 @@
 ﻿class Graphics : public App::Window::Proceedable
 {
-	PROTECTED struct Constant
-	{
-		DirectX::XMMATRIX view;
-		DirectX::XMMATRIX projection;
-	};
-
-	PROTECTED Constant constant;
-	PROTECTED ATL::CComPtr<ID3D11Device> device = nullptr;
-	PROTECTED ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11DeviceContext> context = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
-
-	PUBLIC Graphics()
+public:
+	Graphics()
 	{
 		App::Initialize();
 		Initialize();
 		Create();
 	}
-	PUBLIC ~Graphics()
+	~Graphics()
 	{
 		App::RemoveProcedure(this);
 	}
-	PROTECTED virtual void Initialize()
+	ID3D11Device& GetDevice() const
+	{
+		return *device;
+	}
+	IDXGISwapChain& GetMemory() const
+	{
+		return *swapChain;
+	}
+	ID3D11DeviceContext& GetContext() const
+	{
+		return *context;
+	}
+	void Update()
+	{
+		swapChain->Present(1, 0);
+
+		context->UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
+		context->VSSetConstantBuffers(1, 1, &constantBuffer.p);
+		context->HSSetConstantBuffers(1, 1, &constantBuffer.p);
+		context->DSSetConstantBuffers(1, 1, &constantBuffer.p);
+		context->GSSetConstantBuffers(1, 1, &constantBuffer.p);
+		context->PSSetConstantBuffers(1, 1, &constantBuffer.p);
+
+		context->OMSetRenderTargets(1, &renderTargetView.p, nullptr);
+
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		context->ClearRenderTargetView(renderTargetView, color);
+	}
+
+private:
+	struct Constant
+	{
+		DirectX::XMMATRIX view;
+		DirectX::XMMATRIX projection;
+	};
+
+	Constant constant;
+	ATL::CComPtr<ID3D11Device> device = nullptr;
+	ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
+	ATL::CComPtr<ID3D11DeviceContext> context = nullptr;
+	ATL::CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+	ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
+	ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
+
+	virtual void Initialize()
 	{
 		int flags = 0;
 #if defined(DEBUG) || defined(_DEBUG)
@@ -99,7 +130,7 @@
 
 		App::AddProcedure(this);
 	}
-	PROTECTED virtual void Create()
+	virtual void Create()
 	{
 		D3D11_VIEWPORT viewPort = {};
 		viewPort.Width = App::GetWindowSize().x;
@@ -118,39 +149,11 @@
 		constant.view = DirectX::XMMatrixIdentity();
 		constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
 	}
-	PUBLIC ID3D11Device& GetDevice() const
-	{
-		return *device;
-	}
-	PUBLIC IDXGISwapChain& GetMemory() const
-	{
-		return *swapChain;
-	}
-	PUBLIC ID3D11DeviceContext& GetContext() const
-	{
-		return *context;
-	}
-	PUBLIC void Update()
-	{
-		swapChain->Present(1, 0);
-
-		context->UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-		context->VSSetConstantBuffers(1, 1, &constantBuffer.p);
-		context->HSSetConstantBuffers(1, 1, &constantBuffer.p);
-		context->DSSetConstantBuffers(1, 1, &constantBuffer.p);
-		context->GSSetConstantBuffers(1, 1, &constantBuffer.p);
-		context->PSSetConstantBuffers(1, 1, &constantBuffer.p);
-
-		context->OMSetRenderTargets(1, &renderTargetView.p, nullptr);
-
-		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		context->ClearRenderTargetView(renderTargetView, color);
-	}
-	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
+	void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
 	{
 		if (message != WM_SIZE)
 			return;
-		
+
 		if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
 			return;
 

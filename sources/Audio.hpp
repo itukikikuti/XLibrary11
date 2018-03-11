@@ -1,22 +1,29 @@
 class Audio
 {
-	PROTECTED ATL::CComPtr<IXAudio2> audioEngine;
-	PROTECTED IXAudio2MasteringVoice* masteringVoice = nullptr;
-
-	PUBLIC Audio()
+public:
+	Audio()
 	{
 		App::Initialize();
 		Initialize();
 	}
-	PUBLIC ~Audio()
+	~Audio()
 	{
 		MFShutdown();
 
 		masteringVoice->DestroyVoice();
-		
+
 		audioEngine->StopEngine();
 	}
-	PROTECTED virtual void Initialize()
+	IXAudio2& GetEngine() const
+	{
+		return *audioEngine;
+	}
+
+private:
+	ATL::CComPtr<IXAudio2> audioEngine;
+	IXAudio2MasteringVoice* masteringVoice = nullptr;
+
+	virtual void Initialize()
 	{
 		App::GetWindowHandle();
 
@@ -25,9 +32,5 @@ class Audio
 		audioEngine->CreateMasteringVoice(&masteringVoice);
 
 		MFStartup(MF_VERSION);
-	}
-	PUBLIC IXAudio2& GetEngine() const
-	{
-		return *audioEngine;
 	}
 };

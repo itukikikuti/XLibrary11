@@ -1,18 +1,16 @@
 class Voice : public IXAudio2VoiceCallback
 {
-	PROTECTED ATL::CComPtr<IMFSourceReader> sourceReader;
-	PROTECTED IXAudio2SourceVoice* sourceVoice;
-
-	PUBLIC Voice(const wchar_t* const filePath)
+public:
+	Voice(const wchar_t* const filePath)
 	{
 		App::Initialize();
 		Load(filePath);
 	}
-	PUBLIC ~Voice()
+	~Voice()
 	{
 		sourceVoice->DestroyVoice();
 	}
-	PUBLIC void Load(const wchar_t* const filePath)
+	void Load(const wchar_t* const filePath)
 	{
 		App::GetAudioEngine();
 
@@ -43,12 +41,17 @@ class Voice : public IXAudio2VoiceCallback
 
 		App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
 	}
-	PUBLIC virtual void Play()
+	virtual void Play()
 	{
 		sourceVoice->Start();
 		SubmitBuffer();
 	}
-	PROTECTED void SubmitBuffer()
+
+private:
+	ATL::CComPtr<IMFSourceReader> sourceReader;
+	IXAudio2SourceVoice* sourceVoice;
+
+	void SubmitBuffer()
 	{
 		ATL::CComPtr<IMFSample> sample;
 		DWORD flags = 0;
@@ -78,26 +81,26 @@ class Voice : public IXAudio2VoiceCallback
 		audioBuffer.pAudioData = audioData;
 		sourceVoice->SubmitSourceBuffer(&audioBuffer);
 	}
-	PROTECTED void _stdcall OnBufferEnd(void*) override
+	void _stdcall OnBufferEnd(void*) override
 	{
 		SubmitBuffer();
 	}
-	PRIVATE void _stdcall OnBufferStart(void*) override
+	void _stdcall OnBufferStart(void*) override
 	{
 	}
-	PRIVATE void _stdcall OnLoopEnd(void*) override
+	void _stdcall OnLoopEnd(void*) override
 	{
 	}
-	PRIVATE void _stdcall OnStreamEnd() override
+	void _stdcall OnStreamEnd() override
 	{
 	}
-	PRIVATE void _stdcall OnVoiceError(void*, HRESULT) override
+	void _stdcall OnVoiceError(void*, HRESULT) override
 	{
 	}
-	PRIVATE void _stdcall OnVoiceProcessingPassStart(UINT32) override
+	void _stdcall OnVoiceProcessingPassStart(UINT32) override
 	{
 	}
-	PRIVATE void _stdcall OnVoiceProcessingPassEnd() override
+	void _stdcall OnVoiceProcessingPassEnd() override
 	{
 	}
 };

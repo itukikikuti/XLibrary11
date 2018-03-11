@@ -33,97 +33,94 @@ namespace XLibrary11
 {
 
 #define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
-#define PUBLIC public:
-#define PRIVATE private:
-#define PROTECTED protected:
 
 struct Float2 : public DirectX::XMFLOAT2
 {
-	PUBLIC Float2() : DirectX::XMFLOAT2()
+	Float2() : DirectX::XMFLOAT2()
 	{
 	}
-	PUBLIC Float2(float x, float y) : DirectX::XMFLOAT2(x, y)
+	Float2(float x, float y) : DirectX::XMFLOAT2(x, y)
 	{
 	}
-	PUBLIC Float2(float value) : DirectX::XMFLOAT2(value, value)
+	Float2(float value) : DirectX::XMFLOAT2(value, value)
 	{
 	}
-	PUBLIC Float2(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT2()
+	Float2(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT2()
 	{
 		DirectX::XMStoreFloat2(this, vector);
 	}
-	PUBLIC Float2& operator=(const DirectX::XMVECTOR& vector)
+	Float2& operator=(const DirectX::XMVECTOR& vector)
 	{
 		DirectX::XMStoreFloat2(this, vector);
 		return *this;
 	}
-	PUBLIC operator DirectX::XMVECTOR() const noexcept
+	operator DirectX::XMVECTOR() const noexcept
 	{
 		return DirectX::XMLoadFloat2(this);
 	}
-	PUBLIC Float2 operator+() const
+	Float2 operator+() const
 	{
 		return Float2(this->x, this->y);
 	}
-	PUBLIC Float2 operator-() const
+	Float2 operator-() const
 	{
 		return Float2(-this->x, -this->y);
 	}
-	PUBLIC Float2& operator=(const Float2& value)
+	Float2& operator=(const Float2& value)
 	{
 		x = value.x;
 		y = value.y;
 		return *this;
 	}
-	PUBLIC Float2& operator=(const float& value)
+	Float2& operator=(const float& value)
 	{
 		x = value;
 		y = value;
 		return *this;
 	}
-	PUBLIC Float2& operator+=(const Float2& value)
+	Float2& operator+=(const Float2& value)
 	{
 		x += value.x;
 		y += value.y;
 		return *this;
 	}
-	PUBLIC Float2& operator+=(const float& value)
+	Float2& operator+=(const float& value)
 	{
 		x += value;
 		y += value;
 		return *this;
 	}
-	PUBLIC Float2& operator-=(const Float2& value)
+	Float2& operator-=(const Float2& value)
 	{
 		x -= value.x;
 		y -= value.y;
 		return *this;
 	}
-	PUBLIC Float2& operator-=(const float& value)
+	Float2& operator-=(const float& value)
 	{
 		x -= value;
 		y -= value;
 		return *this;
 	}
-	PUBLIC Float2& operator*=(const Float2& value)
+	Float2& operator*=(const Float2& value)
 	{
 		x *= value.x;
 		y *= value.y;
 		return *this;
 	}
-	PUBLIC Float2& operator*=(const float& value)
+	Float2& operator*=(const float& value)
 	{
 		x *= value;
 		y *= value;
 		return *this;
 	}
-	PUBLIC Float2& operator/=(const Float2& value)
+	Float2& operator/=(const Float2& value)
 	{
 		x /= value.x;
 		y /= value.y;
 		return *this;
 	}
-	PUBLIC Float2& operator/=(const float& value)
+	Float2& operator/=(const float& value)
 	{
 		x /= value;
 		y /= value;
@@ -166,100 +163,100 @@ Float2 operator/(const Float2& t1, const float& t2)
 
 struct Float3 : public DirectX::XMFLOAT3
 {
-	PUBLIC Float3() : DirectX::XMFLOAT3()
+	Float3() : DirectX::XMFLOAT3()
 	{
 	}
-	PUBLIC Float3(float x, float y, float z) : DirectX::XMFLOAT3(x, y, z)
+	Float3(float x, float y, float z) : DirectX::XMFLOAT3(x, y, z)
 	{
 	}
-	PUBLIC Float3(float value) : DirectX::XMFLOAT3(value, value, value)
+	Float3(float value) : DirectX::XMFLOAT3(value, value, value)
 	{
 	}
-	PUBLIC Float3(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT3()
+	Float3(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT3()
 	{
 		DirectX::XMStoreFloat3(this, vector);
 	}
-	PUBLIC Float3& operator=(const DirectX::XMVECTOR& vector)
+	Float3& operator=(const DirectX::XMVECTOR& vector)
 	{
 		DirectX::XMStoreFloat3(this, vector);
 		return *this;
 	}
-	PUBLIC operator DirectX::XMVECTOR() const noexcept
+	operator DirectX::XMVECTOR() const noexcept
 	{
 		return DirectX::XMLoadFloat3(this);
 	}
-	PUBLIC Float3 operator+() const
+	Float3 operator+() const
 	{
 		return Float3(this->x, this->y, this->z);
 	}
-	PUBLIC Float3 operator-() const
+	Float3 operator-() const
 	{
 		return Float3(-this->x, -this->y, -this->z);
 	}
-	PUBLIC Float3& operator=(const Float3& value)
+	Float3& operator=(const Float3& value)
 	{
 		x = value.x;
 		y = value.y;
 		z = value.z;
 		return *this;
 	}
-	PUBLIC Float3& operator=(const float& value)
+	Float3& operator=(const float& value)
 	{
 		x = value;
 		y = value;
 		z = value;
 		return *this;
 	}
-	PUBLIC Float3& operator+=(const Float3& value)
+	Float3& operator+=(const Float3& value)
 	{
 		x += value.x;
 		y += value.y;
 		z += value.z;
 		return *this;
 	}
-	PUBLIC Float3& operator+=(const float& value)
+	Float3& operator+=(const float& value)
 	{
 		x += value;
 		y += value;
 		z += value;
 		return *this;
 	}
-	PUBLIC Float3& operator-=(const Float3& value)
+	Float3& operator-=(const Float3& value)
 	{
 		x -= value.x;
 		y -= value.y;
 		z -= value.z;
 		return *this;
 	}
-	PUBLIC Float3& operator-=(const float& value)
+	Float3& operator-=(const float& value)
 	{
 		x -= value;
 		y -= value;
 		z -= value;
 		return *this;
 	}
-	PUBLIC Float3& operator*=(const Float3& value)
+	Float3& operator*=(const Float3& value)
 	{
 		x *= value.x;
 		y *= value.y;
 		z *= value.z;
 		return *this;
 	}
-	PUBLIC Float3& operator*=(const float& value)
+	Float3& operator*=(const float& value)
 	{
 		x *= value;
 		y *= value;
 		z *= value;
 		return *this;
 	}
-	PUBLIC Float3& operator/=(const Float3& value)
+	Float3& operator/=(const Float3& value)
 	{
 		x /= value.x;
 		y /= value.y;
 		z /= value.z;
 		return *this;
 	}
-	PUBLIC Float3& operator/=(const float& value)
+	Float3& operator/=(const float& value)
 	{
 		x /= value;
 		y /= value;
@@ -303,37 +300,37 @@ Float3 operator/(const Float3& t1, const float& t2)
 
 struct Float4 : public DirectX::XMFLOAT4
 {
-	PUBLIC Float4() : DirectX::XMFLOAT4()
+	Float4() : DirectX::XMFLOAT4()
 	{
 	}
-	PUBLIC Float4(float x, float y, float z, float w) : DirectX::XMFLOAT4(x, y, z, w)
+	Float4(float x, float y, float z, float w) : DirectX::XMFLOAT4(x, y, z, w)
 	{
 	}
-	PUBLIC Float4(float value) : DirectX::XMFLOAT4(value, value, value, value)
+	Float4(float value) : DirectX::XMFLOAT4(value, value, value, value)
 	{
 	}
-	PUBLIC Float4(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT4()
+	Float4(const DirectX::XMVECTOR& vector) : DirectX::XMFLOAT4()
 	{
 		DirectX::XMStoreFloat4(this, vector);
 	}
-	PUBLIC Float4& operator=(const DirectX::XMVECTOR& vector)
+	Float4& operator=(const DirectX::XMVECTOR& vector)
 	{
 		DirectX::XMStoreFloat4(this, vector);
 		return *this;
 	}
-	PUBLIC operator DirectX::XMVECTOR() const noexcept
+	operator DirectX::XMVECTOR() const noexcept
 	{
 		return DirectX::XMLoadFloat4(this);
 	}
-	PUBLIC Float4 operator+() const
+	Float4 operator+() const
 	{
 		return Float4(this->x, this->y, this->z, this->w);
 	}
-	PUBLIC Float4 operator-() const
+	Float4 operator-() const
 	{
 		return Float4(-this->x, -this->y, -this->z, -this->w);
 	}
-	PUBLIC Float4& operator=(const Float4& value)
+	Float4& operator=(const Float4& value)
 	{
 		x = value.x;
 		y = value.y;
@@ -341,7 +338,7 @@ struct Float4 : public DirectX::XMFLOAT4
 		w = value.w;
 		return *this;
 	}
-	PUBLIC Float4& operator=(const float& value)
+	Float4& operator=(const float& value)
 	{
 		x = value;
 		y = value;
@@ -349,7 +346,7 @@ struct Float4 : public DirectX::XMFLOAT4
 		w = value;
 		return *this;
 	}
-	PUBLIC Float4& operator+=(const Float4& value)
+	Float4& operator+=(const Float4& value)
 	{
 		x += value.x;
 		y += value.y;
@@ -357,7 +354,7 @@ struct Float4 : public DirectX::XMFLOAT4
 		w += value.w;
 		return *this;
 	}
-	PUBLIC Float4& operator+=(const float& value)
+	Float4& operator+=(const float& value)
 	{
 		x += value;
 		y += value;
@@ -365,7 +362,7 @@ struct Float4 : public DirectX::XMFLOAT4
 		w += value;
 		return *this;
 	}
-	PUBLIC Float4& operator-=(const Float4& value)
+	Float4& operator-=(const Float4& value)
 	{
 		x -= value.x;
 		y -= value.y;
@@ -373,7 +370,7 @@ struct Float4 : public DirectX::XMFLOAT4
 		w -= value.w;
 		return *this;
 	}
-	PUBLIC Float4& operator-=(const float& value)
+	Float4& operator-=(const float& value)
 	{
 		x -= value;
 		y -= value;
@@ -381,7 +378,7 @@ struct Float4 : public DirectX::XMFLOAT4
 		w -= value;
 		return *this;
 	}
-	PUBLIC Float4& operator*=(const Float4& value)
+	Float4& operator*=(const Float4& value)
 	{
 		x *= value.x;
 		y *= value.y;
@@ -389,7 +386,7 @@ struct Float4 : public DirectX::XMFLOAT4
 		w *= value.w;
 		return *this;
 	}
-	PUBLIC Float4& operator*=(const float& value)
+	Float4& operator*=(const float& value)
 	{
 		x *= value;
 		y *= value;
@@ -397,7 +394,7 @@ struct Float4 : public DirectX::XMFLOAT4
 		w *= value;
 		return *this;
 	}
-	PUBLIC Float4& operator/=(const Float4& value)
+	Float4& operator/=(const Float4& value)
 	{
 		x /= value.x;
 		y /= value.y;
@@ -405,7 +402,7 @@ struct Float4 : public DirectX::XMFLOAT4
 		w /= value.w;
 		return *this;
 	}
-	PUBLIC Float4& operator/=(const float& value)
+	Float4& operator/=(const float& value)
 	{
 		x /= value;
 		y /= value;
@@ -450,11 +447,11 @@ Float4 operator/(const Float4& t1, const float& t2)
 
 struct Vertex
 {
-	PUBLIC Float3 position;
-	PUBLIC Float3 normal;
-	PUBLIC Float2 uv;
+	Float3 position;
+	Float3 normal;
+	Float2 uv;
 
-	PUBLIC Vertex(Float3 position, Float3 normal, Float2 uv)
+	Vertex(Float3 position, Float3 normal, Float2 uv)
 	{
 		this->position = position;
 		this->normal = normal;
@@ -462,31 +459,29 @@ struct Vertex
 	}
 };
 
-
 class App final
 {
-	PUBLIC static constexpr wchar_t* NAME = L"XLibrary11";
+public:
 
 class Window
 {
-	PUBLIC class Proceedable
+public:
+	class Proceedable
 	{
-		PUBLIC virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
+	public:
+		virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
 	};
 
-	PROTECTED HWND handle;
-	PROTECTED const DWORD style = WS_OVERLAPPEDWINDOW;
-
-	PUBLIC Window()
+	Window()
 	{
 		App::Initialize();
 		Initialize();
 	}
-	PUBLIC ~Window()
+	~Window()
 	{
 		UnregisterClassW(App::NAME, GetModuleHandleW(nullptr));
 	}
-	PROTECTED virtual void Initialize()
+	virtual void Initialize()
 	{
 		HINSTANCE instance = GetModuleHandleW(nullptr);
 
@@ -505,23 +500,23 @@ class Window
 		windowClass.hIconSm = nullptr;
 		RegisterClassExW(&windowClass);
 
-		handle = CreateWindowW(App::NAME, App::NAME, style, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
+		handle = CreateWindowW(App::NAME, App::NAME, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, nullptr, nullptr, instance, nullptr);
 
 		SetSize(1280.0f, 720.0f);
 		ShowWindow(handle, SW_SHOWNORMAL);
 	}
-	PUBLIC HWND GetHandle() const
+	HWND GetHandle() const
 	{
 		return handle;
 	}
-	PUBLIC DirectX::XMINT2 GetSize() const
+	DirectX::XMINT2 GetSize() const
 	{
 		RECT clientRect = {};
 		GetClientRect(handle, &clientRect);
 
 		return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 	}
-	PUBLIC void SetSize(int width, int height)
+	void SetSize(int width, int height)
 	{
 		RECT windowRect = {};
 		RECT clientRect = {};
@@ -536,17 +531,17 @@ class Window
 
 		SetWindowPos(handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
 	}
-	PUBLIC wchar_t* const GetTitle() const
+	wchar_t* const GetTitle() const
 	{
 		wchar_t* title = nullptr;
 		GetWindowTextW(handle, title, GetWindowTextLengthW(handle));
 		return title;
 	}
-	PUBLIC void SetTitle(const wchar_t* const title)
+	void SetTitle(const wchar_t* const title)
 	{
 		SetWindowTextW(handle, title);
 	}
-	PUBLIC void SetFullScreen(bool isFullScreen)
+	void SetFullScreen(bool isFullScreen)
 	{
 		static DirectX::XMINT2 size = GetSize();
 
@@ -560,20 +555,20 @@ class Window
 		}
 		else
 		{
-			SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | style);
+			SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
 			SetWindowPos(handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 			SetSize(size.x, size.y);
 		}
 	}
-	PUBLIC void AddProcedure(Proceedable* const procedure)
+	void AddProcedure(Proceedable* const procedure)
 	{
 		GetProcedures().push_front(procedure);
 	}
-	PUBLIC void RemoveProcedure(Proceedable* const procedure)
+	void RemoveProcedure(Proceedable* const procedure)
 	{
 		GetProcedures().remove(procedure);
 	}
-	PUBLIC bool Update()
+	bool Update()
 	{
 		MSG message = {};
 
@@ -588,12 +583,16 @@ class Window
 
 		return true;
 	}
-	PROTECTED static std::forward_list<Proceedable*>& GetProcedures()
+
+private:
+	HWND handle;
+
+	static std::forward_list<Proceedable*>& GetProcedures()
 	{
 		static std::forward_list<Proceedable*> procedures;
 		return procedures;
 	}
-	PROTECTED static LRESULT CALLBACK ProceedMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
+	static LRESULT CALLBACK ProceedMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		for (Proceedable* procedure : GetProcedures())
 		{
@@ -609,31 +608,62 @@ class Window
 
 class Graphics : public App::Window::Proceedable
 {
-	PROTECTED struct Constant
-	{
-		DirectX::XMMATRIX view;
-		DirectX::XMMATRIX projection;
-	};
-
-	PROTECTED Constant constant;
-	PROTECTED ATL::CComPtr<ID3D11Device> device = nullptr;
-	PROTECTED ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11DeviceContext> context = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
-
-	PUBLIC Graphics()
+public:
+	Graphics()
 	{
 		App::Initialize();
 		Initialize();
 		Create();
 	}
-	PUBLIC ~Graphics()
+	~Graphics()
 	{
 		App::RemoveProcedure(this);
 	}
-	PROTECTED virtual void Initialize()
+	ID3D11Device& GetDevice() const
+	{
+		return *device;
+	}
+	IDXGISwapChain& GetMemory() const
+	{
+		return *swapChain;
+	}
+	ID3D11DeviceContext& GetContext() const
+	{
+		return *context;
+	}
+	void Update()
+	{
+		swapChain->Present(1, 0);
+
+		context->UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
+		context->VSSetConstantBuffers(1, 1, &constantBuffer.p);
+		context->HSSetConstantBuffers(1, 1, &constantBuffer.p);
+		context->DSSetConstantBuffers(1, 1, &constantBuffer.p);
+		context->GSSetConstantBuffers(1, 1, &constantBuffer.p);
+		context->PSSetConstantBuffers(1, 1, &constantBuffer.p);
+
+		context->OMSetRenderTargets(1, &renderTargetView.p, nullptr);
+
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		context->ClearRenderTargetView(renderTargetView, color);
+	}
+
+private:
+	struct Constant
+	{
+		DirectX::XMMATRIX view;
+		DirectX::XMMATRIX projection;
+	};
+
+	Constant constant;
+	ATL::CComPtr<ID3D11Device> device = nullptr;
+	ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
+	ATL::CComPtr<ID3D11DeviceContext> context = nullptr;
+	ATL::CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+	ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
+	ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
+
+	virtual void Initialize()
 	{
 		int flags = 0;
 #if defined(DEBUG) || defined(_DEBUG)
@@ -708,7 +738,7 @@ class Graphics : public App::Window::Proceedable
 
 		App::AddProcedure(this);
 	}
-	PROTECTED virtual void Create()
+	virtual void Create()
 	{
 		D3D11_VIEWPORT viewPort = {};
 		viewPort.Width = App::GetWindowSize().x;
@@ -727,39 +757,11 @@ class Graphics : public App::Window::Proceedable
 		constant.view = DirectX::XMMatrixIdentity();
 		constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
 	}
-	PUBLIC ID3D11Device& GetDevice() const
-	{
-		return *device;
-	}
-	PUBLIC IDXGISwapChain& GetMemory() const
-	{
-		return *swapChain;
-	}
-	PUBLIC ID3D11DeviceContext& GetContext() const
-	{
-		return *context;
-	}
-	PUBLIC void Update()
-	{
-		swapChain->Present(1, 0);
-
-		context->UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-		context->VSSetConstantBuffers(1, 1, &constantBuffer.p);
-		context->HSSetConstantBuffers(1, 1, &constantBuffer.p);
-		context->DSSetConstantBuffers(1, 1, &constantBuffer.p);
-		context->GSSetConstantBuffers(1, 1, &constantBuffer.p);
-		context->PSSetConstantBuffers(1, 1, &constantBuffer.p);
-
-		context->OMSetRenderTargets(1, &renderTargetView.p, nullptr);
-
-		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		context->ClearRenderTargetView(renderTargetView, color);
-	}
-	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
+	void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
 	{
 		if (message != WM_SIZE)
 			return;
-		
+
 		if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
 			return;
 
@@ -776,26 +778,32 @@ class Graphics : public App::Window::Proceedable
 		Create();
 	}
 };
-
 class Audio
 {
-	PROTECTED ATL::CComPtr<IXAudio2> audioEngine;
-	PROTECTED IXAudio2MasteringVoice* masteringVoice = nullptr;
-
-	PUBLIC Audio()
+public:
+	Audio()
 	{
 		App::Initialize();
 		Initialize();
 	}
-	PUBLIC ~Audio()
+	~Audio()
 	{
 		MFShutdown();
 
 		masteringVoice->DestroyVoice();
-		
+
 		audioEngine->StopEngine();
 	}
-	PROTECTED virtual void Initialize()
+	IXAudio2& GetEngine() const
+	{
+		return *audioEngine;
+	}
+
+private:
+	ATL::CComPtr<IXAudio2> audioEngine;
+	IXAudio2MasteringVoice* masteringVoice = nullptr;
+
+	virtual void Initialize()
 	{
 		App::GetWindowHandle();
 
@@ -805,48 +813,35 @@ class Audio
 
 		MFStartup(MF_VERSION);
 	}
-	PUBLIC IXAudio2& GetEngine() const
-	{
-		return *audioEngine;
-	}
 };
-
 class Input
 {
-	PROTECTED Float2 mousePosition;
-	PROTECTED BYTE preKeyState[256];
-	PROTECTED BYTE keyState[256];
-	PROTECTED bool isShowCursor = true;
-
-	PUBLIC Input()
+public:
+	Input()
 	{
 		App::Initialize();
 		Initialize();
 	}
-	PUBLIC ~Input()
+	~Input()
 	{
 	}
-	PROTECTED virtual void Initialize()
-	{
-		Update();
-	}
-	PUBLIC bool GetKey(int keyCode) const
+	bool GetKey(int keyCode) const
 	{
 		return keyState[keyCode] & 0x80;
 	}
-	PUBLIC bool GetKeyUp(int keyCode) const
+	bool GetKeyUp(int keyCode) const
 	{
 		return !(keyState[keyCode] & 0x80) && (preKeyState[keyCode] & 0x80);
 	}
-	PUBLIC bool GetKeyDown(int keyCode) const
+	bool GetKeyDown(int keyCode) const
 	{
 		return (keyState[keyCode] & 0x80) && !(preKeyState[keyCode] & 0x80);
 	}
-	PUBLIC Float2 GetMousePosition() const
+	Float2 GetMousePosition() const
 	{
 		return mousePosition;
 	}
-	PUBLIC void SetMousePosition(float x, float y)
+	void SetMousePosition(float x, float y)
 	{
 		if (GetActiveWindow() != App::GetWindowHandle())
 			return;
@@ -857,7 +852,7 @@ class Input
 		ClientToScreen(App::GetWindowHandle(), &point);
 		SetCursorPos(point.x, point.y);
 	}
-	PUBLIC void SetShowCursor(bool isShowCursor)
+	void SetShowCursor(bool isShowCursor)
 	{
 		if (this->isShowCursor == isShowCursor)
 			return;
@@ -865,7 +860,7 @@ class Input
 		this->isShowCursor = isShowCursor;
 		ShowCursor(isShowCursor);
 	}
-	PUBLIC void Update()
+	void Update()
 	{
 		POINT point = {};
 		GetCursorPos(&point);
@@ -880,44 +875,42 @@ class Input
 
 		GetKeyboardState(keyState);
 	}
-};
 
+private:
+	Float2 mousePosition;
+	BYTE preKeyState[256];
+	BYTE keyState[256];
+	bool isShowCursor = true;
+
+	virtual void Initialize()
+	{
+		Update();
+	}
+};
 class Timer
 {
-	PROTECTED float time = 0.0f;
-	PROTECTED float deltaTime = 0.0f;
-	PROTECTED int frameRate = 0;
-	PROTECTED float second = 0.0f;
-	PROTECTED int frameCount = 0;
-	LARGE_INTEGER preCount;
-	LARGE_INTEGER frequency;
-
-	PUBLIC Timer()
+public:
+	Timer()
 	{
 		App::Initialize();
 		Initialize();
 	}
-	PUBLIC ~Timer()
+	~Timer()
 	{
 	}
-	PROTECTED virtual void Initialize()
-	{
-		preCount = GetCounter();
-		frequency = GetCountFrequency();
-	}
-	PUBLIC float GetTime() const
+	float GetTime() const
 	{
 		return time;
 	}
-	PUBLIC float GetDeltaTime() const
+	float GetDeltaTime() const
 	{
 		return deltaTime;
 	}
-	PUBLIC int GetFrameRate() const
+	int GetFrameRate() const
 	{
 		return frameRate;
 	}
-	PUBLIC void Update()
+	void Update()
 	{
 		LARGE_INTEGER count = GetCounter();
 		deltaTime = (float)(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
@@ -934,13 +927,28 @@ class Timer
 			second -= 1.0f;
 		}
 	}
-	PROTECTED LARGE_INTEGER GetCounter() const
+
+private:
+	float time = 0.0f;
+	float deltaTime = 0.0f;
+	int frameRate = 0;
+	float second = 0.0f;
+	int frameCount = 0;
+	LARGE_INTEGER preCount;
+	LARGE_INTEGER frequency;
+
+	virtual void Initialize()
+	{
+		preCount = GetCounter();
+		frequency = GetCountFrequency();
+	}
+	LARGE_INTEGER GetCounter() const
 	{
 		LARGE_INTEGER counter;
 		QueryPerformanceCounter(&counter);
 		return counter;
 	}
-	PROTECTED LARGE_INTEGER GetCountFrequency() const
+	LARGE_INTEGER GetCountFrequency() const
 	{
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
@@ -948,16 +956,17 @@ class Timer
 	}
 };
 
+	static constexpr wchar_t* NAME = L"XLibrary11";
 
-	PUBLIC App() = delete;
-	PUBLIC static bool Refresh()
+	App() = delete;
+	static bool Refresh()
 	{
 		GetGraphics().Update();
 		GetInput().Update();
 		GetTimer().Update();
 		return GetWindow().Update();
 	}
-	PUBLIC static void Initialize()
+	static void Initialize()
 	{
 		static bool isInitialized = false;
 
@@ -968,115 +977,117 @@ class Timer
 			isInitialized = true;
 		}
 	}
-	PUBLIC static HWND GetWindowHandle()
+	static HWND GetWindowHandle()
 	{
 		return GetWindow().GetHandle();
 	}
-	PUBLIC static DirectX::XMINT2 GetWindowSize()
+	static DirectX::XMINT2 GetWindowSize()
 	{
 		return GetWindow().GetSize();
 	}
-	PUBLIC static void SetWindowSize(int width, int height)
+	static void SetWindowSize(int width, int height)
 	{
 		GetWindow().SetSize(width, height);
 	}
-	PUBLIC static wchar_t* const GetTitle()
+	static wchar_t* const GetTitle()
 	{
 		return GetWindow().GetTitle();
 	}
-	PUBLIC static void SetTitle(const wchar_t* const title)
+	static void SetTitle(const wchar_t* const title)
 	{
 		GetWindow().SetTitle(title);
 	}
-	PUBLIC static void SetFullScreen(bool isFullScreen)
+	static void SetFullScreen(bool isFullScreen)
 	{
 		GetWindow().SetFullScreen(isFullScreen);
 	}
-	PUBLIC static void AddProcedure(Window::Proceedable* const procedure)
+	static void AddProcedure(Window::Proceedable* const procedure)
 	{
 		GetWindow().AddProcedure(procedure);
 	}
-	PUBLIC static void RemoveProcedure(Window::Proceedable* const procedure)
+	static void RemoveProcedure(Window::Proceedable* const procedure)
 	{
 		GetWindow().RemoveProcedure(procedure);
 	}
-	PUBLIC static ID3D11Device& GetGraphicsDevice()
+	static ID3D11Device& GetGraphicsDevice()
 	{
 		return GetGraphics().GetDevice();
 	}
-	PUBLIC static ID3D11DeviceContext& GetGraphicsContext()
+	static ID3D11DeviceContext& GetGraphicsContext()
 	{
 		return GetGraphics().GetContext();
 	}
-	PUBLIC static IDXGISwapChain& GetGraphicsMemory()
+	static IDXGISwapChain& GetGraphicsMemory()
 	{
 		return GetGraphics().GetMemory();
 	}
-	PUBLIC static IXAudio2& GetAudioEngine()
+	static IXAudio2& GetAudioEngine()
 	{
 		return GetAudio().GetEngine();
 	}
-	PUBLIC static bool GetKey(int VK_CODE)
+	static bool GetKey(int VK_CODE)
 	{
 		return GetInput().GetKey(VK_CODE);
 	}
-	PUBLIC static bool GetKeyUp(int VK_CODE)
+	static bool GetKeyUp(int VK_CODE)
 	{
 		return GetInput().GetKeyUp(VK_CODE);
 	}
-	PUBLIC static bool GetKeyDown(int VK_CODE)
+	static bool GetKeyDown(int VK_CODE)
 	{
 		return GetInput().GetKeyDown(VK_CODE);
 	}
-	PUBLIC static Float2 GetMousePosition()
+	static Float2 GetMousePosition()
 	{
 		return GetInput().GetMousePosition();
 	}
-	PUBLIC static void SetMousePosition(float x, float y)
+	static void SetMousePosition(float x, float y)
 	{
 		GetInput().SetMousePosition(x, y);
 	}
-	PUBLIC static void SetShowCursor(bool isShowCursor)
+	static void SetShowCursor(bool isShowCursor)
 	{
 		GetInput().SetShowCursor(isShowCursor);
 	}
-	PUBLIC static float GetTime()
+	static float GetTime()
 	{
 		return GetTimer().GetTime();
 	}
-	PUBLIC static float GetDeltaTime()
+	static float GetDeltaTime()
 	{
 		return GetTimer().GetDeltaTime();
 	}
-	PUBLIC static int GetFrameRate()
+	static int GetFrameRate()
 	{
 		return GetTimer().GetFrameRate();
 	}
-	PUBLIC static void AddFont(const wchar_t* filePath)
+	static void AddFont(const wchar_t* filePath)
 	{
 		AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
 	}
-	PRIVATE static Window& GetWindow()
+
+private:
+	static Window& GetWindow()
 	{
 		static std::unique_ptr<Window> window(new Window());
 		return *window.get();
 	}
-	PRIVATE static Graphics& GetGraphics()
+	static Graphics& GetGraphics()
 	{
 		static std::unique_ptr<Graphics> graphics(new Graphics());
 		return *graphics.get();
 	}
-	PRIVATE static Audio& GetAudio()
+	static Audio& GetAudio()
 	{
 		static std::unique_ptr<Audio> audio(new Audio());
 		return *audio.get();
 	}
-	PRIVATE static Input& GetInput()
+	static Input& GetInput()
 	{
 		static std::unique_ptr<Input> input(new Input());
 		return *input.get();
 	}
-	PRIVATE static Timer& GetTimer()
+	static Timer& GetTimer()
 	{
 		static std::unique_ptr<Timer> timer(new Timer());
 		return *timer.get();
@@ -1085,32 +1096,83 @@ class Timer
 
 class Texture
 {
-	PROTECTED int width;
-	PROTECTED int height;
-	PROTECTED ATL::CComPtr<ID3D11Texture2D> texture;
-	PROTECTED ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView;
-	PROTECTED ATL::CComPtr<ID3D11SamplerState> samplerState;
-
-	PUBLIC Texture()
+public:
+	Texture()
 	{
 		App::Initialize();
 		std::unique_ptr<BYTE[]> buffer(new BYTE[4]{ 0xff, 0x00, 0xff, 0xff });
 		Create(1, 1, buffer.get());
 	}
-	PUBLIC Texture(const wchar_t* const filePath)
+	Texture(const wchar_t* const filePath)
 	{
 		App::Initialize();
 		Load(filePath);
 	}
-	PUBLIC Texture(int width, int height, BYTE* buffer)
+	Texture(int width, int height, BYTE* buffer)
 	{
 		App::Initialize();
 		Create(width, height, buffer);
 	}
-	PUBLIC virtual ~Texture()
+	virtual ~Texture()
 	{
 	}
-	PROTECTED virtual void Create(int width, int height, const BYTE* const buffer)
+	void Load(const wchar_t* const filePath)
+	{
+		App::GetWindowHandle();
+
+		ATL::CComPtr<IWICImagingFactory> factory = nullptr;
+		CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+
+		ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
+
+		factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+		ATL::CComPtr<IWICBitmapFrameDecode> frame = nullptr;
+		decoder->GetFrame(0, &frame);
+		UINT width, height;
+		frame->GetSize(&width, &height);
+
+		WICPixelFormatGUID pixelFormat;
+		frame->GetPixelFormat(&pixelFormat);
+		std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
+
+		if (pixelFormat != GUID_WICPixelFormat32bppRGBA)
+		{
+			ATL::CComPtr<IWICFormatConverter> formatConverter = nullptr;
+			factory->CreateFormatConverter(&formatConverter);
+
+			formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
+
+			formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
+		}
+		else
+		{
+			frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
+		}
+
+		Create(width, height, buffer.get());
+	}
+	Float2 GetSize() const
+	{
+		return Float2(static_cast<float>(width), static_cast<float>(height));
+	}
+	void SetSize(float width, float height)
+	{
+
+	}
+	virtual void Attach(int slot)
+	{
+		App::GetGraphicsContext().PSSetShaderResources(slot, 1, &shaderResourceView.p);
+		App::GetGraphicsContext().PSSetSamplers(slot, 1, &samplerState.p);
+	}
+
+private:
+	int width;
+	int height;
+	ATL::CComPtr<ID3D11Texture2D> texture;
+	ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView;
+	ATL::CComPtr<ID3D11SamplerState> samplerState;
+
+	virtual void Create(int width, int height, const BYTE* const buffer)
 	{
 		this->width = width;
 		this->height = height;
@@ -1159,66 +1221,11 @@ class Texture
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 		App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, &samplerState);
 	}
-	PUBLIC void Load(const wchar_t* const filePath)
-	{
-		App::GetWindowHandle();
-
-		ATL::CComPtr<IWICImagingFactory> factory = nullptr;
-		CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
-
-		ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
-
-		factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
-		ATL::CComPtr<IWICBitmapFrameDecode> frame = nullptr;
-		decoder->GetFrame(0, &frame);
-		UINT width, height;
-		frame->GetSize(&width, &height);
-
-		WICPixelFormatGUID pixelFormat;
-		frame->GetPixelFormat(&pixelFormat);
-		std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
-
-		if (pixelFormat != GUID_WICPixelFormat32bppRGBA)
-		{
-			ATL::CComPtr<IWICFormatConverter> formatConverter = nullptr;
-			factory->CreateFormatConverter(&formatConverter);
-
-			formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
-
-			formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
-		}
-		else
-		{
-			frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
-		}
-
-		Create(width, height, buffer.get());
-	}
-	PUBLIC Float2 GetSize() const
-	{
-		return Float2(static_cast<float>(width), static_cast<float>(height));
-	}
-	PUBLIC void SetSize(float width, float height)
-	{
-
-	}
-	PUBLIC virtual void Attach(int slot)
-	{
-		App::GetGraphicsContext().PSSetShaderResources(slot, 1, &shaderResourceView.p);
-		App::GetGraphicsContext().PSSetSamplers(slot, 1, &samplerState.p);
-	}
 };
-
 class Material
 {
-	PROTECTED void* cbuffer = nullptr;
-	PROTECTED Texture* textures[10];
-	PROTECTED ATL::CComPtr<ID3D11VertexShader> vertexShader = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11PixelShader> pixelShader = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11InputLayout> inputLayout = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
-
-	PUBLIC Material()
+public:
+	Material()
 	{
 		App::Initialize();
 		char* source =
@@ -1247,48 +1254,22 @@ class Material
 		Initialize();
 		Create(source);
 	}
-	PUBLIC Material(char* source)
+	Material(char* source)
 	{
 		App::Initialize();
 		Initialize();
 		Create(source);
 	}
-	PUBLIC Material(const wchar_t* const filePath)
+	Material(const wchar_t* const filePath)
 	{
 		App::Initialize();
 		Initialize();
 		Load(filePath);
 	}
-	PUBLIC virtual ~Material()
+	virtual ~Material()
 	{
 	}
-	PROTECTED virtual void Initialize()
-	{
-		for (int i = 0; i < 10; i++) {
-			textures[i] = nullptr;
-		}
-	}
-	PROTECTED virtual void Create(const char* source)
-	{
-		vertexShader.Release();
-		ATL::CComPtr<ID3DBlob> vertexShaderBlob = nullptr;
-		CompileShader(source, "VS", "vs_5_0", &vertexShaderBlob);
-		App::GetGraphicsDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
-
-		pixelShader.Release();
-		ATL::CComPtr<ID3DBlob> pixelShaderBlob = nullptr;
-		CompileShader(source, "PS", "ps_5_0", &pixelShaderBlob);
-		App::GetGraphicsDevice().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
-
-		inputLayout.Release();
-		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc;
-		inputElementDesc.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-		inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-		inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-
-		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
-	}
-	PUBLIC void Load(const wchar_t* const filePath)
+	void Load(const wchar_t* const filePath)
 	{
 		std::ifstream sourceFile(filePath);
 		std::istreambuf_iterator<char> iterator(sourceFile);
@@ -1298,7 +1279,7 @@ class Material
 
 		Create(source.c_str());
 	}
-	PUBLIC void SetCBuffer(void* cbuffer, size_t size)
+	void SetCBuffer(void* cbuffer, size_t size)
 	{
 		this->cbuffer = cbuffer;
 
@@ -1310,11 +1291,11 @@ class Material
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	}
-	PUBLIC void SetTexture(int slot, Texture* texture)
+	void SetTexture(int slot, Texture* texture)
 	{
 		textures[slot] = texture;
 	}
-	PUBLIC virtual void Attach()
+	virtual void Attach()
 	{
 		App::GetGraphicsContext().VSSetShader(vertexShader, nullptr, 0);
 		App::GetGraphicsContext().PSSetShader(pixelShader, nullptr, 0);
@@ -1340,7 +1321,42 @@ class Material
 			i++;
 		}
 	}
-	PROTECTED static void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out)
+
+private:
+	void* cbuffer = nullptr;
+	Texture* textures[10];
+	ATL::CComPtr<ID3D11VertexShader> vertexShader = nullptr;
+	ATL::CComPtr<ID3D11PixelShader> pixelShader = nullptr;
+	ATL::CComPtr<ID3D11InputLayout> inputLayout = nullptr;
+	ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
+
+	virtual void Initialize()
+	{
+		for (int i = 0; i < 10; i++) {
+			textures[i] = nullptr;
+		}
+	}
+	virtual void Create(const char* source)
+	{
+		vertexShader.Release();
+		ATL::CComPtr<ID3DBlob> vertexShaderBlob = nullptr;
+		CompileShader(source, "VS", "vs_5_0", &vertexShaderBlob);
+		App::GetGraphicsDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
+
+		pixelShader.Release();
+		ATL::CComPtr<ID3DBlob> pixelShaderBlob = nullptr;
+		CompileShader(source, "PS", "ps_5_0", &pixelShaderBlob);
+		App::GetGraphicsDevice().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
+
+		inputLayout.Release();
+		std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc;
+		inputElementDesc.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+
+		App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
+	}
+	static void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out)
 	{
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(DEBUG) || defined(_DEBUG)
@@ -1357,38 +1373,70 @@ class Material
 		}
 	}
 };
-
 class Camera : public App::Window::Proceedable
 {
-	PROTECTED struct Constant
-	{
-		DirectX::XMMATRIX view;
-		DirectX::XMMATRIX projection;
-	};
+public:
+	Float3 position;
+	Float3 angles;
 
-	PUBLIC Float3 position;
-	PUBLIC Float3 angles;
-	PROTECTED float fieldOfView;
-	PROTECTED float nearClip;
-	PROTECTED float farClip;
-	PROTECTED Constant constant;
-	PROTECTED ATL::CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11DepthStencilView> depthStencilView = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11Texture2D> depthTexture = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
-
-	PUBLIC Camera()
+	Camera()
 	{
 		App::Initialize();
 		Initialize();
 		Create();
 	}
-	PUBLIC virtual ~Camera()
+	virtual ~Camera()
 	{
 		App::RemoveProcedure(this);
 	}
-	PROTECTED virtual void Initialize()
+	void SetPerspective(float fieldOfView, float nearClip, float farClip)
+	{
+		this->fieldOfView = fieldOfView;
+		this->nearClip = nearClip;
+		this->farClip = farClip;
+		constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
+	}
+	virtual void Update()
+	{
+		constant.view =
+			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
+			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		constant.view = DirectX::XMMatrixInverse(nullptr, constant.view);
+
+		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
+		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, &constantBuffer.p);
+		App::GetGraphicsContext().HSSetConstantBuffers(1, 1, &constantBuffer.p);
+		App::GetGraphicsContext().DSSetConstantBuffers(1, 1, &constantBuffer.p);
+		App::GetGraphicsContext().GSSetConstantBuffers(1, 1, &constantBuffer.p);
+		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, &constantBuffer.p);
+
+		App::GetGraphicsContext().OMSetRenderTargets(1, &renderTargetView.p, depthStencilView);
+
+		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		App::GetGraphicsContext().ClearRenderTargetView(renderTargetView, color);
+		App::GetGraphicsContext().ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	}
+
+private:
+	struct Constant
+	{
+		DirectX::XMMATRIX view;
+		DirectX::XMMATRIX projection;
+	};
+
+	float fieldOfView;
+	float nearClip;
+	float farClip;
+	Constant constant;
+	ATL::CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+	ATL::CComPtr<ID3D11DepthStencilView> depthStencilView = nullptr;
+	ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
+	ATL::CComPtr<ID3D11Texture2D> depthTexture = nullptr;
+	ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
+
+	virtual void Initialize()
 	{
 		position = Float3(0.0f, 0.0f, -5.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1397,7 +1445,7 @@ class Camera : public App::Window::Proceedable
 
 		App::AddProcedure(this);
 	}
-	PROTECTED virtual void Create()
+	virtual void Create()
 	{
 		renderTexture.Release();
 		App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
@@ -1444,36 +1492,7 @@ class Camera : public App::Window::Proceedable
 		constantBufferDesc.CPUAccessFlags = 0;
 		App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	}
-	PUBLIC void SetPerspective(float fieldOfView, float nearClip, float farClip)
-	{
-		this->fieldOfView = fieldOfView;
-		this->nearClip = nearClip;
-		this->farClip = farClip;
-		constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
-	}
-	PUBLIC virtual void Update()
-	{
-		constant.view =
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
-			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
-			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
-			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		constant.view = DirectX::XMMatrixInverse(nullptr, constant.view);
-
-		App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-		App::GetGraphicsContext().VSSetConstantBuffers(1, 1, &constantBuffer.p);
-		App::GetGraphicsContext().HSSetConstantBuffers(1, 1, &constantBuffer.p);
-		App::GetGraphicsContext().DSSetConstantBuffers(1, 1, &constantBuffer.p);
-		App::GetGraphicsContext().GSSetConstantBuffers(1, 1, &constantBuffer.p);
-		App::GetGraphicsContext().PSSetConstantBuffers(1, 1, &constantBuffer.p);
-
-		App::GetGraphicsContext().OMSetRenderTargets(1, &renderTargetView.p, depthStencilView);
-		
-		static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		App::GetGraphicsContext().ClearRenderTargetView(renderTargetView, color);
-		App::GetGraphicsContext().ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	}
-	PROTECTED void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
+	void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
 	{
 		if (message != WM_SIZE)
 			return;
@@ -1498,35 +1517,121 @@ class Camera : public App::Window::Proceedable
 		Create();
 	}
 };
-
 class Mesh {
-	PROTECTED struct Constant
-	{
-		DirectX::XMMATRIX world;
-		Float3 lightDirection;
-	};
+public:
+	Float3 position;
+	Float3 angles;
+	Float3 scale;
+	std::vector<Vertex> vertices;
+	std::vector<int> indices;
+	Material material;
 
-	PUBLIC Float3 position;
-	PUBLIC Float3 angles;
-	PUBLIC Float3 scale;
-	PUBLIC std::vector<Vertex> vertices;
-	PUBLIC std::vector<int> indices;
-	PUBLIC Material material;
-	PROTECTED Constant constant;
-	PROTECTED ATL::CComPtr<ID3D11Buffer> vertexBuffer = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
-
-	PUBLIC Mesh()
+	Mesh()
 	{
 		App::Initialize();
 		Initialize();
 		Create();
 	}
-	PUBLIC virtual ~Mesh()
+	virtual ~Mesh()
 	{
 	}
-	PROTECTED virtual void Initialize()
+	void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f))
+	{
+		if (shouldClear)
+		{
+			vertices.clear();
+			indices.clear();
+		}
+
+		leftDirection = DirectX::XMVector3Normalize(leftDirection);
+		upDirection = DirectX::XMVector3Normalize(upDirection);
+		forwardDirection = DirectX::XMVector3Normalize(forwardDirection);
+
+		vertices.push_back(Vertex(leftDirection * -size.x + upDirection * size.y + offset, -forwardDirection, Float2(0.0f, 0.0f)));
+		vertices.push_back(Vertex(leftDirection * size.x + upDirection * size.y + offset, -forwardDirection, Float2(1.0f, 0.0f)));
+		vertices.push_back(Vertex(leftDirection * -size.x + upDirection * -size.y + offset, -forwardDirection, Float2(0.0f, 1.0f)));
+		vertices.push_back(Vertex(leftDirection * size.x + upDirection * -size.y + offset, -forwardDirection, Float2(1.0f, 1.0f)));
+
+		size_t indexOffset = vertices.size() - 4;
+		indices.push_back(indexOffset + 0);
+		indices.push_back(indexOffset + 1);
+		indices.push_back(indexOffset + 2);
+		indices.push_back(indexOffset + 3);
+		indices.push_back(indexOffset + 2);
+		indices.push_back(indexOffset + 1);
+	}
+	void CreateCube(bool shouldClear = true)
+	{
+		if (shouldClear)
+		{
+			vertices.clear();
+			indices.clear();
+		}
+
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, -0.5f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));		// front
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, 0.5f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));	// back
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));		// left
+		CreateQuad(Float2(0.5f, 0.5f), Float3(-0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));	// right
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));		// up
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
+	}
+	void SetCullingMode(D3D11_CULL_MODE cullingMode)
+	{
+		D3D11_RASTERIZER_DESC rasterizerDesc = {};
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.CullMode = cullingMode;
+		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+	}
+	void Apply()
+	{
+		Create();
+	}
+	virtual void Draw()
+	{
+		material.Attach();
+
+		constant.world =
+			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
+			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
+			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		constant.lightDirection = DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f));
+
+		if (vertexBuffer == nullptr)
+		{
+			return;
+		}
+
+		App::GetGraphicsContext().RSSetState(rasterizerState);
+
+		UINT stride = static_cast<UINT>(sizeof(Vertex));
+		UINT offset = 0;
+		App::GetGraphicsContext().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
+
+		if (indexBuffer == nullptr)
+		{
+			App::GetGraphicsContext().Draw(static_cast<UINT>(vertices.size()), 0);
+		}
+		else {
+			App::GetGraphicsContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+			App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
+		}
+	}
+
+private:
+	struct Constant
+	{
+		DirectX::XMMATRIX world;
+		Float3 lightDirection;
+	};
+
+	Constant constant;
+	ATL::CComPtr<ID3D11Buffer> vertexBuffer = nullptr;
+	ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;
+	ATL::CComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
+
+	virtual void Initialize()
 	{
 		position = Float3(0.0f, 0.0f, 0.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1570,7 +1675,7 @@ class Mesh {
 
 		SetCullingMode(D3D11_CULL_BACK);
 	}
-	PROTECTED virtual void Create()
+	virtual void Create()
 	{
 		if (vertices.size() > 0)
 		{
@@ -1600,109 +1705,42 @@ class Mesh {
 
 		material.SetCBuffer(&constant, sizeof(Constant));
 	}
-	PUBLIC void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f))
-	{
-		if (shouldClear)
-		{
-			vertices.clear();
-			indices.clear();
-		}
-
-		leftDirection = DirectX::XMVector3Normalize(leftDirection);
-		upDirection = DirectX::XMVector3Normalize(upDirection);
-		forwardDirection = DirectX::XMVector3Normalize(forwardDirection);
-
-		vertices.push_back(Vertex(leftDirection * -size.x + upDirection * size.y + offset, -forwardDirection, Float2(0.0f, 0.0f)));
-		vertices.push_back(Vertex(leftDirection * size.x + upDirection * size.y + offset, -forwardDirection, Float2(1.0f, 0.0f)));
-		vertices.push_back(Vertex(leftDirection * -size.x + upDirection * -size.y + offset, -forwardDirection, Float2(0.0f, 1.0f)));
-		vertices.push_back(Vertex(leftDirection * size.x + upDirection * -size.y + offset, -forwardDirection, Float2(1.0f, 1.0f)));
-
-		size_t indexOffset = vertices.size() - 4;
-		indices.push_back(indexOffset + 0);
-		indices.push_back(indexOffset + 1);
-		indices.push_back(indexOffset + 2);
-		indices.push_back(indexOffset + 3);
-		indices.push_back(indexOffset + 2);
-		indices.push_back(indexOffset + 1);
-	}
-	PUBLIC void CreateCube(bool shouldClear = true)
-	{
-		if (shouldClear)
-		{
-			vertices.clear();
-			indices.clear();
-		}
-
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, -0.5f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));		// front
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, 0.5f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));	// back
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));		// left
-		CreateQuad(Float2(0.5f, 0.5f), Float3(-0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));	// right
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));		// up
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
-	}
-	PUBLIC void SetCullingMode(D3D11_CULL_MODE cullingMode)
-	{
-		D3D11_RASTERIZER_DESC rasterizerDesc = {};
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerDesc.CullMode = cullingMode;
-		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
-	}
-	PUBLIC void Apply()
-	{
-		Create();
-	}
-	PUBLIC virtual void Draw()
-	{
-		material.Attach();
-
-		constant.world =
-			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
-			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
-			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
-			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		constant.lightDirection = DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f));
-
-		if (vertexBuffer == nullptr)
-		{
-			return;
-		}
-
-		App::GetGraphicsContext().RSSetState(rasterizerState);
-
-		UINT stride = static_cast<UINT>(sizeof(Vertex));
-		UINT offset = 0;
-		App::GetGraphicsContext().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
-
-		if (indexBuffer == nullptr)
-		{
-			App::GetGraphicsContext().Draw(static_cast<UINT>(vertices.size()), 0);
-		}
-		else {
-			App::GetGraphicsContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-			App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
-		}
-	}
 };
-
 class Sprite
 {
-	PUBLIC Float3 position;
-	PUBLIC Float3 angles;
-	PUBLIC Float3 scale;
-	PUBLIC Texture texture;
-	PROTECTED Mesh mesh;
+public:
+	Float3 position;
+	Float3 angles;
+	Float3 scale;
+	Texture texture;
 
-	PUBLIC Sprite(const wchar_t* const filePath)
+	Sprite(const wchar_t* const filePath)
 	{
 		App::Initialize();
 		Initialize();
 		Load(filePath);
 	}
-	PUBLIC ~Sprite()
+	~Sprite()
 	{
 	}
-	PROTECTED virtual void Initialize()
+	void Load(const wchar_t* const filePath)
+	{
+		texture.Load(filePath);
+		mesh.material.SetTexture(0, &texture);
+		mesh.CreateQuad(texture.GetSize() / 2.0f);
+		mesh.Apply();
+	}
+	virtual void Draw()
+	{
+		mesh.position = position;
+		mesh.angles = angles;
+		mesh.scale = scale;
+		mesh.Draw();
+	}
+private:
+	Mesh mesh;
+
+	virtual void Initialize()
 	{
 		position = Float3(0.0f, 0.0f, 0.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1740,22 +1778,7 @@ class Sprite
 			"}"
 		);
 	}
-	PUBLIC void Load(const wchar_t* const filePath)
-	{
-		texture.Load(filePath);
-		mesh.material.SetTexture(0, &texture);
-		mesh.CreateQuad(texture.GetSize() / 2.0f);
-		mesh.Apply();
-	}
-	PUBLIC virtual void Draw()
-	{
-		mesh.position = position;
-		mesh.angles = angles;
-		mesh.scale = scale;
-		mesh.Draw();
-	}
 };
-
 //class Text {
 //	PUBLIC Text(const wchar_t* text = L"", const wchar_t* fontFamily = L"")
 //	{
@@ -1844,19 +1867,17 @@ class Sprite
 
 class Voice : public IXAudio2VoiceCallback
 {
-	PROTECTED ATL::CComPtr<IMFSourceReader> sourceReader;
-	PROTECTED IXAudio2SourceVoice* sourceVoice;
-
-	PUBLIC Voice(const wchar_t* const filePath)
+public:
+	Voice(const wchar_t* const filePath)
 	{
 		App::Initialize();
 		Load(filePath);
 	}
-	PUBLIC ~Voice()
+	~Voice()
 	{
 		sourceVoice->DestroyVoice();
 	}
-	PUBLIC void Load(const wchar_t* const filePath)
+	void Load(const wchar_t* const filePath)
 	{
 		App::GetAudioEngine();
 
@@ -1887,12 +1908,17 @@ class Voice : public IXAudio2VoiceCallback
 
 		App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
 	}
-	PUBLIC virtual void Play()
+	virtual void Play()
 	{
 		sourceVoice->Start();
 		SubmitBuffer();
 	}
-	PROTECTED void SubmitBuffer()
+
+private:
+	ATL::CComPtr<IMFSourceReader> sourceReader;
+	IXAudio2SourceVoice* sourceVoice;
+
+	void SubmitBuffer()
 	{
 		ATL::CComPtr<IMFSample> sample;
 		DWORD flags = 0;
@@ -1922,26 +1948,26 @@ class Voice : public IXAudio2VoiceCallback
 		audioBuffer.pAudioData = audioData;
 		sourceVoice->SubmitSourceBuffer(&audioBuffer);
 	}
-	PROTECTED void _stdcall OnBufferEnd(void*) override
+	void _stdcall OnBufferEnd(void*) override
 	{
 		SubmitBuffer();
 	}
-	PRIVATE void _stdcall OnBufferStart(void*) override
+	void _stdcall OnBufferStart(void*) override
 	{
 	}
-	PRIVATE void _stdcall OnLoopEnd(void*) override
+	void _stdcall OnLoopEnd(void*) override
 	{
 	}
-	PRIVATE void _stdcall OnStreamEnd() override
+	void _stdcall OnStreamEnd() override
 	{
 	}
-	PRIVATE void _stdcall OnVoiceError(void*, HRESULT) override
+	void _stdcall OnVoiceError(void*, HRESULT) override
 	{
 	}
-	PRIVATE void _stdcall OnVoiceProcessingPassStart(UINT32) override
+	void _stdcall OnVoiceProcessingPassStart(UINT32) override
 	{
 	}
-	PRIVATE void _stdcall OnVoiceProcessingPassEnd() override
+	void _stdcall OnVoiceProcessingPassEnd() override
 	{
 	}
 };

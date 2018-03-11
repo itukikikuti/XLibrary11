@@ -1,39 +1,31 @@
 class Input
 {
-	PROTECTED Float2 mousePosition;
-	PROTECTED BYTE preKeyState[256];
-	PROTECTED BYTE keyState[256];
-	PROTECTED bool isShowCursor = true;
-
-	PUBLIC Input()
+public:
+	Input()
 	{
 		App::Initialize();
 		Initialize();
 	}
-	PUBLIC ~Input()
+	~Input()
 	{
 	}
-	PROTECTED virtual void Initialize()
-	{
-		Update();
-	}
-	PUBLIC bool GetKey(int keyCode) const
+	bool GetKey(int keyCode) const
 	{
 		return keyState[keyCode] & 0x80;
 	}
-	PUBLIC bool GetKeyUp(int keyCode) const
+	bool GetKeyUp(int keyCode) const
 	{
 		return !(keyState[keyCode] & 0x80) && (preKeyState[keyCode] & 0x80);
 	}
-	PUBLIC bool GetKeyDown(int keyCode) const
+	bool GetKeyDown(int keyCode) const
 	{
 		return (keyState[keyCode] & 0x80) && !(preKeyState[keyCode] & 0x80);
 	}
-	PUBLIC Float2 GetMousePosition() const
+	Float2 GetMousePosition() const
 	{
 		return mousePosition;
 	}
-	PUBLIC void SetMousePosition(float x, float y)
+	void SetMousePosition(float x, float y)
 	{
 		if (GetActiveWindow() != App::GetWindowHandle())
 			return;
@@ -44,7 +36,7 @@ class Input
 		ClientToScreen(App::GetWindowHandle(), &point);
 		SetCursorPos(point.x, point.y);
 	}
-	PUBLIC void SetShowCursor(bool isShowCursor)
+	void SetShowCursor(bool isShowCursor)
 	{
 		if (this->isShowCursor == isShowCursor)
 			return;
@@ -52,7 +44,7 @@ class Input
 		this->isShowCursor = isShowCursor;
 		ShowCursor(isShowCursor);
 	}
-	PUBLIC void Update()
+	void Update()
 	{
 		POINT point = {};
 		GetCursorPos(&point);
@@ -66,5 +58,16 @@ class Input
 		}
 
 		GetKeyboardState(keyState);
+	}
+
+private:
+	Float2 mousePosition;
+	BYTE preKeyState[256];
+	BYTE keyState[256];
+	bool isShowCursor = true;
+
+	virtual void Initialize()
+	{
+		Update();
 	}
 };

@@ -1,31 +1,118 @@
 ﻿class Mesh {
-	PROTECTED struct Constant
-	{
-		DirectX::XMMATRIX world;
-		Float3 lightDirection;
-	};
+public:
+	Float3 position;
+	Float3 angles;
+	Float3 scale;
+	std::vector<Vertex> vertices;
+	std::vector<int> indices;
+	Material material;
 
-	PUBLIC Float3 position;
-	PUBLIC Float3 angles;
-	PUBLIC Float3 scale;
-	PUBLIC std::vector<Vertex> vertices;
-	PUBLIC std::vector<int> indices;
-	PUBLIC Material material;
-	PROTECTED Constant constant;
-	PROTECTED ATL::CComPtr<ID3D11Buffer> vertexBuffer = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;
-	PROTECTED ATL::CComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
-
-	PUBLIC Mesh()
+	Mesh()
 	{
 		App::Initialize();
 		Initialize();
 		Create();
 	}
-	PUBLIC virtual ~Mesh()
+	virtual ~Mesh()
 	{
 	}
-	PROTECTED virtual void Initialize()
+	void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f))
+	{
+		if (shouldClear)
+		{
+			vertices.clear();
+			indices.clear();
+		}
+
+		leftDirection = DirectX::XMVector3Normalize(leftDirection);
+		upDirection = DirectX::XMVector3Normalize(upDirection);
+		forwardDirection = DirectX::XMVector3Normalize(forwardDirection);
+
+		vertices.push_back(Vertex(leftDirection * -size.x + upDirection * size.y + offset, -forwardDirection, Float2(0.0f, 0.0f)));
+		vertices.push_back(Vertex(leftDirection * size.x + upDirection * size.y + offset, -forwardDirection, Float2(1.0f, 0.0f)));
+		vertices.push_back(Vertex(leftDirection * -size.x + upDirection * -size.y + offset, -forwardDirection, Float2(0.0f, 1.0f)));
+		vertices.push_back(Vertex(leftDirection * size.x + upDirection * -size.y + offset, -forwardDirection, Float2(1.0f, 1.0f)));
+
+		size_t indexOffset = vertices.size() - 4;
+		indices.push_back(indexOffset + 0);
+		indices.push_back(indexOffset + 1);
+		indices.push_back(indexOffset + 2);
+		indices.push_back(indexOffset + 3);
+		indices.push_back(indexOffset + 2);
+		indices.push_back(indexOffset + 1);
+	}
+	void CreateCube(bool shouldClear = true)
+	{
+		if (shouldClear)
+		{
+			vertices.clear();
+			indices.clear();
+		}
+
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, -0.5f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));		// front
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, 0.5f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));	// back
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));		// left
+		CreateQuad(Float2(0.5f, 0.5f), Float3(-0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));	// right
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));		// up
+		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
+	}
+	void SetCullingMode(D3D11_CULL_MODE cullingMode)
+	{
+		D3D11_RASTERIZER_DESC rasterizerDesc = {};
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.CullMode = cullingMode;
+		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+	}
+	void Apply()
+	{
+		Create();
+	}
+	virtual void Draw()
+	{
+		material.Attach();
+
+		constant.world =
+			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
+			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
+			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		constant.lightDirection = DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f));
+
+		if (vertexBuffer == nullptr)
+		{
+			return;
+		}
+
+		App::GetGraphicsContext().RSSetState(rasterizerState);
+
+		UINT stride = static_cast<UINT>(sizeof(Vertex));
+		UINT offset = 0;
+		App::GetGraphicsContext().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
+
+		if (indexBuffer == nullptr)
+		{
+			App::GetGraphicsContext().Draw(static_cast<UINT>(vertices.size()), 0);
+		}
+		else {
+			App::GetGraphicsContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+			App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
+		}
+	}
+
+private:
+	struct Constant
+	{
+		DirectX::XMMATRIX world;
+		Float3 lightDirection;
+	};
+
+	Constant constant;
+	ATL::CComPtr<ID3D11Buffer> vertexBuffer = nullptr;
+	ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;
+	ATL::CComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
+
+	virtual void Initialize()
 	{
 		position = Float3(0.0f, 0.0f, 0.0f);
 		angles = Float3(0.0f, 0.0f, 0.0f);
@@ -69,7 +156,7 @@
 
 		SetCullingMode(D3D11_CULL_BACK);
 	}
-	PROTECTED virtual void Create()
+	virtual void Create()
 	{
 		if (vertices.size() > 0)
 		{
@@ -98,88 +185,5 @@
 		}
 
 		material.SetCBuffer(&constant, sizeof(Constant));
-	}
-	PUBLIC void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f))
-	{
-		if (shouldClear)
-		{
-			vertices.clear();
-			indices.clear();
-		}
-
-		leftDirection = DirectX::XMVector3Normalize(leftDirection);
-		upDirection = DirectX::XMVector3Normalize(upDirection);
-		forwardDirection = DirectX::XMVector3Normalize(forwardDirection);
-
-		vertices.push_back(Vertex(leftDirection * -size.x + upDirection * size.y + offset, -forwardDirection, Float2(0.0f, 0.0f)));
-		vertices.push_back(Vertex(leftDirection * size.x + upDirection * size.y + offset, -forwardDirection, Float2(1.0f, 0.0f)));
-		vertices.push_back(Vertex(leftDirection * -size.x + upDirection * -size.y + offset, -forwardDirection, Float2(0.0f, 1.0f)));
-		vertices.push_back(Vertex(leftDirection * size.x + upDirection * -size.y + offset, -forwardDirection, Float2(1.0f, 1.0f)));
-
-		size_t indexOffset = vertices.size() - 4;
-		indices.push_back(indexOffset + 0);
-		indices.push_back(indexOffset + 1);
-		indices.push_back(indexOffset + 2);
-		indices.push_back(indexOffset + 3);
-		indices.push_back(indexOffset + 2);
-		indices.push_back(indexOffset + 1);
-	}
-	PUBLIC void CreateCube(bool shouldClear = true)
-	{
-		if (shouldClear)
-		{
-			vertices.clear();
-			indices.clear();
-		}
-
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, -0.5f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));		// front
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, 0.5f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));	// back
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));		// left
-		CreateQuad(Float2(0.5f, 0.5f), Float3(-0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));	// right
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));		// up
-		CreateQuad(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
-	}
-	PUBLIC void SetCullingMode(D3D11_CULL_MODE cullingMode)
-	{
-		D3D11_RASTERIZER_DESC rasterizerDesc = {};
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerDesc.CullMode = cullingMode;
-		App::GetGraphicsDevice().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
-	}
-	PUBLIC void Apply()
-	{
-		Create();
-	}
-	PUBLIC virtual void Draw()
-	{
-		material.Attach();
-
-		constant.world =
-			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
-			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
-			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
-			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-		constant.lightDirection = DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f));
-
-		if (vertexBuffer == nullptr)
-		{
-			return;
-		}
-
-		App::GetGraphicsContext().RSSetState(rasterizerState);
-
-		UINT stride = static_cast<UINT>(sizeof(Vertex));
-		UINT offset = 0;
-		App::GetGraphicsContext().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
-
-		if (indexBuffer == nullptr)
-		{
-			App::GetGraphicsContext().Draw(static_cast<UINT>(vertices.size()), 0);
-		}
-		else {
-			App::GetGraphicsContext().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-			App::GetGraphicsContext().DrawIndexed(static_cast<UINT>(indices.size()), 0, 0);
-		}
 	}
 };
