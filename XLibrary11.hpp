@@ -6,10 +6,9 @@
 #define OEMRESOURCE
 #include <forward_list>
 #include <fstream>
-#include <functional>
 #include <memory>
 #include <vector>
-#include <windows.h>
+#include <Windows.h>
 #include <atlbase.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
@@ -666,7 +665,7 @@ private:
 	virtual void Initialize()
 	{
 		int flags = 0;
-#if defined(DEBUG) || defined(_DEBUG)
+#if defined(_DEBUG)
 		flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
@@ -1359,7 +1358,7 @@ private:
 	static void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out)
 	{
 		DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-#if defined(DEBUG) || defined(_DEBUG)
+#if defined(_DEBUG)
 		shaderFlags |= D3DCOMPILE_DEBUG;
 #endif
 

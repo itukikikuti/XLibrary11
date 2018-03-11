@@ -6,10 +6,9 @@
 #define OEMRESOURCE
 #include <forward_list>
 #include <fstream>
-#include <functional>
 #include <memory>
 #include <vector>
-#include <windows.h>
+#include <Windows.h>
 #include <atlbase.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>

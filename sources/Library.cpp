@@ -52,6 +52,10 @@ namespace Library
 
 	inline void Generate(const wchar_t* inputFilePath, const wchar_t* outputFilePath)
 	{
+#if !defined(_DEBUG)
+		return;
+#endif
+
 		wstring library = GetSourceCode(inputFilePath);
 
 		vector<wstring> sourceFileNameList = GetSourceFileNameList(library);
