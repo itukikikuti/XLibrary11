@@ -1,4 +1,6 @@
 ﻿// © 2017 itukikikuti
+// https://github.com/itukikikuti/XLibrary11
+// GNU General Public License v3.0
 #pragma once
 
 #define OEMRESOURCE
@@ -8,29 +10,29 @@
 #include <memory>
 #include <vector>
 #include <windows.h>
+#include <atlbase.h>
 #include <d3d11.h>
-#include <DirectXMath.h>
 #include <d3dcompiler.h>
-#include <xaudio2.h>
+#include <DirectXMath.h>
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
 #include <Shlwapi.h>
 #include <wincodec.h>
-#include <atlbase.h>
+#include <xaudio2.h>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
-#pragma comment(lib, "xaudio2.lib")
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mfuuid.lib")
 #pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "xaudio2.lib")
 
 namespace XLibrary11
 {
 
-#define Main() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+#define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 #define PUBLIC public:
 #define PRIVATE private:
 #define PROTECTED protected:

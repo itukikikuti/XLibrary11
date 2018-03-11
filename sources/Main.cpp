@@ -6,7 +6,7 @@
 using namespace std;
 using namespace DirectX;
 
-int Main()
+int MAIN()
 {
 	Library::Generate(L"sources/App.hpp", L"XLibrary11.hpp");
 

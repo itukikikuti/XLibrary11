@@ -1,4 +1,6 @@
 ﻿// © 2017 itukikikuti
+// https://github.com/itukikikuti/XLibrary11
+// GNU General Public License v3.0
 #pragma once
 
 #define OEMRESOURCE
@@ -29,7 +31,7 @@
 
 XLIBRARY_NAMESPACE_BEGIN
 
-#define Main() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+#define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 #define PUBLIC public:
 #define PRIVATE private:
 #define PROTECTED protected:
