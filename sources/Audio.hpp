@@ -23,7 +23,7 @@ private:
     ATL::CComPtr<IXAudio2> audioEngine;
     IXAudio2MasteringVoice* masteringVoice = nullptr;
 
-    virtual void Initialize()
+    void Initialize()
     {
         App::GetWindowHandle();
 

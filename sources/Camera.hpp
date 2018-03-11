@@ -10,7 +10,7 @@ public:
         Initialize();
         Create();
     }
-    virtual ~Camera()
+    ~Camera()
     {
         App::RemoveProcedure(this);
     }
@@ -21,7 +21,7 @@ public:
         this->farClip = farClip;
         constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
     }
-    virtual void Update()
+    void Update()
     {
         constant.view =
             DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
@@ -61,7 +61,7 @@ private:
     ATL::CComPtr<ID3D11Texture2D> depthTexture = nullptr;
     ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-    virtual void Initialize()
+    void Initialize()
     {
         position = Float3(0.0f, 0.0f, -5.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -70,7 +70,7 @@ private:
 
         App::AddProcedure(this);
     }
-    virtual void Create()
+    void Create()
     {
         renderTexture.Release();
         App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));

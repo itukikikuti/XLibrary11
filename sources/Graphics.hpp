@@ -55,7 +55,7 @@ private:
     ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
     ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-    virtual void Initialize()
+    void Initialize()
     {
         int flags = 0;
 #if defined(_DEBUG)
@@ -130,7 +130,7 @@ private:
 
         App::AddProcedure(this);
     }
-    virtual void Create()
+    void Create()
     {
         D3D11_VIEWPORT viewPort = {};
         viewPort.Width = App::GetWindowSize().x;

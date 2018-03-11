@@ -48,7 +48,7 @@ private:
     LARGE_INTEGER preCount;
     LARGE_INTEGER frequency;
 
-    virtual void Initialize()
+    void Initialize()
     {
         preCount = GetCounter();
         frequency = GetCountFrequency();

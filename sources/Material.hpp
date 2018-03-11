@@ -42,7 +42,7 @@ public:
         Initialize();
         Load(filePath);
     }
-    virtual ~Material()
+    ~Material()
     {
     }
     void Load(const wchar_t* const filePath)
@@ -71,7 +71,7 @@ public:
     {
         textures[slot] = texture;
     }
-    virtual void Attach()
+    void Attach()
     {
         App::GetGraphicsContext().VSSetShader(vertexShader, nullptr, 0);
         App::GetGraphicsContext().PSSetShader(pixelShader, nullptr, 0);
@@ -106,13 +106,13 @@ private:
     ATL::CComPtr<ID3D11InputLayout> inputLayout = nullptr;
     ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-    virtual void Initialize()
+    void Initialize()
     {
         for (int i = 0; i < 10; i++) {
             textures[i] = nullptr;
         }
     }
-    virtual void Create(const char* source)
+    void Create(const char* source)
     {
         vertexShader.Release();
         ATL::CComPtr<ID3DBlob> vertexShaderBlob = nullptr;

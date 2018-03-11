@@ -41,7 +41,7 @@ public:
 
         App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
     }
-    virtual void Play()
+    void Play()
     {
         sourceVoice->Start();
         SubmitBuffer();

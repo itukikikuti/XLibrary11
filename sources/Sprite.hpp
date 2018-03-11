@@ -22,7 +22,7 @@ public:
         mesh.CreateQuad(texture.GetSize() / 2.0f);
         mesh.Apply();
     }
-    virtual void Draw()
+    void Draw()
     {
         mesh.position = position;
         mesh.angles = angles;
@@ -31,8 +31,8 @@ public:
     }
 private:
     Mesh mesh;
-
-    virtual void Initialize()
+    
+    void Initialize()
     {
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);

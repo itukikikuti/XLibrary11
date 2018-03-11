@@ -66,7 +66,7 @@ private:
     BYTE keyState[256];
     bool isShowCursor = true;
 
-    virtual void Initialize()
+    void Initialize()
     {
         Update();
     }

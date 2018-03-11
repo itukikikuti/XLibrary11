@@ -17,7 +17,7 @@ public:
         App::Initialize();
         Create(width, height, buffer);
     }
-    virtual ~Texture()
+    ~Texture()
     {
     }
     void Load(const wchar_t* const filePath)
@@ -63,7 +63,7 @@ public:
     {
 
     }
-    virtual void Attach(int slot)
+    void Attach(int slot)
     {
         App::GetGraphicsContext().PSSetShaderResources(slot, 1, &shaderResourceView.p);
         App::GetGraphicsContext().PSSetSamplers(slot, 1, &samplerState.p);
@@ -76,7 +76,7 @@ private:
     ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView;
     ATL::CComPtr<ID3D11SamplerState> samplerState;
 
-    virtual void Create(int width, int height, const BYTE* const buffer)
+    void Create(int width, int height, const BYTE* const buffer)
     {
         this->width = width;
         this->height = height;

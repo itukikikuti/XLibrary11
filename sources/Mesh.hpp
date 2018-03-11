@@ -13,7 +13,7 @@ public:
         Initialize();
         Create();
     }
-    virtual ~Mesh()
+    ~Mesh()
     {
     }
     void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f))
@@ -67,7 +67,7 @@ public:
     {
         Create();
     }
-    virtual void Draw()
+    void Draw()
     {
         material.Attach();
 
@@ -112,7 +112,7 @@ private:
     ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;
     ATL::CComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
 
-    virtual void Initialize()
+    void Initialize()
     {
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -156,7 +156,7 @@ private:
 
         SetCullingMode(D3D11_CULL_BACK);
     }
-    virtual void Create()
+    void Create()
     {
         if (vertices.size() > 0)
         {

@@ -16,7 +16,7 @@ public:
     {
         UnregisterClassW(App::NAME, GetModuleHandleW(nullptr));
     }
-    virtual void Initialize()
+    void Initialize()
     {
         HINSTANCE instance = GetModuleHandleW(nullptr);
 

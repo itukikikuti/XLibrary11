@@ -479,7 +479,7 @@ public:
     {
         UnregisterClassW(App::NAME, GetModuleHandleW(nullptr));
     }
-    virtual void Initialize()
+    void Initialize()
     {
         HINSTANCE instance = GetModuleHandleW(nullptr);
 
@@ -660,7 +660,7 @@ private:
     ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
     ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-    virtual void Initialize()
+    void Initialize()
     {
         int flags = 0;
 #if defined(_DEBUG)
@@ -735,7 +735,7 @@ private:
 
         App::AddProcedure(this);
     }
-    virtual void Create()
+    void Create()
     {
         D3D11_VIEWPORT viewPort = {};
         viewPort.Width = App::GetWindowSize().x;
@@ -800,7 +800,7 @@ private:
     ATL::CComPtr<IXAudio2> audioEngine;
     IXAudio2MasteringVoice* masteringVoice = nullptr;
 
-    virtual void Initialize()
+    void Initialize()
     {
         App::GetWindowHandle();
 
@@ -879,7 +879,7 @@ private:
     BYTE keyState[256];
     bool isShowCursor = true;
 
-    virtual void Initialize()
+    void Initialize()
     {
         Update();
     }
@@ -934,7 +934,7 @@ private:
     LARGE_INTEGER preCount;
     LARGE_INTEGER frequency;
 
-    virtual void Initialize()
+    void Initialize()
     {
         preCount = GetCounter();
         frequency = GetCountFrequency();
@@ -1110,7 +1110,7 @@ public:
         App::Initialize();
         Create(width, height, buffer);
     }
-    virtual ~Texture()
+    ~Texture()
     {
     }
     void Load(const wchar_t* const filePath)
@@ -1156,7 +1156,7 @@ public:
     {
 
     }
-    virtual void Attach(int slot)
+    void Attach(int slot)
     {
         App::GetGraphicsContext().PSSetShaderResources(slot, 1, &shaderResourceView.p);
         App::GetGraphicsContext().PSSetSamplers(slot, 1, &samplerState.p);
@@ -1169,7 +1169,7 @@ private:
     ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView;
     ATL::CComPtr<ID3D11SamplerState> samplerState;
 
-    virtual void Create(int width, int height, const BYTE* const buffer)
+    void Create(int width, int height, const BYTE* const buffer)
     {
         this->width = width;
         this->height = height;
@@ -1263,7 +1263,7 @@ public:
         Initialize();
         Load(filePath);
     }
-    virtual ~Material()
+    ~Material()
     {
     }
     void Load(const wchar_t* const filePath)
@@ -1292,7 +1292,7 @@ public:
     {
         textures[slot] = texture;
     }
-    virtual void Attach()
+    void Attach()
     {
         App::GetGraphicsContext().VSSetShader(vertexShader, nullptr, 0);
         App::GetGraphicsContext().PSSetShader(pixelShader, nullptr, 0);
@@ -1327,13 +1327,13 @@ private:
     ATL::CComPtr<ID3D11InputLayout> inputLayout = nullptr;
     ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-    virtual void Initialize()
+    void Initialize()
     {
         for (int i = 0; i < 10; i++) {
             textures[i] = nullptr;
         }
     }
-    virtual void Create(const char* source)
+    void Create(const char* source)
     {
         vertexShader.Release();
         ATL::CComPtr<ID3DBlob> vertexShaderBlob = nullptr;
@@ -1382,7 +1382,7 @@ public:
         Initialize();
         Create();
     }
-    virtual ~Camera()
+    ~Camera()
     {
         App::RemoveProcedure(this);
     }
@@ -1393,7 +1393,7 @@ public:
         this->farClip = farClip;
         constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
     }
-    virtual void Update()
+    void Update()
     {
         constant.view =
             DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
@@ -1433,7 +1433,7 @@ private:
     ATL::CComPtr<ID3D11Texture2D> depthTexture = nullptr;
     ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-    virtual void Initialize()
+    void Initialize()
     {
         position = Float3(0.0f, 0.0f, -5.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1442,7 +1442,7 @@ private:
 
         App::AddProcedure(this);
     }
-    virtual void Create()
+    void Create()
     {
         renderTexture.Release();
         App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
@@ -1529,7 +1529,7 @@ public:
         Initialize();
         Create();
     }
-    virtual ~Mesh()
+    ~Mesh()
     {
     }
     void CreateQuad(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f))
@@ -1583,7 +1583,7 @@ public:
     {
         Create();
     }
-    virtual void Draw()
+    void Draw()
     {
         material.Attach();
 
@@ -1628,7 +1628,7 @@ private:
     ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;
     ATL::CComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
 
-    virtual void Initialize()
+    void Initialize()
     {
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1672,7 +1672,7 @@ private:
 
         SetCullingMode(D3D11_CULL_BACK);
     }
-    virtual void Create()
+    void Create()
     {
         if (vertices.size() > 0)
         {
@@ -1727,7 +1727,7 @@ public:
         mesh.CreateQuad(texture.GetSize() / 2.0f);
         mesh.Apply();
     }
-    virtual void Draw()
+    void Draw()
     {
         mesh.position = position;
         mesh.angles = angles;
@@ -1736,8 +1736,8 @@ public:
     }
 private:
     Mesh mesh;
-
-    virtual void Initialize()
+    
+    void Initialize()
     {
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1819,7 +1819,7 @@ public:
 
         App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
     }
-    virtual void Play()
+    void Play()
     {
         sourceVoice->Start();
         SubmitBuffer();
