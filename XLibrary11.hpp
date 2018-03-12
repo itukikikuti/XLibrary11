@@ -762,7 +762,7 @@ public:
     }
 
 private:
-    ATL::CComPtr<IXAudio2> audioEngine;
+    ATL::CComPtr<IXAudio2> audioEngine = nullptr;
     IXAudio2MasteringVoice* masteringVoice = nullptr;
 };
 class Input
@@ -1045,28 +1045,20 @@ public:
     Texture()
     {
         App::Initialize();
-        std::unique_ptr<BYTE[]> buffer(new BYTE[4]{ 0xff, 0x00, 0xff, 0xff });
-        Create(1, 1, buffer.get());
     }
     Texture(const wchar_t* const filePath)
     {
         App::Initialize();
         Load(filePath);
     }
-    Texture(int width, int height, BYTE* buffer)
-    {
-        App::Initialize();
-        Create(width, height, buffer);
-    }
     ~Texture()
     {
     }
     void Load(const wchar_t* const filePath)
     {
-        App::GetWindowHandle();
-
-        ATL::CComPtr<IWICImagingFactory> factory = nullptr;
-        CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+        static ATL::CComPtr<IWICImagingFactory> factory = nullptr;
+        if (factory == nullptr)
+            CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 
         ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
 
@@ -1094,33 +1086,7 @@ public:
             frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
         }
 
-        Create(width, height, buffer.get());
-    }
-    Float2 GetSize() const
-    {
-        return Float2(static_cast<float>(width), static_cast<float>(height));
-    }
-    void SetSize(float width, float height)
-    {
-
-    }
-    void Attach(int slot)
-    {
-        App::GetGraphicsContext().PSSetShaderResources(slot, 1, &shaderResourceView.p);
-        App::GetGraphicsContext().PSSetSamplers(slot, 1, &samplerState.p);
-    }
-
-private:
-    int width;
-    int height;
-    ATL::CComPtr<ID3D11Texture2D> texture;
-    ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView;
-    ATL::CComPtr<ID3D11SamplerState> samplerState;
-
-    void Create(int width, int height, const BYTE* const buffer)
-    {
-        this->width = width;
-        this->height = height;
+        size = DirectX::XMINT2(width, height);
 
         texture.Release();
         D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -1137,7 +1103,7 @@ private:
         textureDesc.MiscFlags = 0;
 
         D3D11_SUBRESOURCE_DATA textureSubresourceData = {};
-        textureSubresourceData.pSysMem = buffer;
+        textureSubresourceData.pSysMem = buffer.get();
         textureSubresourceData.SysMemPitch = width * 4;
         textureSubresourceData.SysMemSlicePitch = width * height * 4;
         App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
@@ -1166,48 +1132,39 @@ private:
         samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
         App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, &samplerState);
     }
+    DirectX::XMINT2 GetSize() const
+    {
+        return size;
+    }
+    void Attach(int slot)
+    {
+        if (texture == nullptr)
+            return;
+
+        App::GetGraphicsContext().PSSetShaderResources(slot, 1, &shaderResourceView.p);
+        App::GetGraphicsContext().PSSetSamplers(slot, 1, &samplerState.p);
+    }
+
+private:
+    DirectX::XMINT2 size;
+    ATL::CComPtr<ID3D11Texture2D> texture = nullptr;
+    ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView = nullptr;
+    ATL::CComPtr<ID3D11SamplerState> samplerState = nullptr;
 };
 class Material
 {
 public:
     Material()
     {
-        App::Initialize();
-        char* source =
-            "cbuffer Object : register(b0)"
-            "{"
-            "    matrix _world;"
-            "};"
-            "cbuffer Camera : register(b1)"
-            "{"
-            "    matrix _view;"
-            "    matrix _projection;"
-            "};"
-            "float4 VS(float4 vertex : POSITION) : SV_POSITION"
-            "{"
-            "    float4 output = vertex;"
-            "    output = mul(_world, output);"
-            "    output = mul(_view, output);"
-            "    output = mul(_projection, output);"
-            "    return output;"
-            "}"
-            "float4 PS(float4 position : SV_POSITION) : SV_TARGET"
-            "{"
-            "    return float4(1, 0, 1, 1);"
-            "}";
-
         Initialize();
-        Create(source);
     }
     Material(char* source)
     {
-        App::Initialize();
         Initialize();
         Create(source);
     }
     Material(const wchar_t* const filePath)
     {
-        App::Initialize();
         Initialize();
         Load(filePath);
     }
@@ -1224,16 +1181,15 @@ public:
 
         Create(source.c_str());
     }
-    void SetCBuffer(void* cbuffer, size_t size)
+    void SetBuffer(void* cbuffer, size_t size)
     {
-        this->cbuffer = cbuffer;
+        buffer = cbuffer;
 
         constantBuffer.Release();
         D3D11_BUFFER_DESC constantBufferDesc = {};
-        constantBufferDesc.ByteWidth = static_cast<UINT>(size);
+        constantBufferDesc.ByteWidth = size;
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        constantBufferDesc.CPUAccessFlags = 0;
         App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
     }
     void SetTexture(int slot, Texture* texture)
@@ -1242,13 +1198,18 @@ public:
     }
     void Attach()
     {
-        App::GetGraphicsContext().VSSetShader(vertexShader, nullptr, 0);
-        App::GetGraphicsContext().PSSetShader(pixelShader, nullptr, 0);
-        App::GetGraphicsContext().IASetInputLayout(inputLayout);
+        if (vertexShader != nullptr)
+            App::GetGraphicsContext().VSSetShader(vertexShader, nullptr, 0);
 
-        if (cbuffer != nullptr)
+        if (pixelShader != nullptr)
+            App::GetGraphicsContext().PSSetShader(pixelShader, nullptr, 0);
+
+        if (inputLayout != nullptr)
+            App::GetGraphicsContext().IASetInputLayout(inputLayout);
+
+        if (buffer != nullptr)
         {
-            App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, cbuffer, 0, 0);
+            App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, buffer, 0, 0);
             App::GetGraphicsContext().VSSetConstantBuffers(0, 1, &constantBuffer.p);
             App::GetGraphicsContext().HSSetConstantBuffers(0, 1, &constantBuffer.p);
             App::GetGraphicsContext().DSSetConstantBuffers(0, 1, &constantBuffer.p);
@@ -1256,19 +1217,17 @@ public:
             App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer.p);
         }
 
-        int i = 0;
-        for (Texture* texture : textures)
+        for (int i = 0; i < 10; i++)
         {
-            if (texture != nullptr)
+            if (textures[i] != nullptr)
             {
-                texture->Attach(i);
+                textures[i]->Attach(i);
             }
-            i++;
         }
     }
 
 private:
-    void* cbuffer = nullptr;
+    void* buffer = nullptr;
     Texture* textures[10];
     ATL::CComPtr<ID3D11VertexShader> vertexShader = nullptr;
     ATL::CComPtr<ID3D11PixelShader> pixelShader = nullptr;
@@ -1277,7 +1236,10 @@ private:
 
     void Initialize()
     {
-        for (int i = 0; i < 10; i++) {
+        App::Initialize();
+
+        for (int i = 0; i < 10; i++)
+        {
             textures[i] = nullptr;
         }
     }
@@ -1299,9 +1261,9 @@ private:
         inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
         inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
-        App::GetGraphicsDevice().CreateInputLayout(&inputElementDesc[0], static_cast<UINT>(inputElementDesc.size()), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
+        App::GetGraphicsDevice().CreateInputLayout(inputElementDesc.data(), inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
     }
-    static void CompileShader(const char* source, const char* entryPoint, const char* shaderModel, ID3DBlob** out)
+    static void CompileShader(const char* const source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {
         DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
@@ -1313,8 +1275,8 @@ private:
 
         if (errorBlob != nullptr)
         {
-            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-            MessageBoxA(App::GetWindowHandle(), (char*)errorBlob->GetBufferPointer(), "Shader Error", MB_OK);
+            OutputDebugStringA(static_cast<char*>(errorBlob->GetBufferPointer()));
+            MessageBoxA(App::GetWindowHandle(), static_cast<char*>(errorBlob->GetBufferPointer()), "Shader Error", MB_OK);
         }
     }
 };
@@ -1648,7 +1610,7 @@ private:
             App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
         }
 
-        material.SetCBuffer(&constant, sizeof(Constant));
+        material.SetBuffer(&constant, sizeof(Constant));
     }
 };
 class Sprite
@@ -1671,8 +1633,12 @@ public:
     void Load(const wchar_t* const filePath)
     {
         texture.Load(filePath);
+
         mesh.material.SetTexture(0, &texture);
-        mesh.CreateQuad(texture.GetSize() / 2.0f);
+
+        Float2 textureSize(texture.GetSize().x, texture.GetSize().y);
+        mesh.CreateQuad(textureSize / 2.0f);
+        
         mesh.Apply();
     }
     void Draw()
@@ -1774,8 +1740,8 @@ public:
     }
 
 private:
-    ATL::CComPtr<IMFSourceReader> sourceReader;
-    IXAudio2SourceVoice* sourceVoice;
+    ATL::CComPtr<IMFSourceReader> sourceReader = nullptr;
+    IXAudio2SourceVoice* sourceVoice = nullptr;
 
     void SubmitBuffer()
     {

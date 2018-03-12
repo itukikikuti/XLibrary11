@@ -184,6 +184,6 @@ private:
             App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
         }
 
-        material.SetCBuffer(&constant, sizeof(Constant));
+        material.SetBuffer(&constant, sizeof(Constant));
     }
 };
