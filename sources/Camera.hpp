@@ -7,7 +7,14 @@ public:
     Camera()
     {
         App::Initialize();
-        Initialize();
+
+        position = Float3(0.0f, 0.0f, -5.0f);
+        angles = Float3(0.0f, 0.0f, 0.0f);
+
+        SetPerspective(60.0f, 0.1f, 1000.0f);
+
+        App::AddProcedure(this);
+
         Create();
     }
     ~Camera()
@@ -66,15 +73,6 @@ private:
     ATL::CComPtr<ID3D11Texture2D> depthTexture = nullptr;
     ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-    void Initialize()
-    {
-        position = Float3(0.0f, 0.0f, -5.0f);
-        angles = Float3(0.0f, 0.0f, 0.0f);
-
-        SetPerspective(60.0f, 0.1f, 1000.0f);
-
-        App::AddProcedure(this);
-    }
     void Create()
     {
         renderTexture.Release();
