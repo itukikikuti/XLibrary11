@@ -4,28 +4,20 @@ public:
     Texture()
     {
         App::Initialize();
-        std::unique_ptr<BYTE[]> buffer(new BYTE[4]{ 0xff, 0x00, 0xff, 0xff });
-        Create(1, 1, buffer.get());
     }
     Texture(const wchar_t* const filePath)
     {
         App::Initialize();
         Load(filePath);
     }
-    Texture(int width, int height, BYTE* buffer)
-    {
-        App::Initialize();
-        Create(width, height, buffer);
-    }
     ~Texture()
     {
     }
     void Load(const wchar_t* const filePath)
     {
-        App::GetWindowHandle();
-
-        ATL::CComPtr<IWICImagingFactory> factory = nullptr;
-        CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+        static ATL::CComPtr<IWICImagingFactory> factory = nullptr;
+        if (factory == nullptr)
+            CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 
         ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
 
@@ -53,33 +45,7 @@ public:
             frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
         }
 
-        Create(width, height, buffer.get());
-    }
-    Float2 GetSize() const
-    {
-        return Float2(static_cast<float>(width), static_cast<float>(height));
-    }
-    void SetSize(float width, float height)
-    {
-
-    }
-    void Attach(int slot)
-    {
-        App::GetGraphicsContext().PSSetShaderResources(slot, 1, &shaderResourceView.p);
-        App::GetGraphicsContext().PSSetSamplers(slot, 1, &samplerState.p);
-    }
-
-private:
-    int width;
-    int height;
-    ATL::CComPtr<ID3D11Texture2D> texture;
-    ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView;
-    ATL::CComPtr<ID3D11SamplerState> samplerState;
-
-    void Create(int width, int height, const BYTE* const buffer)
-    {
-        this->width = width;
-        this->height = height;
+        size = DirectX::XMINT2(width, height);
 
         texture.Release();
         D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -96,7 +62,7 @@ private:
         textureDesc.MiscFlags = 0;
 
         D3D11_SUBRESOURCE_DATA textureSubresourceData = {};
-        textureSubresourceData.pSysMem = buffer;
+        textureSubresourceData.pSysMem = buffer.get();
         textureSubresourceData.SysMemPitch = width * 4;
         textureSubresourceData.SysMemSlicePitch = width * height * 4;
         App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
@@ -125,4 +91,19 @@ private:
         samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
         App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, &samplerState);
     }
+    DirectX::XMINT2 GetSize() const
+    {
+        return size;
+    }
+    void Attach(int slot)
+    {
+        App::GetGraphicsContext().PSSetShaderResources(slot, 1, &shaderResourceView.p);
+        App::GetGraphicsContext().PSSetSamplers(slot, 1, &samplerState.p);
+    }
+
+private:
+    DirectX::XMINT2 size;
+    ATL::CComPtr<ID3D11Texture2D> texture;
+    ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView;
+    ATL::CComPtr<ID3D11SamplerState> samplerState;
 };
