@@ -97,13 +97,16 @@ public:
     }
     void Attach(int slot)
     {
+        if (texture == nullptr)
+            return;
+
         App::GetGraphicsContext().PSSetShaderResources(slot, 1, &shaderResourceView.p);
         App::GetGraphicsContext().PSSetSamplers(slot, 1, &samplerState.p);
     }
 
 private:
     DirectX::XMINT2 size;
-    ATL::CComPtr<ID3D11Texture2D> texture;
-    ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView;
-    ATL::CComPtr<ID3D11SamplerState> samplerState;
+    ATL::CComPtr<ID3D11Texture2D> texture = nullptr;
+    ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView = nullptr;
+    ATL::CComPtr<ID3D11SamplerState> samplerState = nullptr;
 };

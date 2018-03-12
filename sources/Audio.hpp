@@ -27,6 +27,6 @@ public:
     }
 
 private:
-    ATL::CComPtr<IXAudio2> audioEngine;
+    ATL::CComPtr<IXAudio2> audioEngine = nullptr;
     IXAudio2MasteringVoice* masteringVoice = nullptr;
 };

@@ -48,8 +48,8 @@ public:
     }
 
 private:
-    ATL::CComPtr<IMFSourceReader> sourceReader;
-    IXAudio2SourceVoice* sourceVoice;
+    ATL::CComPtr<IMFSourceReader> sourceReader = nullptr;
+    IXAudio2SourceVoice* sourceVoice = nullptr;
 
     void SubmitBuffer()
     {
