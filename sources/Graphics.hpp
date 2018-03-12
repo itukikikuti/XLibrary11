@@ -109,15 +109,15 @@ private:
     void CreateRenderTarget()
     {
         D3D11_VIEWPORT viewPort = {};
-        viewPort.Width = App::GetWindowSize().x;
-        viewPort.Height = App::GetWindowSize().y;
+        viewPort.Width = static_cast<float>(App::GetWindowSize().x);
+        viewPort.Height = static_cast<float>(App::GetWindowSize().y);
         context->RSSetViewports(1, &viewPort);
 
         swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
         device->CreateRenderTargetView(renderTexture, nullptr, &renderTargetView);
 
         constant.view = DirectX::XMMatrixIdentity();
-        constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
+        constant.projection = DirectX::XMMatrixOrthographicLH(static_cast<float>(App::GetWindowSize().x), static_cast<float>(App::GetWindowSize().y), -10000.0f, 10000.0f);
     }
     void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
     {

@@ -479,7 +479,7 @@ public:
         WNDCLASSW windowClass = {};
         windowClass.lpfnWndProc = ProceedMessage;
         windowClass.hInstance = instance;
-        windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED);
+        windowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED));
         windowClass.lpszClassName = App::NAME;
         RegisterClassW(&windowClass);
 
@@ -702,15 +702,15 @@ private:
     void CreateRenderTarget()
     {
         D3D11_VIEWPORT viewPort = {};
-        viewPort.Width = App::GetWindowSize().x;
-        viewPort.Height = App::GetWindowSize().y;
+        viewPort.Width = static_cast<float>(App::GetWindowSize().x);
+        viewPort.Height = static_cast<float>(App::GetWindowSize().y);
         context->RSSetViewports(1, &viewPort);
 
         swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
         device->CreateRenderTargetView(renderTexture, nullptr, &renderTargetView);
 
         constant.view = DirectX::XMMatrixIdentity();
-        constant.projection = DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x, App::GetWindowSize().y, -10000.0f, 10000.0f);
+        constant.projection = DirectX::XMMatrixOrthographicLH(static_cast<float>(App::GetWindowSize().x), static_cast<float>(App::GetWindowSize().y), -10000.0f, 10000.0f);
     }
     void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
     {
@@ -739,7 +739,14 @@ public:
     Audio()
     {
         App::Initialize();
-        Initialize();
+
+        App::GetWindowHandle();
+
+        XAudio2Create(&audioEngine);
+
+        audioEngine->CreateMasteringVoice(&masteringVoice);
+
+        MFStartup(MF_VERSION);
     }
     ~Audio()
     {
@@ -757,17 +764,6 @@ public:
 private:
     ATL::CComPtr<IXAudio2> audioEngine;
     IXAudio2MasteringVoice* masteringVoice = nullptr;
-
-    void Initialize()
-    {
-        App::GetWindowHandle();
-
-        XAudio2Create(&audioEngine);
-
-        audioEngine->CreateMasteringVoice(&masteringVoice);
-
-        MFStartup(MF_VERSION);
-    }
 };
 class Input
 {
@@ -775,7 +771,8 @@ public:
     Input()
     {
         App::Initialize();
-        Initialize();
+
+        Update();
     }
     ~Input()
     {
@@ -836,11 +833,6 @@ private:
     BYTE preKeyState[256];
     BYTE keyState[256];
     bool isShowCursor = true;
-
-    void Initialize()
-    {
-        Update();
-    }
 };
 class Timer
 {
@@ -848,7 +840,9 @@ public:
     Timer()
     {
         App::Initialize();
-        Initialize();
+
+        preCount = GetCounter();
+        frequency = GetCountFrequency();
     }
     ~Timer()
     {
@@ -868,7 +862,7 @@ public:
     void Update()
     {
         LARGE_INTEGER count = GetCounter();
-        deltaTime = (float)(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
+        deltaTime = static_cast<float>((count.QuadPart - preCount.QuadPart) / frequency.QuadPart);
         preCount = GetCounter();
 
         time += deltaTime;
@@ -876,7 +870,8 @@ public:
 
         frameCount++;
         second += deltaTime;
-        if (second >= 1.0f) {
+        if (second >= 1.0f)
+        {
             frameRate = frameCount;
             frameCount = 0;
             second -= 1.0f;
@@ -892,11 +887,6 @@ private:
     LARGE_INTEGER preCount;
     LARGE_INTEGER frequency;
 
-    void Initialize()
-    {
-        preCount = GetCounter();
-        frequency = GetCountFrequency();
-    }
     LARGE_INTEGER GetCounter() const
     {
         LARGE_INTEGER counter;

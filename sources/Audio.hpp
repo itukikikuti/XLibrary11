@@ -4,7 +4,14 @@ public:
     Audio()
     {
         App::Initialize();
-        Initialize();
+
+        App::GetWindowHandle();
+
+        XAudio2Create(&audioEngine);
+
+        audioEngine->CreateMasteringVoice(&masteringVoice);
+
+        MFStartup(MF_VERSION);
     }
     ~Audio()
     {
@@ -22,15 +29,4 @@ public:
 private:
     ATL::CComPtr<IXAudio2> audioEngine;
     IXAudio2MasteringVoice* masteringVoice = nullptr;
-
-    void Initialize()
-    {
-        App::GetWindowHandle();
-
-        XAudio2Create(&audioEngine);
-
-        audioEngine->CreateMasteringVoice(&masteringVoice);
-
-        MFStartup(MF_VERSION);
-    }
 };

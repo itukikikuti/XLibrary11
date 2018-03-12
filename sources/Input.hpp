@@ -4,7 +4,8 @@ public:
     Input()
     {
         App::Initialize();
-        Initialize();
+
+        Update();
     }
     ~Input()
     {
@@ -65,9 +66,4 @@ private:
     BYTE preKeyState[256];
     BYTE keyState[256];
     bool isShowCursor = true;
-
-    void Initialize()
-    {
-        Update();
-    }
 };

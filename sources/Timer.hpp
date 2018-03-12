@@ -4,7 +4,9 @@ public:
     Timer()
     {
         App::Initialize();
-        Initialize();
+
+        preCount = GetCounter();
+        frequency = GetCountFrequency();
     }
     ~Timer()
     {
@@ -24,7 +26,7 @@ public:
     void Update()
     {
         LARGE_INTEGER count = GetCounter();
-        deltaTime = (float)(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
+        deltaTime = static_cast<float>((count.QuadPart - preCount.QuadPart) / frequency.QuadPart);
         preCount = GetCounter();
 
         time += deltaTime;
@@ -32,7 +34,8 @@ public:
 
         frameCount++;
         second += deltaTime;
-        if (second >= 1.0f) {
+        if (second >= 1.0f)
+        {
             frameRate = frameCount;
             frameCount = 0;
             second -= 1.0f;
@@ -48,11 +51,6 @@ private:
     LARGE_INTEGER preCount;
     LARGE_INTEGER frequency;
 
-    void Initialize()
-    {
-        preCount = GetCounter();
-        frequency = GetCountFrequency();
-    }
     LARGE_INTEGER GetCounter() const
     {
         LARGE_INTEGER counter;
