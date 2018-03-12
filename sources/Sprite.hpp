@@ -6,9 +6,12 @@ public:
     Float3 scale;
     Texture texture;
 
+    Sprite()
+    {
+        Initialize();
+    }
     Sprite(const wchar_t* const filePath)
     {
-        App::Initialize();
         Initialize();
         Load(filePath);
     }
@@ -38,6 +41,8 @@ private:
     
     void Initialize()
     {
+        App::Initialize();
+
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);

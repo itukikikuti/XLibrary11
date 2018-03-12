@@ -1,6 +1,10 @@
 class Voice : public IXAudio2VoiceCallback
 {
 public:
+    Voice()
+    {
+        App::Initialize();
+    }
     Voice(const wchar_t* const filePath)
     {
         App::Initialize();
@@ -14,18 +18,18 @@ public:
     {
         App::GetAudioEngine();
 
-        ATL::CComPtr<IStream> stream;
+        ATL::CComPtr<IStream> stream = nullptr;
         SHCreateStreamOnFileW(filePath, STGM_READ, &stream);
 
-        ATL::CComPtr<IMFByteStream> byteStream;
+        ATL::CComPtr<IMFByteStream> byteStream = nullptr;
         MFCreateMFByteStreamOnStream(stream, &byteStream);
 
-        ATL::CComPtr<IMFAttributes> attributes;
+        ATL::CComPtr<IMFAttributes> attributes = nullptr;
         MFCreateAttributes(&attributes, 1);
 
         MFCreateSourceReaderFromByteStream(byteStream, attributes, &sourceReader);
 
-        ATL::CComPtr<IMFMediaType> mediaType;
+        ATL::CComPtr<IMFMediaType> mediaType = nullptr;
         MFCreateMediaType(&mediaType);
         mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
         mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
@@ -53,7 +57,7 @@ private:
 
     void SubmitBuffer()
     {
-        ATL::CComPtr<IMFSample> sample;
+        ATL::CComPtr<IMFSample> sample = nullptr;
         DWORD flags = 0;
         sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
 
@@ -68,7 +72,7 @@ private:
             sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
         }
 
-        ATL::CComPtr<IMFMediaBuffer> mediaBuffer;
+        ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
         sample->ConvertToContiguousBuffer(&mediaBuffer);
 
         DWORD audioDataLength = 0;
