@@ -18,8 +18,12 @@ public:
     void Load(const wchar_t* const filePath)
     {
         texture.Load(filePath);
+
         mesh.material.SetTexture(0, &texture);
-        mesh.CreateQuad(texture.GetSize() / 2.0f);
+
+        Float2 textureSize(texture.GetSize().x, texture.GetSize().y);
+        mesh.CreateQuad(textureSize / 2.0f);
+        
         mesh.Apply();
     }
     void Draw()
