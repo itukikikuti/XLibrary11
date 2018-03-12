@@ -18,36 +18,46 @@ public:
         material = Material(
             "cbuffer Object : register(b0)"
             "{"
-            "    matrix _world;"
-            "    float3 _lightDirection;"
+            "    matrix world;"
             "};"
             "cbuffer Camera : register(b1)"
             "{"
-            "    matrix _view;"
-            "    matrix _projection;"
+            "    matrix view;"
+            "    matrix projection;"
             "};"
-            "Texture2D tex : register(t0);"
-            "SamplerState samp: register(s0);"
-            "struct VSOutput"
+            "Texture2D texture0 : register(t0);"
+            "SamplerState sampler0 : register(s0);"
+            "struct Vertex"
             "{"
-            "    float4 position : SV_POSITION;"
-            "    float4 normal : NORMAL;"
+            "    float4 position : POSITION;"
+            "    float3 normal : NORMAL;"
             "    float2 uv : TEXCOORD;"
             "};"
-            "VSOutput VS(float3 position : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD)"
+            "struct Pixel"
             "{"
-            "    VSOutput output = (VSOutput)0;"
-            "    output.position = mul(_world, float4(position, 1.0));"
-            "    output.position = mul(_view, output.position);"
-            "    output.position = mul(_projection, output.position);"
-            "    output.normal = normalize(mul(_world, float4(normal, 1)));"
-            "    output.uv = uv;"
+            "    float4 position : SV_POSITION;"
+            "    float3 normal : NORMAL;"
+            "    float2 uv : TEXCOORD;"
+            "};"
+            "Pixel VS(Vertex vertex)"
+            "{"
+            "    Pixel output;"
+            "    output.position = mul(vertex.position, world);"
+            "    output.position = mul(output.position, view);"
+            "    output.position = mul(output.position, projection);"
+            "    output.normal = mul(vertex.normal, (float3x3)world);"
+            "    output.uv = vertex.uv;"
             "    return output;"
             "}"
-            "float4 PS(VSOutput pixel) : SV_TARGET"
+            "float4 PS(Pixel pixel) : SV_TARGET"
             "{"
-            "    float diffuse = dot(-_lightDirection, normalize(pixel.normal).xyz) + 0.25;"
-            "    return max(0, float4(tex.Sample(samp, pixel.uv).rgb * diffuse, 1));"
+            "    float3 normal = normalize(pixel.normal);"
+            "    float3 lightDirection = normalize(float3(0.25, -1.0, 0.5));"
+            "    float3 lightColor = float3(1.0, 1.0, 1.0);"
+            "    float4 diffuseColor = texture0.Sample(sampler0, pixel.uv);"
+            "    float3 diffuseIntensity = dot(-lightDirection, normal) * lightColor;"
+            "    float3 ambientIntensity = lightColor * 0.2;"
+            "    return diffuseColor * float4(diffuseIntensity + ambientIntensity, 1);"
             "}"
         );
 
@@ -141,14 +151,14 @@ public:
 
         material.Attach();
 
-        constant.world =
+        constant.world = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
             DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
             DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
             DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
-            DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-        constant.lightDirection = DirectX::XMVector3Normalize(DirectX::XMVectorSet(0.25f, -1.0f, 0.5f, 0.0f));
-        
+            DirectX::XMMatrixTranslation(position.x, position.y, position.z)
+        );
+
         App::GetGraphicsContext().RSSetState(rasterizerState);
 
         UINT stride = sizeof(Vertex);
@@ -170,7 +180,6 @@ private:
     struct Constant
     {
         DirectX::XMMATRIX world;
-        Float3 lightDirection;
     };
 
     Constant constant;

@@ -19,16 +19,21 @@ public:
         this->fieldOfView = fieldOfView;
         this->nearClip = nearClip;
         this->farClip = farClip;
-        constant.projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip);
+        constant.projection = DirectX::XMMatrixTranspose(
+            DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip)
+        );
     }
     void Update()
     {
-        constant.view =
-            DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
-            DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
-            DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
-            DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-        constant.view = DirectX::XMMatrixInverse(nullptr, constant.view);
+        constant.view = DirectX::XMMatrixTranspose(
+            DirectX::XMMatrixInverse(
+                nullptr,
+                DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+                DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
+                DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
+                DirectX::XMMatrixTranslation(position.x, position.y, position.z)
+            )
+        );
 
         App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
         App::GetGraphicsContext().VSSetConstantBuffers(1, 1, &constantBuffer.p);
