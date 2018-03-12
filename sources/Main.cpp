@@ -14,6 +14,7 @@ int MAIN()
 
     while (App::Refresh())
     {
+        sprite.angles.z += 1.0f;
         sprite.Draw();
     }
 
