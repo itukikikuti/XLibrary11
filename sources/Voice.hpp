@@ -12,7 +12,8 @@ public:
     }
     ~Voice()
     {
-        sourceVoice->DestroyVoice();
+        if (sourceVoice != nullptr)
+            sourceVoice->DestroyVoice();
     }
     void Load(const wchar_t* const filePath)
     {
@@ -47,6 +48,9 @@ public:
     }
     void Play()
     {
+        if (sourceVoice == nullptr)
+            return;
+
         sourceVoice->Start();
         SubmitBuffer();
     }

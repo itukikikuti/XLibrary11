@@ -10,7 +10,8 @@ int MAIN()
 {
     Library::Generate(L"sources/App.hpp", L"XLibrary11.hpp");
 
-    Sprite sprite(L"assets/box.jpg");
+    Sprite sprite(L"assets/clock.png");
+    sprite.scale = 2.0f;
     //Camera camera;
     //camera.position.y = 1.0f;
     //camera.angles.x = 10.0f;
