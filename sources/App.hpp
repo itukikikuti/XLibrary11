@@ -88,14 +88,6 @@ public:
     {
         GetWindow().SetFullScreen(isFullScreen);
     }
-    static void AddProcedure(Window::Proceedable* const procedure)
-    {
-        GetWindow().AddProcedure(procedure);
-    }
-    static void RemoveProcedure(Window::Proceedable* const procedure)
-    {
-        GetWindow().RemoveProcedure(procedure);
-    }
     static ID3D11Device& GetGraphicsDevice()
     {
         return GetGraphics().GetDevice();
@@ -104,9 +96,9 @@ public:
     {
         return GetGraphics().GetContext();
     }
-    static IDXGISwapChain& GetGraphicsMemory()
+    static IDXGISwapChain& GetGraphicsSwapChain()
     {
-        return GetGraphics().GetMemory();
+        return GetGraphics().GetSwapChain();
     }
     static IXAudio2& GetAudioEngine()
     {

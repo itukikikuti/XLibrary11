@@ -546,14 +546,6 @@ public:
             SetSize(size.x, size.y);
         }
     }
-    void AddProcedure(Proceedable* const procedure)
-    {
-        GetProcedures().push_front(procedure);
-    }
-    void RemoveProcedure(Proceedable* const procedure)
-    {
-        GetProcedures().remove(procedure);
-    }
     bool Update()
     {
         MSG message = {};
@@ -568,6 +560,14 @@ public:
         }
 
         return true;
+    }
+    static void AddProcedure(Proceedable* const procedure)
+    {
+        GetProcedures().push_front(procedure);
+    }
+    static void RemoveProcedure(Proceedable* const procedure)
+    {
+        GetProcedures().remove(procedure);
     }
 
 private:
@@ -662,19 +662,19 @@ public:
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         device->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
-        App::AddProcedure(this);
+        App:Window::AddProcedure(this);
 
         CreateRenderTarget();
     }
     ~Graphics()
     {
-        App::RemoveProcedure(this);
+        App::Window::RemoveProcedure(this);
     }
     ID3D11Device& GetDevice() const
     {
         return *device;
     }
-    IDXGISwapChain& GetMemory() const
+    IDXGISwapChain& GetSwapChain() const
     {
         return *swapChain;
     }
@@ -687,11 +687,11 @@ public:
         swapChain->Present(1, 0);
 
         context->UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-        context->VSSetConstantBuffers(1, 1, &constantBuffer.p);
-        context->HSSetConstantBuffers(1, 1, &constantBuffer.p);
-        context->DSSetConstantBuffers(1, 1, &constantBuffer.p);
-        context->GSSetConstantBuffers(1, 1, &constantBuffer.p);
-        context->PSSetConstantBuffers(1, 1, &constantBuffer.p);
+        context->VSSetConstantBuffers(0, 1, &constantBuffer.p);
+        context->HSSetConstantBuffers(0, 1, &constantBuffer.p);
+        context->DSSetConstantBuffers(0, 1, &constantBuffer.p);
+        context->GSSetConstantBuffers(0, 1, &constantBuffer.p);
+        context->PSSetConstantBuffers(0, 1, &constantBuffer.p);
 
         context->OMSetRenderTargets(1, &renderTargetView.p, nullptr);
 
@@ -961,14 +961,6 @@ private:
     {
         GetWindow().SetFullScreen(isFullScreen);
     }
-    static void AddProcedure(Window::Proceedable* const procedure)
-    {
-        GetWindow().AddProcedure(procedure);
-    }
-    static void RemoveProcedure(Window::Proceedable* const procedure)
-    {
-        GetWindow().RemoveProcedure(procedure);
-    }
     static ID3D11Device& GetGraphicsDevice()
     {
         return GetGraphics().GetDevice();
@@ -977,9 +969,9 @@ private:
     {
         return GetGraphics().GetContext();
     }
-    static IDXGISwapChain& GetGraphicsMemory()
+    static IDXGISwapChain& GetGraphicsSwapChain()
     {
-        return GetGraphics().GetMemory();
+        return GetGraphics().GetSwapChain();
     }
     static IXAudio2& GetAudioEngine()
     {
@@ -1186,78 +1178,6 @@ public:
     ~Material()
     {
     }
-    void Load(const wchar_t* const filePath)
-    {
-        std::ifstream sourceFile(filePath);
-        std::istreambuf_iterator<char> iterator(sourceFile);
-        std::istreambuf_iterator<char> last;
-        std::string source(iterator, last);
-        sourceFile.close();
-
-        Create(source.c_str());
-    }
-    void SetBuffer(void* cbuffer, size_t size)
-    {
-        buffer = cbuffer;
-
-        constantBuffer.Release();
-        D3D11_BUFFER_DESC constantBufferDesc = {};
-        constantBufferDesc.ByteWidth = size;
-        constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-        constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-    }
-    void SetTexture(int slot, Texture* texture)
-    {
-        textures[slot] = texture;
-    }
-    void Attach()
-    {
-        if (vertexShader != nullptr)
-            App::GetGraphicsContext().VSSetShader(vertexShader, nullptr, 0);
-
-        if (pixelShader != nullptr)
-            App::GetGraphicsContext().PSSetShader(pixelShader, nullptr, 0);
-
-        if (inputLayout != nullptr)
-            App::GetGraphicsContext().IASetInputLayout(inputLayout);
-
-        if (buffer != nullptr)
-        {
-            App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, buffer, 0, 0);
-            App::GetGraphicsContext().VSSetConstantBuffers(0, 1, &constantBuffer.p);
-            App::GetGraphicsContext().HSSetConstantBuffers(0, 1, &constantBuffer.p);
-            App::GetGraphicsContext().DSSetConstantBuffers(0, 1, &constantBuffer.p);
-            App::GetGraphicsContext().GSSetConstantBuffers(0, 1, &constantBuffer.p);
-            App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer.p);
-        }
-
-        for (int i = 0; i < 10; i++)
-        {
-            if (textures[i] != nullptr)
-            {
-                textures[i]->Attach(i);
-            }
-        }
-    }
-
-private:
-    void* buffer = nullptr;
-    Texture* textures[10];
-    ATL::CComPtr<ID3D11VertexShader> vertexShader = nullptr;
-    ATL::CComPtr<ID3D11PixelShader> pixelShader = nullptr;
-    ATL::CComPtr<ID3D11InputLayout> inputLayout = nullptr;
-    ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
-
-    void Initialize()
-    {
-        App::Initialize();
-
-        for (int i = 0; i < 10; i++)
-        {
-            textures[i] = nullptr;
-        }
-    }
     void Create(const char* source)
     {
         vertexShader.Release();
@@ -1277,6 +1197,86 @@ private:
         inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
         App::GetGraphicsDevice().CreateInputLayout(inputElementDesc.data(), inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
+    }
+    void Load(const wchar_t* const filePath)
+    {
+        std::ifstream sourceFile(filePath);
+        std::istreambuf_iterator<char> iterator(sourceFile);
+        std::istreambuf_iterator<char> last;
+        std::string source(iterator, last);
+        sourceFile.close();
+
+        Create(source.c_str());
+    }
+    void SetBuffer(int slot, void* cbuffer, size_t size)
+    {
+        constantBuffer[slot].ptr = cbuffer;
+
+        constantBuffer[slot].buffer.Release();
+        D3D11_BUFFER_DESC constantBufferDesc = {};
+        constantBufferDesc.ByteWidth = size;
+        constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+        constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer[slot].buffer);
+    }
+    void SetTexture(int slot, Texture* texture)
+    {
+        textures[slot] = texture;
+    }
+    void Attach()
+    {
+        if (vertexShader != nullptr)
+            App::GetGraphicsContext().VSSetShader(vertexShader, nullptr, 0);
+
+        if (pixelShader != nullptr)
+            App::GetGraphicsContext().PSSetShader(pixelShader, nullptr, 0);
+
+        if (inputLayout != nullptr)
+            App::GetGraphicsContext().IASetInputLayout(inputLayout);
+
+        for (int i = 0; i < 10; i++)
+        {
+            if (constantBuffer[i].ptr != nullptr)
+            {
+                App::GetGraphicsContext().UpdateSubresource(constantBuffer[i].buffer, 0, nullptr, constantBuffer[i].ptr, 0, 0);
+                App::GetGraphicsContext().VSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext().HSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext().DSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext().GSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext().PSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+            }
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            if (textures[i] != nullptr)
+            {
+                textures[i]->Attach(i);
+            }
+        }
+    }
+
+private:
+    struct ConstantBuffer
+    {
+        void* ptr = nullptr;
+        ATL::CComPtr<ID3D11Buffer> buffer = nullptr;
+    };
+
+    ConstantBuffer constantBuffer[10];
+    Texture* textures[10];
+    ATL::CComPtr<ID3D11VertexShader> vertexShader = nullptr;
+    ATL::CComPtr<ID3D11PixelShader> pixelShader = nullptr;
+    ATL::CComPtr<ID3D11InputLayout> inputLayout = nullptr;
+
+    void Initialize()
+    {
+        App::Initialize();
+
+        for (int i = 0; i < 10; i++)
+        {
+            textures[i] = nullptr;
+        }
     }
     static void CompileShader(const char* const source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {
@@ -1300,34 +1300,49 @@ class Camera : public App::Window::Proceedable
 public:
     Float3 position;
     Float3 angles;
-
+    Float4 color;
+    
     Camera()
     {
         App::Initialize();
 
         position = Float3(0.0f, 0.0f, -5.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
+        color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
         SetPerspective(60.0f, 0.1f, 1000.0f);
 
-        App::AddProcedure(this);
+        App::Window::AddProcedure(this);
 
         Create();
     }
     ~Camera()
     {
-        App::RemoveProcedure(this);
+        App::Window::RemoveProcedure(this);
     }
     void SetPerspective(float fieldOfView, float nearClip, float farClip)
     {
+        isPerspective = true;
         this->fieldOfView = fieldOfView;
         this->nearClip = nearClip;
         this->farClip = farClip;
+        float aspectRatio = App::GetWindowSize().x / (float)App::GetWindowSize().y;
         constant.projection = DirectX::XMMatrixTranspose(
-            DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip)
+            DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
-    void Update()
+    void Camera::SetOrthographic(float size, float nearClip, float farClip)
+    {
+        isPerspective = false;
+        this->size = size;
+        this->nearClip = nearClip;
+        this->farClip = farClip;
+        float aspectRatio = App::GetWindowSize().x / (float)App::GetWindowSize().y;
+        constant.projection = DirectX::XMMatrixTranspose(
+            DirectX::XMMatrixOrthographicLH(size * aspectRatio, size, nearClip, farClip)
+        );
+    }
+    void Start()
     {
         constant.view = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixInverse(
@@ -1340,17 +1355,20 @@ public:
         );
 
         App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-        App::GetGraphicsContext().VSSetConstantBuffers(1, 1, &constantBuffer.p);
-        App::GetGraphicsContext().HSSetConstantBuffers(1, 1, &constantBuffer.p);
-        App::GetGraphicsContext().DSSetConstantBuffers(1, 1, &constantBuffer.p);
-        App::GetGraphicsContext().GSSetConstantBuffers(1, 1, &constantBuffer.p);
-        App::GetGraphicsContext().PSSetConstantBuffers(1, 1, &constantBuffer.p);
+        App::GetGraphicsContext().VSSetConstantBuffers(0, 1, &constantBuffer.p);
+        App::GetGraphicsContext().HSSetConstantBuffers(0, 1, &constantBuffer.p);
+        App::GetGraphicsContext().DSSetConstantBuffers(0, 1, &constantBuffer.p);
+        App::GetGraphicsContext().GSSetConstantBuffers(0, 1, &constantBuffer.p);
+        App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer.p);
 
         App::GetGraphicsContext().OMSetRenderTargets(1, &renderTargetView.p, depthStencilView);
 
-        static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-        App::GetGraphicsContext().ClearRenderTargetView(renderTargetView, color);
+        float clearColor[4] = { color.x, color.y, color.z, color.w };
+        App::GetGraphicsContext().ClearRenderTargetView(renderTargetView, clearColor);
         App::GetGraphicsContext().ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    }
+    void Stop()
+    {
     }
 
 private:
@@ -1360,7 +1378,9 @@ private:
         DirectX::XMMATRIX projection;
     };
 
+    bool isPerspective;
     float fieldOfView;
+    float size;
     float nearClip;
     float farClip;
     Constant constant;
@@ -1373,12 +1393,12 @@ private:
     void Create()
     {
         renderTexture.Release();
-        App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
+        App::GetGraphicsSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
         renderTargetView.Release();
         App::GetGraphicsDevice().CreateRenderTargetView(renderTexture, nullptr, &renderTargetView);
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-        App::GetGraphicsMemory().GetDesc(&swapChainDesc);
+        App::GetGraphicsSwapChain().GetDesc(&swapChainDesc);
 
         depthTexture.Release();
         D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -1426,7 +1446,7 @@ private:
             return;
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-        App::GetGraphicsMemory().GetDesc(&swapChainDesc);
+        App::GetGraphicsSwapChain().GetDesc(&swapChainDesc);
 
         ATL::CComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
         ATL::CComPtr<ID3D11DepthStencilView> nullDepthStencil = nullptr;
@@ -1436,9 +1456,13 @@ private:
         renderTexture.Release();
         depthTexture.Release();
         App::GetGraphicsContext().Flush();
-        App::GetGraphicsMemory().ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
+        App::GetGraphicsSwapChain().ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
 
-        SetPerspective(fieldOfView, nearClip, farClip);
+        if (isPerspective)
+            SetPerspective(fieldOfView, nearClip, farClip);
+        else
+            SetOrthographic(size, nearClip, farClip);
+
         Create();
     }
 };
@@ -1449,7 +1473,6 @@ public:
     Float3 scale;
     std::vector<Vertex> vertices;
     std::vector<UINT> indices;
-    Material material;
 
     Mesh()
     {
@@ -1459,15 +1482,15 @@ public:
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
 
-        material = Material(
-            "cbuffer Object : register(b0)"
-            "{"
-            "    matrix world;"
-            "};"
-            "cbuffer Camera : register(b1)"
+        material.Create(
+            "cbuffer Camera : register(b0)"
             "{"
             "    matrix view;"
             "    matrix projection;"
+            "};"
+            "cbuffer Object : register(b1)"
+            "{"
+            "    matrix world;"
             "};"
             "Texture2D texture0 : register(t0);"
             "SamplerState sampler0 : register(s0);"
@@ -1553,6 +1576,10 @@ public:
         CreatePlane(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));		// up
         CreatePlane(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
     }
+    Material& GetMaterial()
+    {
+        return material;
+    }
     void SetCullingMode(D3D11_CULL_MODE cullingMode)
     {
         D3D11_RASTERIZER_DESC rasterizerDesc = {};
@@ -1586,7 +1613,7 @@ public:
             App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
         }
 
-        material.SetBuffer(&constant, sizeof(Constant));
+        material.SetBuffer(1, &constant, sizeof(Constant));
     }
     void Draw()
     {
@@ -1626,6 +1653,7 @@ private:
         DirectX::XMMATRIX world;
     };
 
+    Material material;
     Constant constant;
     ATL::CComPtr<ID3D11Buffer> vertexBuffer = nullptr;
     ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;
@@ -1637,7 +1665,7 @@ public:
     Float3 position;
     Float3 angles;
     Float3 scale;
-    Texture texture;
+    Float4 color;
 
     Sprite()
     {
@@ -1655,12 +1683,23 @@ public:
     {
         texture.Load(filePath);
 
-        mesh.material.SetTexture(0, &texture);
-
+        mesh.GetMaterial().SetTexture(0, &texture);
+    }
+    DirectX::XMINT2 GetSize() const
+    {
+        return texture.GetSize();
+    }
+    void SetPivot(Float2 pivot)
+    {
         Float2 textureSize(static_cast<float>(texture.GetSize().x), static_cast<float>(texture.GetSize().y));
-        mesh.CreatePlane(textureSize / 2.0f);
-        
+        Float2 offset = textureSize / 2.0f * -pivot;
+
+        mesh.CreatePlane(textureSize / 2.0f, Float3(offset.x, offset.y, 0.0f));
         mesh.Apply();
+    }
+    Material& GetMaterial()
+    {
+        return mesh.GetMaterial();
     }
     void Draw()
     {
@@ -1671,7 +1710,8 @@ public:
     }
 private:
     Mesh mesh;
-    
+    Texture texture;
+
     void Initialize()
     {
         App::Initialize();
@@ -1679,16 +1719,21 @@ private:
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
+        color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        mesh.material = Material(
-            "cbuffer Object : register(b0)"
-            "{"
-            "    matrix world;"
-            "};"
-            "cbuffer Camera : register(b1)"
+        mesh.GetMaterial().Create(
+            "cbuffer Camera : register(b0)"
             "{"
             "    matrix view;"
             "    matrix projection;"
+            "};"
+            "cbuffer Object : register(b1)"
+            "{"
+            "    matrix world;"
+            "};"
+            "cbuffer Sprite : register(b2)"
+            "{"
+            "    float4 color;"
             "};"
             "Texture2D texture0 : register(t0);"
             "SamplerState sampler0 : register(s0);"
@@ -1713,9 +1758,12 @@ private:
             "}"
             "float4 PS(Pixel pixel) : SV_TARGET"
             "{"
-            "    return texture0.Sample(sampler0, pixel.uv);"
+            "    return texture0.Sample(sampler0, pixel.uv) * color;"
             "}"
         );
+
+        SetPivot(0.0f);
+        mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
     }
 };
 class Voice : public IXAudio2VoiceCallback

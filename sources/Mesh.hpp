@@ -5,7 +5,6 @@ public:
     Float3 scale;
     std::vector<Vertex> vertices;
     std::vector<UINT> indices;
-    Material material;
 
     Mesh()
     {
@@ -15,15 +14,15 @@ public:
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
 
-        material = Material(
-            "cbuffer Object : register(b0)"
-            "{"
-            "    matrix world;"
-            "};"
-            "cbuffer Camera : register(b1)"
+        material.Create(
+            "cbuffer Camera : register(b0)"
             "{"
             "    matrix view;"
             "    matrix projection;"
+            "};"
+            "cbuffer Object : register(b1)"
+            "{"
+            "    matrix world;"
             "};"
             "Texture2D texture0 : register(t0);"
             "SamplerState sampler0 : register(s0);"
@@ -109,6 +108,10 @@ public:
         CreatePlane(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));		// up
         CreatePlane(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
     }
+    Material& GetMaterial()
+    {
+        return material;
+    }
     void SetCullingMode(D3D11_CULL_MODE cullingMode)
     {
         D3D11_RASTERIZER_DESC rasterizerDesc = {};
@@ -142,7 +145,7 @@ public:
             App::GetGraphicsDevice().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
         }
 
-        material.SetBuffer(&constant, sizeof(Constant));
+        material.SetBuffer(1, &constant, sizeof(Constant));
     }
     void Draw()
     {
@@ -182,6 +185,7 @@ private:
         DirectX::XMMATRIX world;
     };
 
+    Material material;
     Constant constant;
     ATL::CComPtr<ID3D11Buffer> vertexBuffer = nullptr;
     ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;

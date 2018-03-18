@@ -18,78 +18,6 @@ public:
     ~Material()
     {
     }
-    void Load(const wchar_t* const filePath)
-    {
-        std::ifstream sourceFile(filePath);
-        std::istreambuf_iterator<char> iterator(sourceFile);
-        std::istreambuf_iterator<char> last;
-        std::string source(iterator, last);
-        sourceFile.close();
-
-        Create(source.c_str());
-    }
-    void SetBuffer(void* cbuffer, size_t size)
-    {
-        buffer = cbuffer;
-
-        constantBuffer.Release();
-        D3D11_BUFFER_DESC constantBufferDesc = {};
-        constantBufferDesc.ByteWidth = size;
-        constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-        constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-    }
-    void SetTexture(int slot, Texture* texture)
-    {
-        textures[slot] = texture;
-    }
-    void Attach()
-    {
-        if (vertexShader != nullptr)
-            App::GetGraphicsContext().VSSetShader(vertexShader, nullptr, 0);
-
-        if (pixelShader != nullptr)
-            App::GetGraphicsContext().PSSetShader(pixelShader, nullptr, 0);
-
-        if (inputLayout != nullptr)
-            App::GetGraphicsContext().IASetInputLayout(inputLayout);
-
-        if (buffer != nullptr)
-        {
-            App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, buffer, 0, 0);
-            App::GetGraphicsContext().VSSetConstantBuffers(0, 1, &constantBuffer.p);
-            App::GetGraphicsContext().HSSetConstantBuffers(0, 1, &constantBuffer.p);
-            App::GetGraphicsContext().DSSetConstantBuffers(0, 1, &constantBuffer.p);
-            App::GetGraphicsContext().GSSetConstantBuffers(0, 1, &constantBuffer.p);
-            App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer.p);
-        }
-
-        for (int i = 0; i < 10; i++)
-        {
-            if (textures[i] != nullptr)
-            {
-                textures[i]->Attach(i);
-            }
-        }
-    }
-
-private:
-    void* buffer = nullptr;
-    Texture* textures[10];
-    ATL::CComPtr<ID3D11VertexShader> vertexShader = nullptr;
-    ATL::CComPtr<ID3D11PixelShader> pixelShader = nullptr;
-    ATL::CComPtr<ID3D11InputLayout> inputLayout = nullptr;
-    ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
-
-    void Initialize()
-    {
-        App::Initialize();
-
-        for (int i = 0; i < 10; i++)
-        {
-            textures[i] = nullptr;
-        }
-    }
     void Create(const char* source)
     {
         vertexShader.Release();
@@ -109,6 +37,86 @@ private:
         inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
         App::GetGraphicsDevice().CreateInputLayout(inputElementDesc.data(), inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
+    }
+    void Load(const wchar_t* const filePath)
+    {
+        std::ifstream sourceFile(filePath);
+        std::istreambuf_iterator<char> iterator(sourceFile);
+        std::istreambuf_iterator<char> last;
+        std::string source(iterator, last);
+        sourceFile.close();
+
+        Create(source.c_str());
+    }
+    void SetBuffer(int slot, void* cbuffer, size_t size)
+    {
+        constantBuffer[slot].ptr = cbuffer;
+
+        constantBuffer[slot].buffer.Release();
+        D3D11_BUFFER_DESC constantBufferDesc = {};
+        constantBufferDesc.ByteWidth = size;
+        constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+        constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer[slot].buffer);
+    }
+    void SetTexture(int slot, Texture* texture)
+    {
+        textures[slot] = texture;
+    }
+    void Attach()
+    {
+        if (vertexShader != nullptr)
+            App::GetGraphicsContext().VSSetShader(vertexShader, nullptr, 0);
+
+        if (pixelShader != nullptr)
+            App::GetGraphicsContext().PSSetShader(pixelShader, nullptr, 0);
+
+        if (inputLayout != nullptr)
+            App::GetGraphicsContext().IASetInputLayout(inputLayout);
+
+        for (int i = 0; i < 10; i++)
+        {
+            if (constantBuffer[i].ptr != nullptr)
+            {
+                App::GetGraphicsContext().UpdateSubresource(constantBuffer[i].buffer, 0, nullptr, constantBuffer[i].ptr, 0, 0);
+                App::GetGraphicsContext().VSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext().HSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext().DSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext().GSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext().PSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+            }
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            if (textures[i] != nullptr)
+            {
+                textures[i]->Attach(i);
+            }
+        }
+    }
+
+private:
+    struct ConstantBuffer
+    {
+        void* ptr = nullptr;
+        ATL::CComPtr<ID3D11Buffer> buffer = nullptr;
+    };
+
+    ConstantBuffer constantBuffer[10];
+    Texture* textures[10];
+    ATL::CComPtr<ID3D11VertexShader> vertexShader = nullptr;
+    ATL::CComPtr<ID3D11PixelShader> pixelShader = nullptr;
+    ATL::CComPtr<ID3D11InputLayout> inputLayout = nullptr;
+
+    void Initialize()
+    {
+        App::Initialize();
+
+        for (int i = 0; i < 10; i++)
+        {
+            textures[i] = nullptr;
+        }
     }
     static void CompileShader(const char* const source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {

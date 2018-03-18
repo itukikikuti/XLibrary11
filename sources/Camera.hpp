@@ -3,34 +3,49 @@ class Camera : public App::Window::Proceedable
 public:
     Float3 position;
     Float3 angles;
-
+    Float4 color;
+    
     Camera()
     {
         App::Initialize();
 
         position = Float3(0.0f, 0.0f, -5.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
+        color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
         SetPerspective(60.0f, 0.1f, 1000.0f);
 
-        App::AddProcedure(this);
+        App::Window::AddProcedure(this);
 
         Create();
     }
     ~Camera()
     {
-        App::RemoveProcedure(this);
+        App::Window::RemoveProcedure(this);
     }
     void SetPerspective(float fieldOfView, float nearClip, float farClip)
     {
+        isPerspective = true;
         this->fieldOfView = fieldOfView;
         this->nearClip = nearClip;
         this->farClip = farClip;
+        float aspectRatio = App::GetWindowSize().x / (float)App::GetWindowSize().y;
         constant.projection = DirectX::XMMatrixTranspose(
-            DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), App::GetWindowSize().x / (float)App::GetWindowSize().y, nearClip, farClip)
+            DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
-    void Update()
+    void Camera::SetOrthographic(float size, float nearClip, float farClip)
+    {
+        isPerspective = false;
+        this->size = size;
+        this->nearClip = nearClip;
+        this->farClip = farClip;
+        float aspectRatio = App::GetWindowSize().x / (float)App::GetWindowSize().y;
+        constant.projection = DirectX::XMMatrixTranspose(
+            DirectX::XMMatrixOrthographicLH(size * aspectRatio, size, nearClip, farClip)
+        );
+    }
+    void Start()
     {
         constant.view = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixInverse(
@@ -43,17 +58,20 @@ public:
         );
 
         App::GetGraphicsContext().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-        App::GetGraphicsContext().VSSetConstantBuffers(1, 1, &constantBuffer.p);
-        App::GetGraphicsContext().HSSetConstantBuffers(1, 1, &constantBuffer.p);
-        App::GetGraphicsContext().DSSetConstantBuffers(1, 1, &constantBuffer.p);
-        App::GetGraphicsContext().GSSetConstantBuffers(1, 1, &constantBuffer.p);
-        App::GetGraphicsContext().PSSetConstantBuffers(1, 1, &constantBuffer.p);
+        App::GetGraphicsContext().VSSetConstantBuffers(0, 1, &constantBuffer.p);
+        App::GetGraphicsContext().HSSetConstantBuffers(0, 1, &constantBuffer.p);
+        App::GetGraphicsContext().DSSetConstantBuffers(0, 1, &constantBuffer.p);
+        App::GetGraphicsContext().GSSetConstantBuffers(0, 1, &constantBuffer.p);
+        App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer.p);
 
         App::GetGraphicsContext().OMSetRenderTargets(1, &renderTargetView.p, depthStencilView);
 
-        static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-        App::GetGraphicsContext().ClearRenderTargetView(renderTargetView, color);
+        float clearColor[4] = { color.x, color.y, color.z, color.w };
+        App::GetGraphicsContext().ClearRenderTargetView(renderTargetView, clearColor);
         App::GetGraphicsContext().ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    }
+    void Stop()
+    {
     }
 
 private:
@@ -63,7 +81,9 @@ private:
         DirectX::XMMATRIX projection;
     };
 
+    bool isPerspective;
     float fieldOfView;
+    float size;
     float nearClip;
     float farClip;
     Constant constant;
@@ -76,12 +96,12 @@ private:
     void Create()
     {
         renderTexture.Release();
-        App::GetGraphicsMemory().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
+        App::GetGraphicsSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
         renderTargetView.Release();
         App::GetGraphicsDevice().CreateRenderTargetView(renderTexture, nullptr, &renderTargetView);
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-        App::GetGraphicsMemory().GetDesc(&swapChainDesc);
+        App::GetGraphicsSwapChain().GetDesc(&swapChainDesc);
 
         depthTexture.Release();
         D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -129,7 +149,7 @@ private:
             return;
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-        App::GetGraphicsMemory().GetDesc(&swapChainDesc);
+        App::GetGraphicsSwapChain().GetDesc(&swapChainDesc);
 
         ATL::CComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
         ATL::CComPtr<ID3D11DepthStencilView> nullDepthStencil = nullptr;
@@ -139,9 +159,13 @@ private:
         renderTexture.Release();
         depthTexture.Release();
         App::GetGraphicsContext().Flush();
-        App::GetGraphicsMemory().ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
+        App::GetGraphicsSwapChain().ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
 
-        SetPerspective(fieldOfView, nearClip, farClip);
+        if (isPerspective)
+            SetPerspective(fieldOfView, nearClip, farClip);
+        else
+            SetOrthographic(size, nearClip, farClip);
+
         Create();
     }
 };

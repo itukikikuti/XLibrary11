@@ -4,7 +4,7 @@ public:
     Float3 position;
     Float3 angles;
     Float3 scale;
-    Texture texture;
+    Float4 color;
 
     Sprite()
     {
@@ -22,12 +22,23 @@ public:
     {
         texture.Load(filePath);
 
-        mesh.material.SetTexture(0, &texture);
-
+        mesh.GetMaterial().SetTexture(0, &texture);
+    }
+    DirectX::XMINT2 GetSize() const
+    {
+        return texture.GetSize();
+    }
+    void SetPivot(Float2 pivot)
+    {
         Float2 textureSize(static_cast<float>(texture.GetSize().x), static_cast<float>(texture.GetSize().y));
-        mesh.CreatePlane(textureSize / 2.0f);
-        
+        Float2 offset = textureSize / 2.0f * -pivot;
+
+        mesh.CreatePlane(textureSize / 2.0f, Float3(offset.x, offset.y, 0.0f));
         mesh.Apply();
+    }
+    Material& GetMaterial()
+    {
+        return mesh.GetMaterial();
     }
     void Draw()
     {
@@ -38,7 +49,8 @@ public:
     }
 private:
     Mesh mesh;
-    
+    Texture texture;
+
     void Initialize()
     {
         App::Initialize();
@@ -46,16 +58,21 @@ private:
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
+        color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        mesh.material = Material(
-            "cbuffer Object : register(b0)"
-            "{"
-            "    matrix world;"
-            "};"
-            "cbuffer Camera : register(b1)"
+        mesh.GetMaterial().Create(
+            "cbuffer Camera : register(b0)"
             "{"
             "    matrix view;"
             "    matrix projection;"
+            "};"
+            "cbuffer Object : register(b1)"
+            "{"
+            "    matrix world;"
+            "};"
+            "cbuffer Sprite : register(b2)"
+            "{"
+            "    float4 color;"
             "};"
             "Texture2D texture0 : register(t0);"
             "SamplerState sampler0 : register(s0);"
@@ -80,8 +97,11 @@ private:
             "}"
             "float4 PS(Pixel pixel) : SV_TARGET"
             "{"
-            "    return texture0.Sample(sampler0, pixel.uv);"
+            "    return texture0.Sample(sampler0, pixel.uv) * color;"
             "}"
         );
+
+        SetPivot(0.0f);
+        mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
     }
 };

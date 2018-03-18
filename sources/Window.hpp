@@ -83,14 +83,6 @@ public:
             SetSize(size.x, size.y);
         }
     }
-    void AddProcedure(Proceedable* const procedure)
-    {
-        GetProcedures().push_front(procedure);
-    }
-    void RemoveProcedure(Proceedable* const procedure)
-    {
-        GetProcedures().remove(procedure);
-    }
     bool Update()
     {
         MSG message = {};
@@ -105,6 +97,14 @@ public:
         }
 
         return true;
+    }
+    static void AddProcedure(Proceedable* const procedure)
+    {
+        GetProcedures().push_front(procedure);
+    }
+    static void RemoveProcedure(Proceedable* const procedure)
+    {
+        GetProcedures().remove(procedure);
     }
 
 private:

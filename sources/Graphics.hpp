@@ -69,19 +69,19 @@ public:
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         device->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
-        App::AddProcedure(this);
+        App:Window::AddProcedure(this);
 
         CreateRenderTarget();
     }
     ~Graphics()
     {
-        App::RemoveProcedure(this);
+        App::Window::RemoveProcedure(this);
     }
     ID3D11Device& GetDevice() const
     {
         return *device;
     }
-    IDXGISwapChain& GetMemory() const
+    IDXGISwapChain& GetSwapChain() const
     {
         return *swapChain;
     }
@@ -94,11 +94,11 @@ public:
         swapChain->Present(1, 0);
 
         context->UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-        context->VSSetConstantBuffers(1, 1, &constantBuffer.p);
-        context->HSSetConstantBuffers(1, 1, &constantBuffer.p);
-        context->DSSetConstantBuffers(1, 1, &constantBuffer.p);
-        context->GSSetConstantBuffers(1, 1, &constantBuffer.p);
-        context->PSSetConstantBuffers(1, 1, &constantBuffer.p);
+        context->VSSetConstantBuffers(0, 1, &constantBuffer.p);
+        context->HSSetConstantBuffers(0, 1, &constantBuffer.p);
+        context->DSSetConstantBuffers(0, 1, &constantBuffer.p);
+        context->GSSetConstantBuffers(0, 1, &constantBuffer.p);
+        context->PSSetConstantBuffers(0, 1, &constantBuffer.p);
 
         context->OMSetRenderTargets(1, &renderTargetView.p, nullptr);
 
