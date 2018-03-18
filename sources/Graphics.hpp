@@ -111,6 +111,7 @@ private:
         D3D11_VIEWPORT viewPort = {};
         viewPort.Width = static_cast<float>(App::GetWindowSize().x);
         viewPort.Height = static_cast<float>(App::GetWindowSize().y);
+        viewPort.MaxDepth = 1.0f;
         context->RSSetViewports(1, &viewPort);
 
         swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
