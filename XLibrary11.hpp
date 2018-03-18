@@ -603,6 +603,14 @@ public:
         flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
+        std::vector<D3D_DRIVER_TYPE> driverTypes
+        {
+            D3D_DRIVER_TYPE_HARDWARE,
+            D3D_DRIVER_TYPE_WARP,
+            D3D_DRIVER_TYPE_REFERENCE,
+            D3D_DRIVER_TYPE_SOFTWARE,
+        };
+
         std::vector<D3D_FEATURE_LEVEL> featureLevels
         {
             D3D_FEATURE_LEVEL_11_0,
@@ -622,7 +630,14 @@ public:
         swapChainDesc.BufferCount = 1;
         swapChainDesc.OutputWindow = App::GetWindowHandle();
         swapChainDesc.Windowed = true;
-        D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, featureLevels.data(), featureLevels.size(), D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device, nullptr, &context);
+
+        for (size_t i = 0; i < driverTypes.size(); i++)
+        {
+            HRESULT r = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), featureLevels.size(), D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device, nullptr, &context);
+
+            if (SUCCEEDED(r))
+                break;
+        }
 
         context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -704,6 +719,7 @@ private:
         D3D11_VIEWPORT viewPort = {};
         viewPort.Width = static_cast<float>(App::GetWindowSize().x);
         viewPort.Height = static_cast<float>(App::GetWindowSize().y);
+        viewPort.MaxDepth = 1.0f;
         context->RSSetViewports(1, &viewPort);
 
         swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
@@ -862,11 +878,10 @@ public:
     void Update()
     {
         LARGE_INTEGER count = GetCounter();
-        deltaTime = static_cast<float>((count.QuadPart - preCount.QuadPart) / frequency.QuadPart);
+        deltaTime = static_cast<float>(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
         preCount = GetCounter();
 
         time += deltaTime;
-
 
         frameCount++;
         second += deltaTime;
@@ -1265,7 +1280,7 @@ private:
     }
     static void CompileShader(const char* const source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {
-        DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+        UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
         shaderFlags |= D3DCOMPILE_DEBUG;
 #endif
@@ -1642,7 +1657,7 @@ public:
 
         mesh.material.SetTexture(0, &texture);
 
-        Float2 textureSize(texture.GetSize().x, texture.GetSize().y);
+        Float2 textureSize(static_cast<float>(texture.GetSize().x), static_cast<float>(texture.GetSize().y));
         mesh.CreatePlane(textureSize / 2.0f);
         
         mesh.Apply();
@@ -1740,10 +1755,10 @@ public:
         mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
         mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
 
-        sourceReader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType);
+        sourceReader->SetCurrentMediaType(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), nullptr, mediaType);
 
         mediaType.Release();
-        sourceReader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, &mediaType);
+        sourceReader->GetCurrentMediaType(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), &mediaType);
 
         UINT32 waveFormatSize = 0;
         WAVEFORMATEX* waveFormat;
@@ -1768,7 +1783,7 @@ private:
     {
         ATL::CComPtr<IMFSample> sample = nullptr;
         DWORD flags = 0;
-        sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+        sourceReader->ReadSample(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), 0, nullptr, &flags, nullptr, &sample);
 
         if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
         {
@@ -1778,7 +1793,7 @@ private:
             sourceReader->SetCurrentPosition(GUID_NULL, position);
 
             sample.Release();
-            sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+            sourceReader->ReadSample(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), 0, nullptr, &flags, nullptr, &sample);
         }
 
         ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;

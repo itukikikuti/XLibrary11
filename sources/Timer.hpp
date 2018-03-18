@@ -26,11 +26,10 @@ public:
     void Update()
     {
         LARGE_INTEGER count = GetCounter();
-        deltaTime = static_cast<float>((count.QuadPart - preCount.QuadPart) / frequency.QuadPart);
+        deltaTime = static_cast<float>(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
         preCount = GetCounter();
 
         time += deltaTime;
-
 
         frameCount++;
         second += deltaTime;

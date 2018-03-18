@@ -24,7 +24,7 @@ public:
 
         mesh.material.SetTexture(0, &texture);
 
-        Float2 textureSize(texture.GetSize().x, texture.GetSize().y);
+        Float2 textureSize(static_cast<float>(texture.GetSize().x), static_cast<float>(texture.GetSize().y));
         mesh.CreatePlane(textureSize / 2.0f);
         
         mesh.Apply();

@@ -112,7 +112,7 @@ private:
     }
     static void CompileShader(const char* const source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {
-        DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+        UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
         shaderFlags |= D3DCOMPILE_DEBUG;
 #endif

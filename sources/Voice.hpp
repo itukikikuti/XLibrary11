@@ -35,10 +35,10 @@ public:
         mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
         mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
 
-        sourceReader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType);
+        sourceReader->SetCurrentMediaType(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), nullptr, mediaType);
 
         mediaType.Release();
-        sourceReader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, &mediaType);
+        sourceReader->GetCurrentMediaType(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), &mediaType);
 
         UINT32 waveFormatSize = 0;
         WAVEFORMATEX* waveFormat;
@@ -63,7 +63,7 @@ private:
     {
         ATL::CComPtr<IMFSample> sample = nullptr;
         DWORD flags = 0;
-        sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+        sourceReader->ReadSample(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), 0, nullptr, &flags, nullptr, &sample);
 
         if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
         {
@@ -73,7 +73,7 @@ private:
             sourceReader->SetCurrentPosition(GUID_NULL, position);
 
             sample.Release();
-            sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+            sourceReader->ReadSample(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), 0, nullptr, &flags, nullptr, &sample);
         }
 
         ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;

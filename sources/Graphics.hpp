@@ -10,6 +10,14 @@ public:
         flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
+        std::vector<D3D_DRIVER_TYPE> driverTypes
+        {
+            D3D_DRIVER_TYPE_HARDWARE,
+            D3D_DRIVER_TYPE_WARP,
+            D3D_DRIVER_TYPE_REFERENCE,
+            D3D_DRIVER_TYPE_SOFTWARE,
+        };
+
         std::vector<D3D_FEATURE_LEVEL> featureLevels
         {
             D3D_FEATURE_LEVEL_11_0,
@@ -29,7 +37,14 @@ public:
         swapChainDesc.BufferCount = 1;
         swapChainDesc.OutputWindow = App::GetWindowHandle();
         swapChainDesc.Windowed = true;
-        D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, featureLevels.data(), featureLevels.size(), D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device, nullptr, &context);
+
+        for (size_t i = 0; i < driverTypes.size(); i++)
+        {
+            HRESULT r = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), featureLevels.size(), D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device, nullptr, &context);
+
+            if (SUCCEEDED(r))
+                break;
+        }
 
         context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
