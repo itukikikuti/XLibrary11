@@ -11,31 +11,20 @@ int MAIN()
     Library::Generate(L"sources/App.hpp", L"XLibrary11.hpp");
 
     Camera camera;
-    camera.position.y = 1.0f;
-    camera.angles.x = 10.0f;
-    camera.color.x = 0.0f;
+    camera.position = Float3(0.0f, 1.0f, -5.0f);
+    camera.SetPerspective(60.0f, 0.1f, 100.0f);
 
-    Texture texture(L"assets/box.jpg");
-    
     Mesh mesh;
-    mesh.GetMaterial().SetTexture(0, &texture);
+    Texture texture(L"assets/box.jpg");
 
-    Sprite sprite(L"assets/box.jpg");
-    sprite.position.y = 1.0f;
-    sprite.scale = 1.0f / sprite.GetSize().y;
-    sprite.SetPivot(Float2(1.0f, -1.0f));
+    mesh.GetMaterial().SetTexture(0, &texture);
 
     while (App::Refresh())
     {
-        camera.Start();
-
-        sprite.angles.z += 1.0f;
-        sprite.Draw();
+        camera.Update();
 
         mesh.angles.y += 1.0f;
         mesh.Draw();
-        
-        camera.Stop();
     }
 
     return 0;
