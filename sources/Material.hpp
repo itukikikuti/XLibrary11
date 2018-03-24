@@ -5,20 +5,30 @@ public:
     {
         Initialize();
     }
-    Material(const char* const source)
-    {
-        Initialize();
-        Create(source);
-    }
     Material(const wchar_t* const filePath)
     {
         Initialize();
         Load(filePath);
     }
+    Material(const std::string& source)
+    {
+        Initialize();
+        Create(source);
+    }
     ~Material()
     {
     }
-    void Create(const char* const source)
+    void Load(const wchar_t* const filePath)
+    {
+        std::ifstream sourceFile(filePath);
+        std::istreambuf_iterator<char> iterator(sourceFile);
+        std::istreambuf_iterator<char> last;
+        std::string source(iterator, last);
+        sourceFile.close();
+
+        Create(source);
+    }
+    void Create(const std::string& source)
     {
         vertexShader.Release();
         ATL::CComPtr<ID3DBlob> vertexShaderBlob = nullptr;
@@ -37,16 +47,6 @@ public:
         inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
         App::GetGraphicsDevice().CreateInputLayout(inputElementDesc.data(), inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
-    }
-    void Load(const wchar_t* const filePath)
-    {
-        std::ifstream sourceFile(filePath);
-        std::istreambuf_iterator<char> iterator(sourceFile);
-        std::istreambuf_iterator<char> last;
-        std::string source(iterator, last);
-        sourceFile.close();
-
-        Create(source.c_str());
     }
     void SetBuffer(int slot, void* cbuffer, size_t size)
     {
@@ -118,7 +118,7 @@ private:
             textures[i] = nullptr;
         }
     }
-    static void CompileShader(const char* const source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
+    static void CompileShader(const std::string& source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {
         UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
@@ -126,7 +126,7 @@ private:
 #endif
 
         ATL::CComPtr<ID3DBlob> errorBlob = nullptr;
-        D3DCompile(source, strlen(source), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
+        D3DCompile(source.c_str(), source.length(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 
         if (errorBlob != nullptr)
         {

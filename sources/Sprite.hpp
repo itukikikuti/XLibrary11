@@ -15,20 +15,25 @@ public:
         Initialize();
         Load(filePath);
     }
+    Sprite(const BYTE* const buffer, int width, int height)
+    {
+        Initialize();
+        Create(buffer, width, height);
+    }
     ~Sprite()
     {
     }
-    void Create(const BYTE* const buffer, int width, int height)
+    void Load(const wchar_t* const filePath)
     {
-        texture.Create(buffer, width, height);
+        texture.Load(filePath);
 
         mesh.GetMaterial().SetTexture(0, &texture);
 
         SetPivot(0.0f);
     }
-    void Load(const wchar_t* const filePath)
+    void Create(const BYTE* const buffer, int width, int height)
     {
-        texture.Load(filePath);
+        texture.Create(buffer, width, height);
 
         mesh.GetMaterial().SetTexture(0, &texture);
 

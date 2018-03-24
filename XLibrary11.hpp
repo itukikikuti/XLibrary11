@@ -5,6 +5,7 @@
 
 #define OEMRESOURCE
 #include <cstdio>
+#include <filesystem>
 #include <forward_list>
 #include <fstream>
 #include <memory>
@@ -1023,6 +1024,40 @@ public:
     ~Texture()
     {
     }
+    void Load(const wchar_t* const filePath)
+    {
+        static ATL::CComPtr<IWICImagingFactory> factory = nullptr;
+        if (factory == nullptr)
+            CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+
+        ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
+
+        factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+        ATL::CComPtr<IWICBitmapFrameDecode> frame = nullptr;
+        decoder->GetFrame(0, &frame);
+        UINT width, height;
+        frame->GetSize(&width, &height);
+
+        WICPixelFormatGUID pixelFormat;
+        frame->GetPixelFormat(&pixelFormat);
+        std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
+
+        if (pixelFormat != GUID_WICPixelFormat32bppRGBA)
+        {
+            ATL::CComPtr<IWICFormatConverter> formatConverter = nullptr;
+            factory->CreateFormatConverter(&formatConverter);
+
+            formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
+
+            formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
+        }
+        else
+        {
+            frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
+        }
+
+        Create(buffer.get(), width, height);
+    }
     void Create(const BYTE* const buffer, int width, int height)
     {
         size = DirectX::XMINT2(width, height);
@@ -1071,40 +1106,6 @@ public:
         samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
         App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, &samplerState);
     }
-    void Load(const wchar_t* const filePath)
-    {
-        static ATL::CComPtr<IWICImagingFactory> factory = nullptr;
-        if (factory == nullptr)
-            CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
-
-        ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
-
-        factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
-        ATL::CComPtr<IWICBitmapFrameDecode> frame = nullptr;
-        decoder->GetFrame(0, &frame);
-        UINT width, height;
-        frame->GetSize(&width, &height);
-
-        WICPixelFormatGUID pixelFormat;
-        frame->GetPixelFormat(&pixelFormat);
-        std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
-
-        if (pixelFormat != GUID_WICPixelFormat32bppRGBA)
-        {
-            ATL::CComPtr<IWICFormatConverter> formatConverter = nullptr;
-            factory->CreateFormatConverter(&formatConverter);
-
-            formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
-
-            formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
-        }
-        else
-        {
-            frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
-        }
-
-        Create(buffer.get(), width, height);
-    }
     DirectX::XMINT2 GetSize() const
     {
         return size;
@@ -1131,20 +1132,30 @@ public:
     {
         Initialize();
     }
-    Material(const char* const source)
-    {
-        Initialize();
-        Create(source);
-    }
     Material(const wchar_t* const filePath)
     {
         Initialize();
         Load(filePath);
     }
+    Material(const std::string& source)
+    {
+        Initialize();
+        Create(source);
+    }
     ~Material()
     {
     }
-    void Create(const char* const source)
+    void Load(const wchar_t* const filePath)
+    {
+        std::ifstream sourceFile(filePath);
+        std::istreambuf_iterator<char> iterator(sourceFile);
+        std::istreambuf_iterator<char> last;
+        std::string source(iterator, last);
+        sourceFile.close();
+
+        Create(source);
+    }
+    void Create(const std::string& source)
     {
         vertexShader.Release();
         ATL::CComPtr<ID3DBlob> vertexShaderBlob = nullptr;
@@ -1163,16 +1174,6 @@ public:
         inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
         App::GetGraphicsDevice().CreateInputLayout(inputElementDesc.data(), inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
-    }
-    void Load(const wchar_t* const filePath)
-    {
-        std::ifstream sourceFile(filePath);
-        std::istreambuf_iterator<char> iterator(sourceFile);
-        std::istreambuf_iterator<char> last;
-        std::string source(iterator, last);
-        sourceFile.close();
-
-        Create(source.c_str());
     }
     void SetBuffer(int slot, void* cbuffer, size_t size)
     {
@@ -1244,7 +1245,7 @@ private:
             textures[i] = nullptr;
         }
     }
-    static void CompileShader(const char* const source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
+    static void CompileShader(const std::string& source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {
         UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
@@ -1252,7 +1253,7 @@ private:
 #endif
 
         ATL::CComPtr<ID3DBlob> errorBlob = nullptr;
-        D3DCompile(source, strlen(source), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
+        D3DCompile(source.c_str(), source.length(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
 
         if (errorBlob != nullptr)
         {

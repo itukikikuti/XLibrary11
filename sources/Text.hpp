@@ -6,7 +6,11 @@ public:
     Float3 scale;
     Float4 color;
 
-    Text(const std::wstring text = L"", const wchar_t* const fontFace = L"")
+    Text(const std::wstring text = L"", int fontSize = 16, const wchar_t* const fontFace = L"")
+    {
+        Create(text, fontSize, fontFace);
+    }
+    void Create(const std::wstring text = L"", int fontSize = 16, const wchar_t* const fontFace = L"")
     {
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -14,7 +18,7 @@ public:
         color = Float4(0.0f, 0.0f, 0.0f, 1.0f);
 
         LOGFONTW logFont = {};
-        logFont.lfHeight = 256;
+        logFont.lfHeight = fontSize;
         logFont.lfWeight = 500;
         logFont.lfCharSet = SHIFTJIS_CHARSET;
         logFont.lfOutPrecision = OUT_TT_ONLY_PRECIS;
@@ -62,7 +66,26 @@ public:
         SelectObject(dc, oldFont);
         ReleaseDC(nullptr, dc);
 
-        SetPivot();
+        SetPivot(0.0f);
+    }
+    void SetPivot(Float2 pivot)
+    {
+        float origin = 0.0f;
+        for (size_t i = 0; i < characters.size(); i++)
+        {
+            Sprite& s = characters[i]->sprite;
+            GLYPHMETRICS& m = characters[i]->metrics;
+
+            DirectX::XMINT2 size = s.GetSize();
+            Float2 localPivot;
+            localPivot.x = -1.0f - (float)m.gmptGlyphOrigin.x / size.x * 2.0f;
+            localPivot.y = 1.0f - (float)m.gmptGlyphOrigin.y / size.y * 2.0f;
+            float offset = origin / size.x * 2.0f;
+
+            s.SetPivot(Float2(localPivot.x - offset, localPivot.y));
+
+            origin += m.gmCellIncX;
+        }
     }
     void Draw()
     {
@@ -85,24 +108,4 @@ private:
     };
 
     std::vector<std::unique_ptr<Character>> characters;
-
-    void SetPivot()
-    {
-        float origin = 0.0f;
-        for (size_t i = 0; i < characters.size(); i++)
-        {
-            Sprite& s = characters[i]->sprite;
-            GLYPHMETRICS& m = characters[i]->metrics;
-
-            DirectX::XMINT2 size = s.GetSize();
-            Float2 localPivot;
-            localPivot.x = -1.0f - (float)m.gmptGlyphOrigin.x / size.x * 2.0f;
-            localPivot.y = 1.0f - (float)m.gmptGlyphOrigin.y / size.y * 2.0f;
-            float offset = origin / size.x * 2.0f;
-
-            s.SetPivot(Float2(localPivot.x - offset, localPivot.y));
-
-            origin += m.gmCellIncX;
-        }
-    }
 };

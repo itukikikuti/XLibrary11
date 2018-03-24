@@ -18,6 +18,40 @@ public:
     ~Texture()
     {
     }
+    void Load(const wchar_t* const filePath)
+    {
+        static ATL::CComPtr<IWICImagingFactory> factory = nullptr;
+        if (factory == nullptr)
+            CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+
+        ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
+
+        factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+        ATL::CComPtr<IWICBitmapFrameDecode> frame = nullptr;
+        decoder->GetFrame(0, &frame);
+        UINT width, height;
+        frame->GetSize(&width, &height);
+
+        WICPixelFormatGUID pixelFormat;
+        frame->GetPixelFormat(&pixelFormat);
+        std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
+
+        if (pixelFormat != GUID_WICPixelFormat32bppRGBA)
+        {
+            ATL::CComPtr<IWICFormatConverter> formatConverter = nullptr;
+            factory->CreateFormatConverter(&formatConverter);
+
+            formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
+
+            formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
+        }
+        else
+        {
+            frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
+        }
+
+        Create(buffer.get(), width, height);
+    }
     void Create(const BYTE* const buffer, int width, int height)
     {
         size = DirectX::XMINT2(width, height);
@@ -65,40 +99,6 @@ public:
         samplerDesc.MinLOD = 0.0f;
         samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
         App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, &samplerState);
-    }
-    void Load(const wchar_t* const filePath)
-    {
-        static ATL::CComPtr<IWICImagingFactory> factory = nullptr;
-        if (factory == nullptr)
-            CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
-
-        ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
-
-        factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
-        ATL::CComPtr<IWICBitmapFrameDecode> frame = nullptr;
-        decoder->GetFrame(0, &frame);
-        UINT width, height;
-        frame->GetSize(&width, &height);
-
-        WICPixelFormatGUID pixelFormat;
-        frame->GetPixelFormat(&pixelFormat);
-        std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
-
-        if (pixelFormat != GUID_WICPixelFormat32bppRGBA)
-        {
-            ATL::CComPtr<IWICFormatConverter> formatConverter = nullptr;
-            factory->CreateFormatConverter(&formatConverter);
-
-            formatConverter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
-
-            formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
-        }
-        else
-        {
-            frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
-        }
-
-        Create(buffer.get(), width, height);
     }
     DirectX::XMINT2 GetSize() const
     {
