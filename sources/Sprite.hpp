@@ -18,11 +18,21 @@ public:
     ~Sprite()
     {
     }
+    void Create(const BYTE* const buffer, int width, int height)
+    {
+        texture.Create(buffer, width, height);
+
+        mesh.GetMaterial().SetTexture(0, &texture);
+
+        SetPivot(0.0f);
+    }
     void Load(const wchar_t* const filePath)
     {
         texture.Load(filePath);
 
         mesh.GetMaterial().SetTexture(0, &texture);
+
+        SetPivot(0.0f);
     }
     DirectX::XMINT2 GetSize() const
     {
@@ -47,6 +57,7 @@ public:
         mesh.scale = scale;
         mesh.Draw();
     }
+
 private:
     Mesh mesh;
     Texture texture;
@@ -97,11 +108,13 @@ private:
             "}"
             "float4 PS(Pixel pixel) : SV_TARGET"
             "{"
-            "    return texture0.Sample(sampler0, pixel.uv) * color;"
+            "    float4 textureColor = texture0.Sample(sampler0, pixel.uv);"
+            "    if (textureColor.a <= 0)"
+            "        discard;"
+            "    return textureColor * color;"
             "}"
         );
 
-        SetPivot(0.0f);
         mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
     }
 };

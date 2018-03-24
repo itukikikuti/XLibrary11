@@ -4,6 +4,7 @@
 #pragma once
 
 #define OEMRESOURCE
+#include <cstdio>
 #include <forward_list>
 #include <fstream>
 #include <memory>
@@ -178,6 +179,7 @@ private:
 #include "Camera.hpp"
 #include "Mesh.hpp"
 #include "Sprite.hpp"
+#include "Text.hpp"
 #include "Voice.hpp"
 
 XLIBRARY_NAMESPACE_END
