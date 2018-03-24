@@ -5,7 +5,6 @@
 
 #define OEMRESOURCE
 #include <cstdio>
-#include <filesystem>
 #include <forward_list>
 #include <fstream>
 #include <memory>
@@ -1656,20 +1655,25 @@ public:
         Initialize();
         Load(filePath);
     }
+    Sprite(const BYTE* const buffer, int width, int height)
+    {
+        Initialize();
+        Create(buffer, width, height);
+    }
     ~Sprite()
     {
     }
-    void Create(const BYTE* const buffer, int width, int height)
+    void Load(const wchar_t* const filePath)
     {
-        texture.Create(buffer, width, height);
+        texture.Load(filePath);
 
         mesh.GetMaterial().SetTexture(0, &texture);
 
         SetPivot(0.0f);
     }
-    void Load(const wchar_t* const filePath)
+    void Create(const BYTE* const buffer, int width, int height)
     {
-        texture.Load(filePath);
+        texture.Create(buffer, width, height);
 
         mesh.GetMaterial().SetTexture(0, &texture);
 
@@ -1767,7 +1771,11 @@ public:
     Float3 scale;
     Float4 color;
 
-    Text(const std::wstring text = L"", const wchar_t* const fontFace = L"")
+    Text(const std::wstring text = L"", int fontSize = 16, const wchar_t* const fontFace = L"")
+    {
+        Create(text, fontSize, fontFace);
+    }
+    void Create(const std::wstring text = L"", int fontSize = 16, const wchar_t* const fontFace = L"")
     {
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1775,7 +1783,7 @@ public:
         color = Float4(0.0f, 0.0f, 0.0f, 1.0f);
 
         LOGFONTW logFont = {};
-        logFont.lfHeight = 256;
+        logFont.lfHeight = fontSize;
         logFont.lfWeight = 500;
         logFont.lfCharSet = SHIFTJIS_CHARSET;
         logFont.lfOutPrecision = OUT_TT_ONLY_PRECIS;
@@ -1807,7 +1815,6 @@ public:
                 for (UINT y = 0; y < height; y++)
                 {
                     DWORD alpha = glyph[x + width * y] * 255 / 16;
-
                     buffer[x + width * y] = 0x00ffffff | (alpha << 24);
                 }
             }
@@ -1823,7 +1830,26 @@ public:
         SelectObject(dc, oldFont);
         ReleaseDC(nullptr, dc);
 
-        SetPivot();
+        SetPivot(0.0f);
+    }
+    void SetPivot(Float2 pivot)
+    {
+        float origin = 0.0f;
+        for (size_t i = 0; i < characters.size(); i++)
+        {
+            Sprite& s = characters[i]->sprite;
+            GLYPHMETRICS& m = characters[i]->metrics;
+
+            DirectX::XMINT2 size = s.GetSize();
+            Float2 localPivot;
+            localPivot.x = -1.0f - (float)m.gmptGlyphOrigin.x / size.x * 2.0f;
+            localPivot.y = 1.0f - (float)m.gmptGlyphOrigin.y / size.y * 2.0f;
+            float offset = origin / size.x * 2.0f;
+
+            s.SetPivot(Float2(localPivot.x - offset, localPivot.y));
+
+            origin += m.gmCellIncX;
+        }
     }
     void Draw()
     {
@@ -1846,26 +1872,6 @@ private:
     };
 
     std::vector<std::unique_ptr<Character>> characters;
-
-    void SetPivot()
-    {
-        float origin = 0.0f;
-        for (size_t i = 0; i < characters.size(); i++)
-        {
-            Sprite& s = characters[i]->sprite;
-            GLYPHMETRICS& m = characters[i]->metrics;
-
-            DirectX::XMINT2 size = s.GetSize();
-            Float2 localPivot;
-            localPivot.x = -1.0f - (float)m.gmptGlyphOrigin.x / size.x * 2.0f;
-            localPivot.y = 1.0f - (float)m.gmptGlyphOrigin.y / size.y * 2.0f;
-            float offset = origin / size.x * 2.0f;
-
-            s.SetPivot(Float2(localPivot.x - offset, localPivot.y));
-
-            origin += m.gmCellIncX;
-        }
-    }
 };
 class Voice : public IXAudio2VoiceCallback
 {
@@ -1915,20 +1921,72 @@ public:
 
         App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
     }
+    void SetLoop(bool isLoop)
+    {
+        this->isLoop = isLoop;
+    }
+    void SetPitch(float pitch)
+    {
+        sourceVoice->SetFrequencyRatio(pitch);
+    }
+    void SetVolume(float volume)
+    {
+        sourceVoice->SetVolume(volume);
+    }
     void Play()
+    {
+        if (isLoop)
+        {
+            if (isPlaying)
+                return;
+        }
+        else
+        {
+            Stop();
+        }
+
+        if (sourceVoice == nullptr)
+            return;
+
+        isPlaying = true;
+        sourceVoice->Start();
+        Push();
+    }
+    void Pause()
+    {
+        if (!isLoop)
+            return;
+
+        if (sourceVoice == nullptr)
+            return;
+
+        isPlaying = false;
+        sourceVoice->Stop();
+    }
+    void Stop()
     {
         if (sourceVoice == nullptr)
             return;
 
-        sourceVoice->Start();
-        SubmitBuffer();
+        isPlaying = false;
+        sourceVoice->Stop();
+        ResetPosition();
     }
 
 private:
     ATL::CComPtr<IMFSourceReader> sourceReader = nullptr;
     IXAudio2SourceVoice* sourceVoice = nullptr;
+    bool isLoop = false;
+    bool isPlaying = false;
 
-    void SubmitBuffer()
+    void ResetPosition()
+    {
+        PROPVARIANT position = {};
+        position.vt = VT_I8;
+        position.hVal.QuadPart = 0;
+        sourceReader->SetCurrentPosition(GUID_NULL, position);
+    }
+    void Push()
     {
         ATL::CComPtr<IMFSample> sample = nullptr;
         DWORD flags = 0;
@@ -1936,13 +1994,18 @@ private:
 
         if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
         {
-            PROPVARIANT position = {};
-            position.vt = VT_I8;
-            position.hVal.QuadPart = 0;
-            sourceReader->SetCurrentPosition(GUID_NULL, position);
+            if (isLoop)
+            {
+                ResetPosition();
 
-            sample.Release();
-            sourceReader->ReadSample(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), 0, nullptr, &flags, nullptr, &sample);
+                sample.Release();
+                sourceReader->ReadSample(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), 0, nullptr, &flags, nullptr, &sample);
+            }
+            else
+            {
+                Stop();
+                return;
+            }
         }
 
         ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
@@ -1958,28 +2021,16 @@ private:
         audioBuffer.pAudioData = audioData;
         sourceVoice->SubmitSourceBuffer(&audioBuffer);
     }
-    void _stdcall OnBufferEnd(void*) override
+    void STDMETHODCALLTYPE OnBufferEnd(void*) override
     {
-        SubmitBuffer();
+        Push();
     }
-    void _stdcall OnBufferStart(void*) override
-    {
-    }
-    void _stdcall OnLoopEnd(void*) override
-    {
-    }
-    void _stdcall OnStreamEnd() override
-    {
-    }
-    void _stdcall OnVoiceError(void*, HRESULT) override
-    {
-    }
-    void _stdcall OnVoiceProcessingPassStart(UINT32) override
-    {
-    }
-    void _stdcall OnVoiceProcessingPassEnd() override
-    {
-    }
+    void STDMETHODCALLTYPE OnBufferStart(void*) override {}
+    void STDMETHODCALLTYPE OnLoopEnd(void*) override {}
+    void STDMETHODCALLTYPE OnStreamEnd() override {}
+    void STDMETHODCALLTYPE OnVoiceError(void*, HRESULT) override {}
+    void STDMETHODCALLTYPE OnVoiceProcessingPassEnd() override {}
+    void STDMETHODCALLTYPE OnVoiceProcessingPassStart(UINT32) override {}
 };
 
 }
