@@ -18,6 +18,14 @@ public:
     ~Sprite()
     {
     }
+    void Create(const BYTE* const buffer, int width, int height)
+    {
+        texture.Create(buffer, width, height);
+
+        mesh.GetMaterial().SetTexture(0, &texture);
+
+        SetPivot(0.0f);
+    }
     void Load(const wchar_t* const filePath)
     {
         texture.Load(filePath);
@@ -37,14 +45,6 @@ public:
 
         mesh.CreatePlane(textureSize / 2.0f, Float3(offset.x, offset.y, 0.0f));
         mesh.Apply();
-    }
-    Mesh& GetMesh()
-    {
-        return mesh;
-    }
-    Texture& GetTexture()
-    {
-        return texture;
     }
     Material& GetMaterial()
     {

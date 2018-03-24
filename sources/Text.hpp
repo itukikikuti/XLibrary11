@@ -6,94 +6,103 @@ public:
     Float3 scale;
     Float4 color;
 
-    Text(const std::wstring text = L"", const wchar_t* fontFamily = L"")
+    Text(const std::wstring text = L"", const wchar_t* const fontFace = L"")
     {
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
         color = Float4(0.0f, 0.0f, 0.0f, 1.0f);
 
+        LOGFONTW logFont = {};
+        logFont.lfHeight = 256;
+        logFont.lfWeight = 500;
+        logFont.lfCharSet = SHIFTJIS_CHARSET;
+        logFont.lfOutPrecision = OUT_TT_ONLY_PRECIS;
+        logFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+        logFont.lfQuality = PROOF_QUALITY;
+        logFont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
+        wcscpy_s(logFont.lfFaceName, fontFace);
+        HFONT font = CreateFontIndirectW(&logFont);
+
+        HDC dc = GetDC(nullptr);
+        HFONT oldFont = (HFONT)SelectObject(dc, font);
+
         for (size_t i = 0; i < text.length(); i++)
         {
-            LOGFONTW logFont = {};
-            logFont.lfHeight = 256;
-            logFont.lfWidth = 0;
-            logFont.lfEscapement = 0;
-            logFont.lfOrientation = 0;
-            logFont.lfWeight = 0;
-            logFont.lfItalic = false;
-            logFont.lfUnderline = false;
-            logFont.lfStrikeOut = false;
-            logFont.lfCharSet = SHIFTJIS_CHARSET;
-            logFont.lfOutPrecision = OUT_TT_ONLY_PRECIS;
-            logFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
-            logFont.lfQuality = PROOF_QUALITY;
-            logFont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
-            wcscpy_s(logFont.lfFaceName, fontFamily);
-            HFONT font = CreateFontIndirectW(&logFont);
-
-            HDC dc = GetDC(nullptr);
-            HFONT oldFont = (HFONT)SelectObject(dc, font);
-            UINT code = text[i];
-
-            TEXTMETRICW textMetrics = {};
-            GetTextMetricsW(dc, &textMetrics);
+            const MAT2 matrix = { { 0, 1 },{ 0, 0 },{ 0, 0 },{ 0, 1 } };
             GLYPHMETRICS glyphMetrics = {};
-            const MAT2 matrix = { { 0, 1 }, { 0, 0 }, { 0, 0 }, { 0, 1 } };
-            DWORD size = GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
+            DWORD size = GetGlyphOutlineW(dc, text[i], GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
+
             std::unique_ptr<BYTE[]> glyph(new BYTE[size]);
-            GetGlyphOutlineW(dc, code, GGO_GRAY4_BITMAP, &glyphMetrics, size, glyph.get(), &matrix);
+            GetGlyphOutlineW(dc, text[i], GGO_GRAY4_BITMAP, &glyphMetrics, size, glyph.get(), &matrix);
 
-            SelectObject(dc, oldFont);
-            DeleteObject(font);
-            ReleaseDC(nullptr, dc);
+            UINT width = (glyphMetrics.gmBlackBoxX + 3) / 4 * 4;
+            UINT height = glyphMetrics.gmBlackBoxY;
 
-            UINT width = glyphMetrics.gmCellIncX;
-            UINT height = textMetrics.tmHeight;
+            std::unique_ptr<DWORD[]> buffer(new DWORD[width * height]);
 
-            std::unique_ptr<BYTE[]> buffer(new BYTE[width * height * 4]);
-
-            DirectX::XMINT2 origin;
-            origin.x = glyphMetrics.gmptGlyphOrigin.x;
-            origin.y = textMetrics.tmAscent - glyphMetrics.gmptGlyphOrigin.y;
-            DirectX::XMINT2 bitmapSize;
-            bitmapSize.x = glyphMetrics.gmBlackBoxX + (4 - (glyphMetrics.gmBlackBoxX % 4)) % 4;
-            bitmapSize.y = glyphMetrics.gmBlackBoxY;
-            const int LEVEL = 17;
-            memset(buffer.get(), 0, width * 4 * height);
-
-            for (int y = origin.y; y < origin.y + bitmapSize.y; y++)
+            for (UINT x = 0; x < width; x++)
             {
-                for (int x = origin.x; x < origin.x + bitmapSize.x; x++)
+                for (UINT y = 0; y < height; y++)
                 {
-                    DWORD alpha = (255 * glyph[x - origin.x + bitmapSize.x * (y - origin.y)]) / (LEVEL - 1);
-                    DWORD color = 0x00ffffff | (alpha << 24);
-                    memcpy(&buffer[(width * 4) * y + 4 * x], &color, sizeof(DWORD));
+                    DWORD alpha = glyph[x + width * y] * 255 / 16;
+
+                    buffer[x + width * y] = 0x00ffffff | (alpha << 24);
                 }
             }
 
-            Sprite sprite;
-            sprites.push_back(sprite);
+            Character* character = new Character();
 
-            sprites[i].GetTexture().Create(buffer.get(), width, height);
-            sprites[i].GetMaterial().SetBuffer(2, &color, sizeof(Float4));
-            sprites[i].GetMaterial().SetTexture(0, &sprites[i].GetTexture());
+            character->sprite.Create(reinterpret_cast<BYTE*>(buffer.get()), width, height);
+            character->metrics = glyphMetrics;
 
-            sprites[i].SetPivot(0.0f);
+            characters.push_back(std::unique_ptr<Character>(character));
         }
+
+        SelectObject(dc, oldFont);
+        ReleaseDC(nullptr, dc);
+
+        SetPivot();
     }
     void Draw()
     {
-        for (int i = 0; i < sprites.size(); i++)
+        for (size_t i = 0; i < characters.size(); i++)
         {
-            sprites[i].position = position;
-            sprites[i].angles = angles;
-            sprites[i].scale = scale;
-            sprites[i].Draw();
+            characters[i]->sprite.position = position;
+            characters[i]->sprite.angles = angles;
+            characters[i]->sprite.scale = scale;
+            characters[i]->sprite.color = color;
+            characters[i]->sprite.Draw();
         }
     }
     void Load(const wchar_t* const filePath) = delete;
 
 private:
-    std::vector<Sprite> sprites;
+    struct Character
+    {
+        Sprite sprite;
+        GLYPHMETRICS metrics;
+    };
+
+    std::vector<std::unique_ptr<Character>> characters;
+
+    void SetPivot()
+    {
+        float origin = 0.0f;
+        for (size_t i = 0; i < characters.size(); i++)
+        {
+            Sprite& s = characters[i]->sprite;
+            GLYPHMETRICS& m = characters[i]->metrics;
+
+            DirectX::XMINT2 size = s.GetSize();
+            Float2 localPivot;
+            localPivot.x = -1.0f - (float)m.gmptGlyphOrigin.x / size.x * 2.0f;
+            localPivot.y = 1.0f - (float)m.gmptGlyphOrigin.y / size.y * 2.0f;
+            float offset = origin / size.x * 2.0f;
+
+            s.SetPivot(Float2(localPivot.x - offset, localPivot.y));
+
+            origin += m.gmCellIncX;
+        }
+    }
 };
