@@ -19,9 +19,15 @@ int MAIN()
 
     mesh.GetMaterial().SetTexture(0, &texture);
 
+    Text text(L"菊池いつきです。");
+    text.scale = 1.0f / 400.0f;
+
     while (App::Refresh())
     {
         camera.Update();
+
+        text.angles.z += 1.0f;
+        text.Draw();
 
         mesh.angles.y += 1.0f;
         mesh.Draw();

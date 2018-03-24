@@ -5,7 +5,7 @@ public:
     {
         Initialize();
     }
-    Material(char* source)
+    Material(const char* const source)
     {
         Initialize();
         Create(source);
@@ -18,7 +18,7 @@ public:
     ~Material()
     {
     }
-    void Create(const char* source)
+    void Create(const char* const source)
     {
         vertexShader.Release();
         ATL::CComPtr<ID3DBlob> vertexShaderBlob = nullptr;
