@@ -4,6 +4,7 @@
 #pragma once
 
 #define OEMRESOURCE
+#include <cstdio>
 #include <forward_list>
 #include <fstream>
 #include <memory>
@@ -1014,8 +1015,61 @@ public:
         App::Initialize();
         Load(filePath);
     }
+    Texture(const BYTE* const buffer, int width, int height)
+    {
+        App::Initialize();
+        Create(buffer, width, height);
+    }
     ~Texture()
     {
+    }
+    void Create(const BYTE* const buffer, int width, int height)
+    {
+        size = DirectX::XMINT2(width, height);
+
+        texture.Release();
+        D3D11_TEXTURE2D_DESC textureDesc = {};
+        textureDesc.Width = width;
+        textureDesc.Height = height;
+        textureDesc.MipLevels = 1;
+        textureDesc.ArraySize = 1;
+        textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        textureDesc.SampleDesc.Count = 1;
+        textureDesc.SampleDesc.Quality = 0;
+        textureDesc.Usage = D3D11_USAGE_DEFAULT;
+        textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+        textureDesc.MiscFlags = 0;
+
+        D3D11_SUBRESOURCE_DATA textureSubresourceData = {};
+        textureSubresourceData.pSysMem = buffer;
+        textureSubresourceData.SysMemPitch = width * 4;
+        textureSubresourceData.SysMemSlicePitch = width * height * 4;
+        App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+
+        shaderResourceView.Release();
+        D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
+        shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        shaderResourceViewDesc.Texture2D.MipLevels = 1;
+        App::GetGraphicsDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+
+        samplerState.Release();
+        D3D11_SAMPLER_DESC samplerDesc = {};
+        samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+        samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+        samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+        samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+        samplerDesc.MipLODBias = 0.0f;
+        samplerDesc.MaxAnisotropy = 1;
+        samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+        samplerDesc.BorderColor[0] = 0.0f;
+        samplerDesc.BorderColor[1] = 0.0f;
+        samplerDesc.BorderColor[2] = 0.0f;
+        samplerDesc.BorderColor[3] = 0.0f;
+        samplerDesc.MinLOD = 0.0f;
+        samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+        App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, &samplerState);
     }
     void Load(const wchar_t* const filePath)
     {
@@ -1049,51 +1103,7 @@ public:
             frame->CopyPixels(0, width * 4, width * height * 4, buffer.get());
         }
 
-        size = DirectX::XMINT2(width, height);
-
-        texture.Release();
-        D3D11_TEXTURE2D_DESC textureDesc = {};
-        textureDesc.Width = width;
-        textureDesc.Height = height;
-        textureDesc.MipLevels = 1;
-        textureDesc.ArraySize = 1;
-        textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        textureDesc.SampleDesc.Count = 1;
-        textureDesc.SampleDesc.Quality = 0;
-        textureDesc.Usage = D3D11_USAGE_DEFAULT;
-        textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-        textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-        textureDesc.MiscFlags = 0;
-
-        D3D11_SUBRESOURCE_DATA textureSubresourceData = {};
-        textureSubresourceData.pSysMem = buffer.get();
-        textureSubresourceData.SysMemPitch = width * 4;
-        textureSubresourceData.SysMemSlicePitch = width * height * 4;
-        App::GetGraphicsDevice().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
-
-        shaderResourceView.Release();
-        D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
-        shaderResourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        shaderResourceViewDesc.Texture2D.MipLevels = 1;
-        App::GetGraphicsDevice().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
-
-        samplerState.Release();
-        D3D11_SAMPLER_DESC samplerDesc = {};
-        samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-        samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-        samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-        samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-        samplerDesc.MipLODBias = 0.0f;
-        samplerDesc.MaxAnisotropy = 1;
-        samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-        samplerDesc.BorderColor[0] = 0.0f;
-        samplerDesc.BorderColor[1] = 0.0f;
-        samplerDesc.BorderColor[2] = 0.0f;
-        samplerDesc.BorderColor[3] = 0.0f;
-        samplerDesc.MinLOD = 0.0f;
-        samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-        App::GetGraphicsDevice().CreateSamplerState(&samplerDesc, &samplerState);
+        Create(buffer.get(), width, height);
     }
     DirectX::XMINT2 GetSize() const
     {
@@ -1121,7 +1131,7 @@ public:
     {
         Initialize();
     }
-    Material(char* source)
+    Material(const char* const source)
     {
         Initialize();
         Create(source);
@@ -1134,7 +1144,7 @@ public:
     ~Material()
     {
     }
-    void Create(const char* source)
+    void Create(const char* const source)
     {
         vertexShader.Release();
         ATL::CComPtr<ID3DBlob> vertexShaderBlob = nullptr;
@@ -1648,11 +1658,21 @@ public:
     ~Sprite()
     {
     }
+    void Create(const BYTE* const buffer, int width, int height)
+    {
+        texture.Create(buffer, width, height);
+
+        mesh.GetMaterial().SetTexture(0, &texture);
+
+        SetPivot(0.0f);
+    }
     void Load(const wchar_t* const filePath)
     {
         texture.Load(filePath);
 
         mesh.GetMaterial().SetTexture(0, &texture);
+
+        SetPivot(0.0f);
     }
     DirectX::XMINT2 GetSize() const
     {
@@ -1677,6 +1697,7 @@ public:
         mesh.scale = scale;
         mesh.Draw();
     }
+
 private:
     Mesh mesh;
     Texture texture;
@@ -1727,12 +1748,122 @@ private:
             "}"
             "float4 PS(Pixel pixel) : SV_TARGET"
             "{"
-            "    return texture0.Sample(sampler0, pixel.uv) * color;"
+            "    float4 textureColor = texture0.Sample(sampler0, pixel.uv);"
+            "    if (textureColor.a <= 0)"
+            "        discard;"
+            "    return textureColor * color;"
             "}"
         );
 
-        SetPivot(0.0f);
         mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
+    }
+};
+class Text
+{
+public:
+    Float3 position;
+    Float3 angles;
+    Float3 scale;
+    Float4 color;
+
+    Text(const std::wstring text = L"", const wchar_t* const fontFace = L"")
+    {
+        position = Float3(0.0f, 0.0f, 0.0f);
+        angles = Float3(0.0f, 0.0f, 0.0f);
+        scale = Float3(1.0f, 1.0f, 1.0f);
+        color = Float4(0.0f, 0.0f, 0.0f, 1.0f);
+
+        LOGFONTW logFont = {};
+        logFont.lfHeight = 256;
+        logFont.lfWeight = 500;
+        logFont.lfCharSet = SHIFTJIS_CHARSET;
+        logFont.lfOutPrecision = OUT_TT_ONLY_PRECIS;
+        logFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+        logFont.lfQuality = PROOF_QUALITY;
+        logFont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
+        wcscpy_s(logFont.lfFaceName, fontFace);
+        HFONT font = CreateFontIndirectW(&logFont);
+
+        HDC dc = GetDC(nullptr);
+        HFONT oldFont = (HFONT)SelectObject(dc, font);
+
+        for (size_t i = 0; i < text.length(); i++)
+        {
+            const MAT2 matrix = { { 0, 1 },{ 0, 0 },{ 0, 0 },{ 0, 1 } };
+            GLYPHMETRICS glyphMetrics = {};
+            DWORD size = GetGlyphOutlineW(dc, text[i], GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
+
+            std::unique_ptr<BYTE[]> glyph(new BYTE[size]);
+            GetGlyphOutlineW(dc, text[i], GGO_GRAY4_BITMAP, &glyphMetrics, size, glyph.get(), &matrix);
+
+            UINT width = (glyphMetrics.gmBlackBoxX + 3) / 4 * 4;
+            UINT height = glyphMetrics.gmBlackBoxY;
+
+            std::unique_ptr<DWORD[]> buffer(new DWORD[width * height]);
+
+            for (UINT x = 0; x < width; x++)
+            {
+                for (UINT y = 0; y < height; y++)
+                {
+                    DWORD alpha = glyph[x + width * y] * 255 / 16;
+
+                    buffer[x + width * y] = 0x00ffffff | (alpha << 24);
+                }
+            }
+
+            Character* character = new Character();
+
+            character->sprite.Create(reinterpret_cast<BYTE*>(buffer.get()), width, height);
+            character->metrics = glyphMetrics;
+
+            characters.push_back(std::unique_ptr<Character>(character));
+        }
+
+        SelectObject(dc, oldFont);
+        ReleaseDC(nullptr, dc);
+
+        SetPivot();
+    }
+    void Draw()
+    {
+        for (size_t i = 0; i < characters.size(); i++)
+        {
+            characters[i]->sprite.position = position;
+            characters[i]->sprite.angles = angles;
+            characters[i]->sprite.scale = scale;
+            characters[i]->sprite.color = color;
+            characters[i]->sprite.Draw();
+        }
+    }
+    void Load(const wchar_t* const filePath) = delete;
+
+private:
+    struct Character
+    {
+        Sprite sprite;
+        GLYPHMETRICS metrics;
+    };
+
+    std::vector<std::unique_ptr<Character>> characters;
+
+    void SetPivot()
+    {
+        float origin = 0.0f;
+        for (size_t i = 0; i < characters.size(); i++)
+        {
+            Sprite& s = characters[i]->sprite;
+            GLYPHMETRICS& m = characters[i]->metrics;
+
+            DirectX::XMINT2 size = s.GetSize();
+            Float2 localPivot;
+            localPivot.x = -1.0f - (float)m.gmptGlyphOrigin.x / size.x * 2.0f;
+            localPivot.y = 1.0f - (float)m.gmptGlyphOrigin.y / size.y * 2.0f;
+            float offset = origin / size.x * 2.0f;
+
+            s.SetPivot(Float2(localPivot.x - offset, localPivot.y));
+
+            origin += m.gmCellIncX;
+        }
     }
 };
 class Voice : public IXAudio2VoiceCallback
