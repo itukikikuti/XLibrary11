@@ -9,11 +9,12 @@ public:
     {
         App::Initialize();
 
-        position = Float3(0.0f, 0.0f, -5.0f);
+        position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
         color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        SetPerspective(60.0f, 0.1f, 1000.0f);
+        isDepthTest = false;
+        SetOrthographic(static_cast<float>(App::GetWindowSize().y), -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
 
         App::Window::AddProcedure(this);
 
@@ -34,7 +35,7 @@ public:
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
-    void Camera::SetOrthographic(float size, float nearClip, float farClip)
+    void SetOrthographic(float size, float nearClip, float farClip)
     {
         isPerspective = false;
         this->size = size;
@@ -45,7 +46,11 @@ public:
             DirectX::XMMatrixOrthographicLH(size * aspectRatio, size, nearClip, farClip)
         );
     }
-    void Start()
+    void SetDepthTest(bool isDepthTest)
+    {
+        this->isDepthTest = isDepthTest;
+    }
+    void Update()
     {
         constant.view = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixInverse(
@@ -64,14 +69,21 @@ public:
         App::GetGraphicsContext().GSSetConstantBuffers(0, 1, &constantBuffer.p);
         App::GetGraphicsContext().PSSetConstantBuffers(0, 1, &constantBuffer.p);
 
-        App::GetGraphicsContext().OMSetRenderTargets(1, &renderTargetView.p, depthStencilView);
-
         float clearColor[4] = { color.x, color.y, color.z, color.w };
         App::GetGraphicsContext().ClearRenderTargetView(renderTargetView, clearColor);
-        App::GetGraphicsContext().ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-    }
-    void Stop()
-    {
+
+        if (isDepthTest)
+        {
+            App::GetGraphicsContext().ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+            App::GetGraphicsContext().OMSetRenderTargets(1, &renderTargetView.p, depthStencilView);
+        }
+        else
+        {
+            App::GetGraphicsContext().OMSetRenderTargets(1, &renderTargetView.p, nullptr);
+
+        }
+
     }
 
 private:
@@ -86,6 +98,7 @@ private:
     float size;
     float nearClip;
     float farClip;
+    bool isDepthTest;
     Constant constant;
     ATL::CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
     ATL::CComPtr<ID3D11DepthStencilView> depthStencilView = nullptr;

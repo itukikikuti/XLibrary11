@@ -63,15 +63,9 @@ public:
         device->CreateBlendState(&blendDesc, &blendState);
         context->OMSetBlendState(blendState, blendFactor, 0xffffffff);
 
-        D3D11_BUFFER_DESC constantBufferDesc = {};
-        constantBufferDesc.ByteWidth = sizeof(Constant);
-        constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-        constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        device->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+        App::Window::AddProcedure(this);
 
-        App:Window::AddProcedure(this);
-
-        CreateRenderTarget();
+        SetViewport();
     }
     ~Graphics()
     {
@@ -92,48 +86,20 @@ public:
     void Update()
     {
         swapChain->Present(1, 0);
-
-        context->UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-        context->VSSetConstantBuffers(0, 1, &constantBuffer.p);
-        context->HSSetConstantBuffers(0, 1, &constantBuffer.p);
-        context->DSSetConstantBuffers(0, 1, &constantBuffer.p);
-        context->GSSetConstantBuffers(0, 1, &constantBuffer.p);
-        context->PSSetConstantBuffers(0, 1, &constantBuffer.p);
-
-        context->OMSetRenderTargets(1, &renderTargetView.p, nullptr);
-
-        static float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-        context->ClearRenderTargetView(renderTargetView, color);
     }
 
 private:
-    struct Constant
-    {
-        DirectX::XMMATRIX view;
-        DirectX::XMMATRIX projection;
-    };
-
-    Constant constant;
     ATL::CComPtr<ID3D11Device> device = nullptr;
     ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
     ATL::CComPtr<ID3D11DeviceContext> context = nullptr;
-    ATL::CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-    ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
-    ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
-    void CreateRenderTarget()
+    void SetViewport()
     {
         D3D11_VIEWPORT viewPort = {};
         viewPort.Width = static_cast<float>(App::GetWindowSize().x);
         viewPort.Height = static_cast<float>(App::GetWindowSize().y);
         viewPort.MaxDepth = 1.0f;
         context->RSSetViewports(1, &viewPort);
-
-        swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
-        device->CreateRenderTargetView(renderTexture, nullptr, &renderTargetView);
-
-        constant.view = DirectX::XMMatrixIdentity();
-        constant.projection = DirectX::XMMatrixOrthographicLH(static_cast<float>(App::GetWindowSize().x), static_cast<float>(App::GetWindowSize().y), -10000.0f, 10000.0f);
     }
     void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
     {
@@ -143,16 +109,6 @@ private:
         if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
             return;
 
-        DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-        swapChain->GetDesc(&swapChainDesc);
-
-        ATL::CComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
-        context->OMSetRenderTargets(1, &nullRenderTarget, nullptr);
-        renderTargetView.Release();
-        renderTexture.Release();
-        context->Flush();
-        swapChain->ResizeBuffers(swapChainDesc.BufferCount, App::GetWindowSize().x, App::GetWindowSize().y, swapChainDesc.BufferDesc.Format, 0);
-
-        CreateRenderTarget();
+        SetViewport();
     }
 };
