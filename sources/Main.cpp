@@ -19,11 +19,14 @@ int MAIN()
 
     mesh.GetMaterial().SetTexture(0, &texture);
 
-    Text text(L"菊池いつきです。");
+    Text text(L"菊池いつきです");
+    text.position.y = 2.0f;
     text.scale = 1.0f / 30.0f;
 
     Voice music(L"assets/music.mp3");
     music.SetLoop(true);
+    music.SetVolume(0.5f);
+    music.SetPitch(0.5f);
     music.Play();
 
     Voice sound(L"assets/sound.wav");
