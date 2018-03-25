@@ -1773,16 +1773,18 @@ public:
 
     Text(const std::wstring text = L"", int fontSize = 16, const wchar_t* const fontFace = L"")
     {
-        Create(text, fontSize, fontFace);
-    }
-    void Create(const std::wstring text = L"", int fontSize = 16, const wchar_t* const fontFace = L"")
-    {
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
         color = Float4(0.0f, 0.0f, 0.0f, 1.0f);
 
-        size.y = fontSize;
+        Create(text, fontSize, fontFace);
+    }
+    void Create(const std::wstring text = L"", int fontSize = 16, const wchar_t* const fontFace = L"")
+    {
+        characters.clear();
+
+        size = DirectX::XMINT2(0, fontSize);
 
         LOGFONTW logFont = {};
         logFont.lfHeight = fontSize;
@@ -1797,7 +1799,6 @@ public:
 
         HDC dc = GetDC(nullptr);
         HFONT oldFont = (HFONT)SelectObject(dc, font);
-
 
         for (size_t i = 0; i < text.length(); i++)
         {
@@ -1835,7 +1836,7 @@ public:
         SelectObject(dc, oldFont);
         ReleaseDC(nullptr, dc);
 
-        SetPivot(0.0f);
+        SetPivot(pivot);
     }
     DirectX::XMINT2 GetSize() const
     {
@@ -1843,6 +1844,8 @@ public:
     }
     void SetPivot(Float2 pivot)
     {
+        this->pivot = pivot;
+
         float origin = 0.0f;
         Float2 center;
         center.x = -GetSize().x / 2.0f;
@@ -1887,6 +1890,7 @@ private:
     };
 
     DirectX::XMINT2 size;
+    Float2 pivot;
     std::vector<std::unique_ptr<Character>> characters;
 };
 class Voice : public IXAudio2VoiceCallback
