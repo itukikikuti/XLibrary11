@@ -1445,7 +1445,8 @@ private:
         Create();
     }
 };
-class Mesh {
+class Mesh
+{
 public:
     Float3 position;
     Float3 angles;
