@@ -1,4 +1,4 @@
-# XLibrary11
+# Minimum Game Library by DirectX 11
 
 ### 詳しくはこちら！
 * [Wiki](https://github.com/itukikikuti/XLibrary11/wiki)
