@@ -22,6 +22,7 @@ public:
         graphBuilder->QueryInterface(IID_IMediaControl, reinterpret_cast<void**>(&mediaControl));
         graphBuilder->QueryInterface(IID_IMediaSeeking, reinterpret_cast<void**>(&mediaSeeking));
         graphBuilder->QueryInterface(IID_IMediaEventEx, reinterpret_cast<void**>(&mediaEvent));
+        graphBuilder->QueryInterface(IID_IBasicAudio, reinterpret_cast<void**>(&basicAudio));
 
         mediaSeeking->SetTimeFormat(&TIME_FORMAT_MEDIA_TIME);
         mediaEvent->SetNotifyWindow((OAHWND)App::GetWindowHandle(), WM_APP, 0);
@@ -32,6 +33,10 @@ public:
     }
     void SetVolume(float volume)
     {
+        float db = volume;
+        if (volume > 0.0f)
+            db = log10f(volume * 100000.0f) * 20.0f;
+        basicAudio->put_Volume(static_cast<int>(db * 100.0f) - 10000);
     }
     void Play()
     {
@@ -67,6 +72,7 @@ private:
     ATL::CComPtr<IMediaControl> mediaControl = nullptr;
     ATL::CComPtr<IMediaSeeking> mediaSeeking = nullptr;
     ATL::CComPtr<IMediaEventEx> mediaEvent = nullptr;
+    ATL::CComPtr<IBasicAudio> basicAudio = nullptr;
     bool isLoop = false;
     bool isPlaying = false;
 
