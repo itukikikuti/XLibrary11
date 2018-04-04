@@ -14,20 +14,12 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
-#include <mfapi.h>
-#include <mfidl.h>
-#include <mfreadwrite.h>
-#include <Shlwapi.h>
+#include <dshow.h>
 #include <wincodec.h>
-#include <xaudio2.h>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
-#pragma comment(lib, "mfplat.lib")
-#pragma comment(lib, "mfreadwrite.lib")
-#pragma comment(lib, "mfuuid.lib")
-#pragma comment(lib, "Shlwapi.lib")
-#pragma comment(lib, "xaudio2.lib")
+#pragma comment(lib, "strmiids.lib")
 
 namespace XLibrary11
 {
@@ -492,6 +484,7 @@ public:
     ~Window()
     {
         UnregisterClassW(App::NAME, GetModuleHandleW(nullptr));
+        CoUninitialize();
     }
     HWND GetHandle() const
     {
@@ -706,38 +699,6 @@ private:
         SetViewport();
     }
 };
-class Audio
-{
-public:
-    Audio()
-    {
-        App::Initialize();
-
-        App::GetWindowHandle();
-
-        XAudio2Create(&audioEngine);
-
-        audioEngine->CreateMasteringVoice(&masteringVoice);
-
-        MFStartup(MF_VERSION);
-    }
-    ~Audio()
-    {
-        MFShutdown();
-
-        masteringVoice->DestroyVoice();
-
-        audioEngine->StopEngine();
-    }
-    IXAudio2& GetEngine() const
-    {
-        return *audioEngine;
-    }
-
-private:
-    ATL::CComPtr<IXAudio2> audioEngine = nullptr;
-    IXAudio2MasteringVoice* masteringVoice = nullptr;
-};
 class Input
 {
 public:
@@ -930,10 +891,6 @@ private:
     {
         return GetGraphics().GetSwapChain();
     }
-    static IXAudio2& GetAudioEngine()
-    {
-        return GetAudio().GetEngine();
-    }
     static bool GetKey(int VK_CODE)
     {
         return GetInput().GetKey(VK_CODE);
@@ -986,11 +943,6 @@ private:
         static std::unique_ptr<Graphics> graphics(new Graphics());
         return *graphics.get();
     }
-    static Audio& GetAudio()
-    {
-        static std::unique_ptr<Audio> audio(new Audio());
-        return *audio.get();
-    }
     static Input& GetInput()
     {
         static std::unique_ptr<Input> input(new Input());
@@ -1027,7 +979,7 @@ public:
     {
         static ATL::CComPtr<IWICImagingFactory> factory = nullptr;
         if (factory == nullptr)
-            CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+            factory.CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER);
 
         ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
 
@@ -1894,164 +1846,106 @@ private:
     Float2 pivot;
     std::vector<std::unique_ptr<Character>> characters;
 };
-class Voice : public IXAudio2VoiceCallback
+class Sound : public App::Window::Proceedable
 {
 public:
-    Voice()
+    Sound()
     {
-        App::Initialize();
+        Initialize();
     }
-    Voice(const wchar_t* const filePath)
+    Sound(const wchar_t* const filePath)
     {
-        App::Initialize();
+        Initialize();
         Load(filePath);
     }
-    ~Voice()
+    ~Sound()
     {
-        if (sourceVoice != nullptr)
-            sourceVoice->DestroyVoice();
+        App::Window::RemoveProcedure(this);
     }
     void Load(const wchar_t* const filePath)
     {
-        App::GetAudioEngine();
+        graphBuilder.CoCreateInstance(CLSID_FilterGraph, nullptr, CLSCTX_INPROC);
+        graphBuilder->RenderFile(filePath, nullptr);
 
-        ATL::CComPtr<IStream> stream = nullptr;
-        SHCreateStreamOnFileW(filePath, STGM_READ, &stream);
+        graphBuilder->QueryInterface(IID_IMediaControl, reinterpret_cast<void**>(&mediaControl));
+        graphBuilder->QueryInterface(IID_IMediaSeeking, reinterpret_cast<void**>(&mediaSeeking));
+        graphBuilder->QueryInterface(IID_IMediaEventEx, reinterpret_cast<void**>(&mediaEvent));
 
-        ATL::CComPtr<IMFByteStream> byteStream = nullptr;
-        MFCreateMFByteStreamOnStream(stream, &byteStream);
-
-        ATL::CComPtr<IMFAttributes> attributes = nullptr;
-        MFCreateAttributes(&attributes, 1);
-
-        MFCreateSourceReaderFromByteStream(byteStream, attributes, &sourceReader);
-
-        ATL::CComPtr<IMFMediaType> mediaType = nullptr;
-        MFCreateMediaType(&mediaType);
-        mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
-        mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
-
-        sourceReader->SetCurrentMediaType(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), nullptr, mediaType);
-
-        mediaType.Release();
-        sourceReader->GetCurrentMediaType(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), &mediaType);
-
-        UINT32 waveFormatSize = 0;
-        WAVEFORMATEX* waveFormat;
-        MFCreateWaveFormatExFromMFMediaType(mediaType, &waveFormat, &waveFormatSize);
-
-        App::GetAudioEngine().CreateSourceVoice(&sourceVoice, waveFormat, XAUDIO2_VOICE_NOPITCH, 1.0f, this);
+        mediaSeeking->SetTimeFormat(&TIME_FORMAT_MEDIA_TIME);
+        mediaEvent->SetNotifyWindow((OAHWND)App::GetWindowHandle(), WM_APP, 0);
     }
     void SetLoop(bool isLoop)
     {
         this->isLoop = isLoop;
     }
-    void SetPitch(float pitch)
-    {
-        sourceVoice->SetFrequencyRatio(pitch);
-    }
     void SetVolume(float volume)
     {
-        sourceVoice->SetVolume(volume);
     }
     void Play()
     {
-        if (isLoop)
-        {
-            if (isPlaying)
-                return;
-        }
-        else
-        {
-            Stop();
-        }
-
-        if (sourceVoice == nullptr)
+        if (graphBuilder == nullptr)
             return;
 
+        if (isPlaying)
+            Stop();
+
         isPlaying = true;
-        sourceVoice->Start();
-        Push();
+        mediaControl->Run();
     }
     void Pause()
+    {
+        if (graphBuilder == nullptr)
+            return;
+
+        isPlaying = false;
+        mediaControl->Pause();
+    }
+    void Stop()
+    {
+        if (graphBuilder == nullptr)
+            return;
+
+        isPlaying = false;
+        mediaControl->Stop();
+        Reset();
+    }
+
+private:
+    ATL::CComPtr<IGraphBuilder> graphBuilder = nullptr;
+    ATL::CComPtr<IMediaControl> mediaControl = nullptr;
+    ATL::CComPtr<IMediaSeeking> mediaSeeking = nullptr;
+    ATL::CComPtr<IMediaEventEx> mediaEvent = nullptr;
+    bool isLoop = false;
+    bool isPlaying = false;
+
+    void Initialize()
+    {
+        App::Initialize();
+        App::Window::AddProcedure(this);
+    }
+    void Reset()
+    {
+        LONGLONG time = 0;
+        mediaSeeking->SetPositions(&time, AM_SEEKING_AbsolutePositioning, nullptr, AM_SEEKING_NoPositioning);
+    }
+    void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
     {
         if (!isLoop)
             return;
 
-        if (sourceVoice == nullptr)
+        if (message != WM_APP)
             return;
 
-        isPlaying = false;
-        sourceVoice->Stop();
-    }
-    void Stop()
-    {
-        if (sourceVoice == nullptr)
-            return;
-
-        isPlaying = false;
-        sourceVoice->Stop();
-        ResetPosition();
-    }
-
-private:
-    ATL::CComPtr<IMFSourceReader> sourceReader = nullptr;
-    IXAudio2SourceVoice* sourceVoice = nullptr;
-    bool isLoop = false;
-    bool isPlaying = false;
-
-    void ResetPosition()
-    {
-        PROPVARIANT position = {};
-        position.vt = VT_I8;
-        position.hVal.QuadPart = 0;
-        sourceReader->SetCurrentPosition(GUID_NULL, position);
-    }
-    void Push()
-    {
-        ATL::CComPtr<IMFSample> sample = nullptr;
-        DWORD flags = 0;
-        sourceReader->ReadSample(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), 0, nullptr, &flags, nullptr, &sample);
-
-        if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
+        LONGLONG duration = 0;
+        LONGLONG time = 0;
+        mediaSeeking->GetDuration(&duration);
+        mediaSeeking->GetPositions(&time, nullptr);
+        if (duration <= time)
         {
-            if (isLoop)
-            {
-                ResetPosition();
-
-                sample.Release();
-                sourceReader->ReadSample(static_cast<DWORD>(MF_SOURCE_READER_FIRST_AUDIO_STREAM), 0, nullptr, &flags, nullptr, &sample);
-            }
-            else
-            {
-                Stop();
-                return;
-            }
+            Stop();
+            Play();
         }
-
-        ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
-        sample->ConvertToContiguousBuffer(&mediaBuffer);
-
-        DWORD audioDataLength = 0;
-        BYTE* audioData;
-        mediaBuffer->Lock(&audioData, nullptr, &audioDataLength);
-        mediaBuffer->Unlock();
-
-        XAUDIO2_BUFFER audioBuffer = {};
-        audioBuffer.AudioBytes = audioDataLength;
-        audioBuffer.pAudioData = audioData;
-        sourceVoice->SubmitSourceBuffer(&audioBuffer);
     }
-    void STDMETHODCALLTYPE OnBufferEnd(void*) override
-    {
-        Push();
-    }
-    void STDMETHODCALLTYPE OnBufferStart(void*) override {}
-    void STDMETHODCALLTYPE OnLoopEnd(void*) override {}
-    void STDMETHODCALLTYPE OnStreamEnd() override {}
-    void STDMETHODCALLTYPE OnVoiceError(void*, HRESULT) override {}
-    void STDMETHODCALLTYPE OnVoiceProcessingPassEnd() override {}
-    void STDMETHODCALLTYPE OnVoiceProcessingPassStart(UINT32) override {}
 };
 
 }

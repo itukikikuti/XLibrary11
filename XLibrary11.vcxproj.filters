@@ -39,13 +39,10 @@
     <ClInclude Include="sources\App.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Audio.hpp">
-      <Filter>sources</Filter>
-    </ClInclude>
-    <ClInclude Include="sources\Voice.hpp">
-      <Filter>sources</Filter>
-    </ClInclude>
     <ClInclude Include="sources\Utility.hpp">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Sound.hpp">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>

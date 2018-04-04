@@ -14,20 +14,12 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
-#include <mfapi.h>
-#include <mfidl.h>
-#include <mfreadwrite.h>
-#include <Shlwapi.h>
+#include <dshow.h>
 #include <wincodec.h>
-#include <xaudio2.h>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
-#pragma comment(lib, "mfplat.lib")
-#pragma comment(lib, "mfreadwrite.lib")
-#pragma comment(lib, "mfuuid.lib")
-#pragma comment(lib, "Shlwapi.lib")
-#pragma comment(lib, "xaudio2.lib")
+#pragma comment(lib, "strmiids.lib")
 
 XLIBRARY_NAMESPACE_BEGIN
 
@@ -40,7 +32,6 @@ class App final
 public:
 #include "Window.hpp"
 #include "Graphics.hpp"
-#include "Audio.hpp"
 #include "Input.hpp"
 #include "Timer.hpp"
 
@@ -101,10 +92,6 @@ public:
     {
         return GetGraphics().GetSwapChain();
     }
-    static IXAudio2& GetAudioEngine()
-    {
-        return GetAudio().GetEngine();
-    }
     static bool GetKey(int VK_CODE)
     {
         return GetInput().GetKey(VK_CODE);
@@ -157,11 +144,6 @@ private:
         static std::unique_ptr<Graphics> graphics(new Graphics());
         return *graphics.get();
     }
-    static Audio& GetAudio()
-    {
-        static std::unique_ptr<Audio> audio(new Audio());
-        return *audio.get();
-    }
     static Input& GetInput()
     {
         static std::unique_ptr<Input> input(new Input());
@@ -180,6 +162,6 @@ private:
 #include "Mesh.hpp"
 #include "Sprite.hpp"
 #include "Text.hpp"
-#include "Voice.hpp"
+#include "Sound.hpp"
 
 XLIBRARY_NAMESPACE_END

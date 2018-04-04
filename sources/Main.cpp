@@ -23,13 +23,12 @@ int MAIN()
     text.position.y = 2.0f;
     text.scale = 1.0f / 30.0f;
 
-    Voice music(L"assets/music.mp3");
+    Sound music(L"assets/music.mp3");
     music.SetLoop(true);
     music.SetVolume(0.5f);
-    music.SetPitch(0.5f);
     music.Play();
 
-    Voice sound(L"assets/sound.wav");
+    Sound sound(L"assets/sound.wav");
 
     while (App::Refresh())
     {
