@@ -28,6 +28,7 @@ public:
     ~Window()
     {
         UnregisterClassW(App::NAME, GetModuleHandleW(nullptr));
+        CoUninitialize();
     }
     HWND GetHandle() const
     {

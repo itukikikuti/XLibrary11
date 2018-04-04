@@ -22,7 +22,7 @@ public:
     {
         static ATL::CComPtr<IWICImagingFactory> factory = nullptr;
         if (factory == nullptr)
-            CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+            factory.CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER);
 
         ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
 
