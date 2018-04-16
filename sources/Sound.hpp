@@ -10,7 +10,7 @@ public:
         Initialize();
         Load(filePath);
     }
-    ~Sound()
+    virtual ~Sound()
     {
         App::Window::RemoveProcedure(this);
     }

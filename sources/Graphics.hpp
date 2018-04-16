@@ -67,7 +67,7 @@ public:
 
         SetViewport();
     }
-    ~Graphics()
+    virtual ~Graphics()
     {
         App::Window::RemoveProcedure(this);
     }

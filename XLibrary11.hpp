@@ -655,7 +655,7 @@ public:
 
         SetViewport();
     }
-    ~Graphics()
+    virtual ~Graphics()
     {
         App::Window::RemoveProcedure(this);
     }
@@ -1857,7 +1857,7 @@ public:
         Initialize();
         Load(filePath);
     }
-    ~Sound()
+    virtual ~Sound()
     {
         App::Window::RemoveProcedure(this);
     }
