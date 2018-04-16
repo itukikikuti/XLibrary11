@@ -46,7 +46,7 @@ struct Float2 : public DirectX::XMFLOAT2
         DirectX::XMStoreFloat2(this, vector);
         return *this;
     }
-    operator DirectX::XMVECTOR() const noexcept
+    operator DirectX::XMVECTOR() const
     {
         return DirectX::XMLoadFloat2(this);
     }
@@ -173,7 +173,7 @@ struct Float3 : public DirectX::XMFLOAT3
         DirectX::XMStoreFloat3(this, vector);
         return *this;
     }
-    operator DirectX::XMVECTOR() const noexcept
+    operator DirectX::XMVECTOR() const
     {
         return DirectX::XMLoadFloat3(this);
     }
@@ -310,7 +310,7 @@ struct Float4 : public DirectX::XMFLOAT4
         DirectX::XMStoreFloat4(this, vector);
         return *this;
     }
-    operator DirectX::XMVECTOR() const noexcept
+    operator DirectX::XMVECTOR() const
     {
         return DirectX::XMLoadFloat4(this);
     }
@@ -473,17 +473,17 @@ public:
         windowClass.lpfnWndProc = ProceedMessage;
         windowClass.hInstance = instance;
         windowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED));
-        windowClass.lpszClassName = App::NAME;
+        windowClass.lpszClassName = className;
         RegisterClassW(&windowClass);
 
-        handle = CreateWindowW(App::NAME, App::NAME, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, instance, nullptr);
+        handle = CreateWindowW(className, className, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, instance, nullptr);
 
         SetSize(640, 480);
         ShowWindow(handle, SW_SHOWNORMAL);
     }
     ~Window()
     {
-        UnregisterClassW(App::NAME, GetModuleHandleW(nullptr));
+        UnregisterClassW(className, GetModuleHandleW(nullptr));
         CoUninitialize();
     }
     HWND GetHandle() const
@@ -565,6 +565,7 @@ public:
     }
 
 private:
+    const wchar_t* className = L"XLibrary11";
     HWND handle;
 
     static std::forward_list<Proceedable*>& GetProcedures()
@@ -834,8 +835,6 @@ private:
     }
 };
 
-    static constexpr wchar_t* NAME = L"XLibrary11";
-
     App() = delete;
     static bool Refresh()
     {
@@ -1024,7 +1023,7 @@ public:
         textureDesc.SampleDesc.Quality = 0;
         textureDesc.Usage = D3D11_USAGE_DEFAULT;
         textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-        textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+        textureDesc.CPUAccessFlags = 0;
         textureDesc.MiscFlags = 0;
 
         D3D11_SUBRESOURCE_DATA textureSubresourceData = {};

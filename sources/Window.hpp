@@ -17,17 +17,17 @@ public:
         windowClass.lpfnWndProc = ProceedMessage;
         windowClass.hInstance = instance;
         windowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED));
-        windowClass.lpszClassName = App::NAME;
+        windowClass.lpszClassName = className;
         RegisterClassW(&windowClass);
 
-        handle = CreateWindowW(App::NAME, App::NAME, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, instance, nullptr);
+        handle = CreateWindowW(className, className, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, instance, nullptr);
 
         SetSize(640, 480);
         ShowWindow(handle, SW_SHOWNORMAL);
     }
     ~Window()
     {
-        UnregisterClassW(App::NAME, GetModuleHandleW(nullptr));
+        UnregisterClassW(className, GetModuleHandleW(nullptr));
         CoUninitialize();
     }
     HWND GetHandle() const
@@ -109,6 +109,7 @@ public:
     }
 
 private:
+    const wchar_t* className = L"XLibrary11";
     HWND handle;
 
     static std::forward_list<Proceedable*>& GetProcedures()

@@ -67,7 +67,7 @@ public:
         textureDesc.SampleDesc.Quality = 0;
         textureDesc.Usage = D3D11_USAGE_DEFAULT;
         textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-        textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+        textureDesc.CPUAccessFlags = 0;
         textureDesc.MiscFlags = 0;
 
         D3D11_SUBRESOURCE_DATA textureSubresourceData = {};

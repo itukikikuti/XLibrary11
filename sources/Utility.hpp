@@ -18,7 +18,7 @@ struct Float2 : public DirectX::XMFLOAT2
         DirectX::XMStoreFloat2(this, vector);
         return *this;
     }
-    operator DirectX::XMVECTOR() const noexcept
+    operator DirectX::XMVECTOR() const
     {
         return DirectX::XMLoadFloat2(this);
     }
@@ -145,7 +145,7 @@ struct Float3 : public DirectX::XMFLOAT3
         DirectX::XMStoreFloat3(this, vector);
         return *this;
     }
-    operator DirectX::XMVECTOR() const noexcept
+    operator DirectX::XMVECTOR() const
     {
         return DirectX::XMLoadFloat3(this);
     }
@@ -282,7 +282,7 @@ struct Float4 : public DirectX::XMFLOAT4
         DirectX::XMStoreFloat4(this, vector);
         return *this;
     }
-    operator DirectX::XMVECTOR() const noexcept
+    operator DirectX::XMVECTOR() const
     {
         return DirectX::XMLoadFloat4(this);
     }

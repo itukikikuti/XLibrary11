@@ -35,8 +35,6 @@ public:
 #include "Input.hpp"
 #include "Timer.hpp"
 
-    static constexpr wchar_t* NAME = L"XLibrary11";
-
     App() = delete;
     static bool Refresh()
     {
