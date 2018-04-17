@@ -30,6 +30,10 @@ int MAIN()
 
     Sound sound(L"assets/sound.wav");
 
+    Sprite sprite(L"assets/clock.png");
+    sprite.position.z = 100.0f;
+    sprite.scale = 0.1f;
+
     while (App::Refresh())
     {
         camera.Update();
@@ -42,6 +46,13 @@ int MAIN()
 
         mesh.angles.y += 1.0f;
         mesh.Draw();
+
+        if (App::GetKey('1'))
+            App::SetMousePosition(0.0f, 0.0f);
+
+        sprite.position.x = App::GetMousePosition().x / 5.0f;
+        sprite.position.y = App::GetMousePosition().y / 5.0f;
+        sprite.Draw();
     }
 
     return 0;
