@@ -4,7 +4,6 @@
 #include "Library.cpp"
 #include <sstream>
 using namespace std;
-using namespace DirectX;
 
 int MAIN()
 {

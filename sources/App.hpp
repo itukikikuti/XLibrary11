@@ -28,6 +28,8 @@
 
 XLIBRARY_NAMESPACE_BEGIN
 
+using namespace DirectX;
+
 #define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 #include "Utility.hpp"
@@ -39,7 +41,7 @@ public:
 #include "Graphics.hpp"
 #include "Input.hpp"
 #include "Timer.hpp"
-
+	 
     App() = delete;
     static bool Refresh()
     {
