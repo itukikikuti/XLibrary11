@@ -33,12 +33,12 @@ public:
         vertexShader.Release();
         ATL::CComPtr<ID3DBlob> vertexShaderBlob = nullptr;
         CompileShader(source, "VS", "vs_5_0", &vertexShaderBlob);
-        App::GetGraphicsDevice().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
+        App::GetGraphicsDevice3D().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
 
         pixelShader.Release();
         ATL::CComPtr<ID3DBlob> pixelShaderBlob = nullptr;
         CompileShader(source, "PS", "ps_5_0", &pixelShaderBlob);
-        App::GetGraphicsDevice().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
+        App::GetGraphicsDevice3D().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
 
         inputLayout.Release();
         std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc;
@@ -46,7 +46,7 @@ public:
         inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
         inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
-        App::GetGraphicsDevice().CreateInputLayout(inputElementDesc.data(), inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
+        App::GetGraphicsDevice3D().CreateInputLayout(inputElementDesc.data(), inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
     }
     void SetBuffer(int slot, void* cbuffer, size_t size)
     {
@@ -57,7 +57,7 @@ public:
         constantBufferDesc.ByteWidth = size;
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        App::GetGraphicsDevice().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer[slot].buffer);
+        App::GetGraphicsDevice3D().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer[slot].buffer);
     }
     void SetTexture(int slot, Texture* texture)
     {
@@ -66,24 +66,24 @@ public:
     void Attach()
     {
         if (vertexShader != nullptr)
-            App::GetGraphicsContext().VSSetShader(vertexShader, nullptr, 0);
+            App::GetGraphicsContext3D().VSSetShader(vertexShader, nullptr, 0);
 
         if (pixelShader != nullptr)
-            App::GetGraphicsContext().PSSetShader(pixelShader, nullptr, 0);
+            App::GetGraphicsContext3D().PSSetShader(pixelShader, nullptr, 0);
 
         if (inputLayout != nullptr)
-            App::GetGraphicsContext().IASetInputLayout(inputLayout);
+            App::GetGraphicsContext3D().IASetInputLayout(inputLayout);
 
         for (int i = 0; i < 10; i++)
         {
             if (constantBuffer[i].ptr != nullptr)
             {
-                App::GetGraphicsContext().UpdateSubresource(constantBuffer[i].buffer, 0, nullptr, constantBuffer[i].ptr, 0, 0);
-                App::GetGraphicsContext().VSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
-                App::GetGraphicsContext().HSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
-                App::GetGraphicsContext().DSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
-                App::GetGraphicsContext().GSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
-                App::GetGraphicsContext().PSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext3D().UpdateSubresource(constantBuffer[i].buffer, 0, nullptr, constantBuffer[i].ptr, 0, 0);
+                App::GetGraphicsContext3D().VSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext3D().HSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext3D().DSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext3D().GSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                App::GetGraphicsContext3D().PSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
             }
         }
 
