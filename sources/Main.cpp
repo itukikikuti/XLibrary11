@@ -27,6 +27,7 @@ int MAIN()
     Text number;
     number.position.y = 3.0f;
     number.scale = 1.0f / 100.0f;
+    number.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
 
     Sound music(L"assets/music.mp3");
     music.SetLoop(true);

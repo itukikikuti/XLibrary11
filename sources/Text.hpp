@@ -4,6 +4,7 @@ public:
     Text(const std::wstring& text = L"", float fontSize = 16.0f, const wchar_t* const fontFace = L"")
     {
         Sprite::Initialize();
+        color = Float4(0.0f, 0.0f, 0.0f, 1.0f);
         Create(text, fontSize, fontFace);
     }
     void Create(const std::wstring& text = L"", float fontSize = 16.0f, const wchar_t* const fontFace = L"")
@@ -50,7 +51,7 @@ public:
         App::GetGraphicsContext2D().SetTarget(bitmap);
 
         brush.Reset();
-        App::GetGraphicsContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), brush.GetAddressOf());
+        App::GetGraphicsContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), brush.GetAddressOf());
         App::GetGraphicsContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
         textFormat.Reset();
