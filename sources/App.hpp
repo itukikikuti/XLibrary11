@@ -11,14 +11,19 @@
 #include <vector>
 #include <Windows.h>
 #include <atlbase.h>
+#include <d2d1_1.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <dshow.h>
+#include <dwrite.h>
 #include <wincodec.h>
+#include <wrl.h>
 
+#pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "dwrite.lib")
 #pragma comment(lib, "strmiids.lib")
 
 XLIBRARY_NAMESPACE_BEGIN
@@ -78,17 +83,33 @@ public:
     {
         GetWindow().SetFullScreen(isFullScreen);
     }
-    static ID3D11Device& GetGraphicsDevice()
+    static ID3D11Device& GetGraphicsDevice3D()
     {
-        return GetGraphics().GetDevice();
+        return GetGraphics().GetDevice3D();
     }
-    static ID3D11DeviceContext& GetGraphicsContext()
+    static ID3D11DeviceContext& GetGraphicsContext3D()
     {
-        return GetGraphics().GetContext();
+        return GetGraphics().GetContext3D();
+    }
+    static ID2D1Device& GetGraphicsDevice2D()
+    {
+        return GetGraphics().GetDevice2D();
+    }
+    static ID2D1DeviceContext& GetGraphicsContext2D()
+    {
+        return GetGraphics().GetContext2D();
     }
     static IDXGISwapChain& GetGraphicsSwapChain()
     {
         return GetGraphics().GetSwapChain();
+    }
+    static IWICImagingFactory& GetTextureFactory()
+    {
+        return GetGraphics().GetTextureFactory();
+    }
+    static IDWriteFactory& GetTextFactory()
+    {
+        return GetGraphics().GetTextFactory();
     }
     static bool GetKey(int VK_CODE)
     {

@@ -63,7 +63,7 @@ public:
         mesh.Draw();
     }
 
-private:
+protected:
     Mesh mesh;
     Texture texture;
 

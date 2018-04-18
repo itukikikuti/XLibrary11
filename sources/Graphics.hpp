@@ -5,7 +5,7 @@ public:
     {
         App::Initialize();
 
-        UINT flags = 0;
+        UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)
         flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
@@ -40,13 +40,13 @@ public:
 
         for (size_t i = 0; i < driverTypes.size(); i++)
         {
-            HRESULT r = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), featureLevels.size(), D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device, nullptr, &context);
+            HRESULT r = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), featureLevels.size(), D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device3D, nullptr, &context3D);
 
             if (SUCCEEDED(r))
                 break;
         }
 
-        context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        context3D->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
         ATL::CComPtr<ID3D11BlendState> blendState = nullptr;
         D3D11_BLEND_DESC blendDesc = {};
@@ -60,8 +60,27 @@ public:
         blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
         float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-        device->CreateBlendState(&blendDesc, &blendState);
-        context->OMSetBlendState(blendState, blendFactor, 0xffffffff);
+        device3D->CreateBlendState(&blendDesc, &blendState);
+        context3D->OMSetBlendState(blendState, blendFactor, 0xffffffff);
+
+        D2D1_FACTORY_OPTIONS options = {};
+#if defined(_DEBUG)
+        options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+#endif
+
+        ATL::CComPtr<ID2D1Factory1> factory = nullptr;
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, &factory);
+
+        ATL::CComPtr<IDXGIDevice> device = nullptr;
+        device3D.QueryInterface(&device);
+
+        factory->CreateDevice(device, &device2D);
+
+        device2D->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &context2D);
+
+        textureFactory.CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER);
+
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &textFactory);
 
         App::Window::AddProcedure(this);
 
@@ -71,17 +90,33 @@ public:
     {
         App::Window::RemoveProcedure(this);
     }
-    ID3D11Device& GetDevice() const
+    ID3D11Device& GetDevice3D() const
     {
-        return *device;
+        return *device3D;
+    }
+    ID3D11DeviceContext& GetContext3D() const
+    {
+        return *context3D;
+    }
+    ID2D1Device& GetDevice2D() const
+    {
+        return *device2D;
+    }
+    ID2D1DeviceContext& GetContext2D() const
+    {
+        return *context2D;
     }
     IDXGISwapChain& GetSwapChain() const
     {
         return *swapChain;
     }
-    ID3D11DeviceContext& GetContext() const
+    IWICImagingFactory& GetTextureFactory() const
     {
-        return *context;
+        return *textureFactory;
+    }
+    IDWriteFactory& GetTextFactory() const
+    {
+        return *textFactory.Get();
     }
     void Update()
     {
@@ -89,9 +124,13 @@ public:
     }
 
 private:
-    ATL::CComPtr<ID3D11Device> device = nullptr;
+    ATL::CComPtr<ID3D11Device> device3D = nullptr;
+    ATL::CComPtr<ID3D11DeviceContext> context3D = nullptr;
+    ATL::CComPtr<ID2D1Device> device2D = nullptr;
+    ATL::CComPtr<ID2D1DeviceContext> context2D = nullptr;
     ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
-    ATL::CComPtr<ID3D11DeviceContext> context = nullptr;
+    ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
+    Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
 
     void SetViewport()
     {
@@ -99,7 +138,7 @@ private:
         viewPort.Width = static_cast<float>(App::GetWindowSize().x);
         viewPort.Height = static_cast<float>(App::GetWindowSize().y);
         viewPort.MaxDepth = 1.0f;
-        context->RSSetViewports(1, &viewPort);
+        context3D->RSSetViewports(1, &viewPort);
     }
     void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
     {

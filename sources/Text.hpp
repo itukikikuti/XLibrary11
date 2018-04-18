@@ -1,130 +1,88 @@
-﻿class Text
+﻿class Text : public Sprite
 {
 public:
-    Float3 position;
-    Float3 angles;
-    Float3 scale;
-    Float4 color;
-
-    Text(const std::wstring text = L"", int fontSize = 16, const wchar_t* const fontFace = L"")
+    Text(const std::wstring& text = L"", float fontSize = 16.0f, const wchar_t* const fontFace = L"")
     {
-        position = Float3(0.0f, 0.0f, 0.0f);
-        angles = Float3(0.0f, 0.0f, 0.0f);
-        scale = Float3(1.0f, 1.0f, 1.0f);
-        color = Float4(0.0f, 0.0f, 0.0f, 1.0f);
-
+        Sprite::Initialize();
         Create(text, fontSize, fontFace);
     }
-    void Create(const std::wstring text = L"", int fontSize = 16, const wchar_t* const fontFace = L"")
+    void Create(const std::wstring& text = L"", float fontSize = 16.0f, const wchar_t* const fontFace = L"")
     {
-        characters.clear();
+        if (text == L"")
+            return;
 
-        size = DirectX::XMINT2(0, fontSize);
+        this->text = text;
 
-        LOGFONTW logFont = {};
-        logFont.lfHeight = fontSize;
-        logFont.lfWeight = 500;
-        logFont.lfCharSet = SHIFTJIS_CHARSET;
-        logFont.lfOutPrecision = OUT_TT_ONLY_PRECIS;
-        logFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
-        logFont.lfQuality = PROOF_QUALITY;
-        logFont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
-        wcscpy_s(logFont.lfFaceName, fontFace);
-        HFONT font = CreateFontIndirectW(&logFont);
-
-        HDC dc = GetDC(nullptr);
-        HFONT oldFont = (HFONT)SelectObject(dc, font);
-
-        for (size_t i = 0; i < text.length(); i++)
+        length = DirectX::XMINT2(0, 1);
+        int maxLength = 0;
+        for (int i = 0; i < text.length(); i++)
         {
-            const MAT2 matrix = { { 0, 1 },{ 0, 0 },{ 0, 0 },{ 0, 1 } };
-            GLYPHMETRICS glyphMetrics = {};
-            DWORD bufferSize = GetGlyphOutlineW(dc, text[i], GGO_GRAY4_BITMAP, &glyphMetrics, 0, nullptr, &matrix);
-
-            std::unique_ptr<BYTE[]> buffer(new BYTE[bufferSize]);
-            GetGlyphOutlineW(dc, text[i], GGO_GRAY4_BITMAP, &glyphMetrics, bufferSize, buffer.get(), &matrix);
-
-            UINT width = (glyphMetrics.gmBlackBoxX + 3) / 4 * 4;
-            UINT height = glyphMetrics.gmBlackBoxY;
-
-            std::unique_ptr<DWORD[]> textureBuffer(new DWORD[width * height]);
-
-            for (UINT x = 0; x < width; x++)
+            if (text[i] == L'\n')
             {
-                for (UINT y = 0; y < height; y++)
-                {
-                    DWORD alpha = buffer[x + width * y] * 255 / 16;
-                    textureBuffer[x + width * y] = 0x00ffffff | (alpha << 24);
-                }
+                maxLength = 0;
+                length.y++;
+                continue;
             }
 
-            size.x += glyphMetrics.gmCellIncX;
+            maxLength++;
 
-            Character* character = new Character();
-
-            character->sprite.Create(reinterpret_cast<BYTE*>(textureBuffer.get()), width, height);
-            character->metrics = glyphMetrics;
-
-            characters.push_back(std::unique_ptr<Character>(character));
+            if (length.x < maxLength)
+            {
+                length.x = maxLength;
+            }
         }
 
-        SelectObject(dc, oldFont);
-        ReleaseDC(nullptr, dc);
+        DirectX::XMINT2 textureSize(static_cast<int>(length.x * fontSize), static_cast<int>(length.y * fontSize * 1.5f));
+        std::unique_ptr<BYTE[]> buffer(new BYTE[textureSize.x * textureSize.y * 4]);
+        texture.Create(buffer.get(), textureSize.x, textureSize.y);
 
-        SetPivot(pivot);
-    }
-    DirectX::XMINT2 GetSize() const
-    {
-        return size;
-    }
-    void SetPivot(Float2 pivot)
-    {
-        this->pivot = pivot;
+        ATL::CComPtr<IDXGISurface> surface = nullptr;
+        texture.GetInterface().QueryInterface(&surface);
 
-        float origin = 0.0f;
-        Float2 center;
-        center.x = -GetSize().x / 2.0f;
-        center.y = -GetSize().y / 2.0f;
+        D2D1_BITMAP_PROPERTIES1 bitmapProperties = {};
+        bitmapProperties.pixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
+        bitmapProperties.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
+        bitmapProperties.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET;
 
-        for (size_t i = 0; i < characters.size(); i++)
-        {
-            Sprite& s = characters[i]->sprite;
-            GLYPHMETRICS& m = characters[i]->metrics;
-            Float2 size = Float2(static_cast<float>(s.GetSize().x), static_cast<float>(s.GetSize().y));
+        ATL::CComPtr<ID2D1Bitmap1> bitmap = nullptr;
+        App::GetGraphicsContext2D().CreateBitmapFromDxgiSurface(surface, bitmapProperties, &bitmap);
 
-            Float2 localPivot;
-            localPivot.x = -(m.gmptGlyphOrigin.x + center.x + origin) / size.x * 2.0f;
-            localPivot.y = -(m.gmptGlyphOrigin.y + center.y) / size.y * 2.0f;
-            Float2 offset;
-            offset.x = GetSize().x / size.x * pivot.x;
-            offset.y = GetSize().y / size.y * pivot.y;
+        App::GetGraphicsContext2D().SetTarget(bitmap);
 
-            s.SetPivot(Float2(-1.0f, 1.0f) + localPivot + offset);
+        brush.Reset();
+        App::GetGraphicsContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), brush.GetAddressOf());
+        App::GetGraphicsContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
-            origin += m.gmCellIncX;
-        }
+        textFormat.Reset();
+        App::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
+
+        textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+        textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+        mesh.GetMaterial().SetTexture(0, &texture);
+
+        SetPivot(0.0f);
     }
     void Draw()
     {
-        for (size_t i = 0; i < characters.size(); i++)
-        {
-            characters[i]->sprite.position = position;
-            characters[i]->sprite.angles = angles;
-            characters[i]->sprite.scale = scale;
-            characters[i]->sprite.color = color;
-            characters[i]->sprite.Draw();
-        }
+        App::GetGraphicsContext2D().BeginDraw();
+        App::GetGraphicsContext2D().Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
+
+        Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayout = nullptr;
+        App::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), static_cast<float>(texture.GetSize().x), static_cast<float>(texture.GetSize().y), textLayout.GetAddressOf());
+
+        App::GetGraphicsContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), textLayout.Get(), brush.Get());
+
+        App::GetGraphicsContext2D().EndDraw();
+
+        Sprite::Draw();
     }
     void Load(const wchar_t* const filePath) = delete;
+    void Create(const BYTE* const buffer, int width, int height) = delete;
 
 private:
-    struct Character
-    {
-        Sprite sprite;
-        GLYPHMETRICS metrics;
-    };
-
-    DirectX::XMINT2 size;
-    Float2 pivot;
-    std::vector<std::unique_ptr<Character>> characters;
+    std::wstring text;
+    DirectX::XMINT2 length;
+    Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush = nullptr;
+    Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat = nullptr;
 };
