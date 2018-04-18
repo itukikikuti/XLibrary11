@@ -19,12 +19,12 @@ int MAIN()
     Mesh mesh;
     mesh.GetMaterial().SetTexture(0, &texture);
 
-    Text text(L"菊池いつきです。\n今日は天気も良くおならが出そうです。\n何を言ってるのかわからないですよね、僕もわからないです！\nabcdefghijklmnopqrstuvwxyz", 32.0f);
+    Text text(L"菊池いつきです。\n今日は天気も良くおならが出そうです。\n何を言ってるのかわからないですよね、僕もわからないです！\nabcdefghijklmnopqrstuvwxyz", 16.0f);
     //text.SetPivot(Float2(-1.0f, 1.0f));
     text.position.y = 2.0f;
-    text.scale = 1.0f / 100.0f;
+    text.scale = 1.0f / 50.0f;
 
-    Text number;
+    Text number(L"0", 100.0f);
     number.position.y = 3.0f;
     number.scale = 1.0f / 100.0f;
     number.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -47,13 +47,20 @@ int MAIN()
         if (App::GetKeyDown(VK_SPACE))
             sound.Play();
 
-        text.angles.z += 0.1f;
-        text.Draw();
+        if (!App::GetKey('2'))
+        {
+            text.angles.z += 1.0f;
+            text.Draw();
 
-        wstringstream ss;
-        ss << App::GetTime();
-        number.Create(ss.str(), 100.0f);
-        number.Draw();
+            number.Draw();
+        }
+        else
+        {
+            wstringstream ss;
+            ss << App::GetTime();
+            number.Create(ss.str(), 100.0f);
+            number.Draw();
+        }
 
         mesh.angles.y += 1.0f;
         mesh.Draw();
