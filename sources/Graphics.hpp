@@ -78,6 +78,10 @@ public:
 
         device2D->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &context2D);
 
+        textureFactory.CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER);
+
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &textFactory);
+
         App::Window::AddProcedure(this);
 
         SetViewport();
@@ -106,6 +110,14 @@ public:
     {
         return *swapChain;
     }
+    IWICImagingFactory& GetTextureFactory() const
+    {
+        return *textureFactory;
+    }
+    IDWriteFactory& GetTextFactory() const
+    {
+        return *textFactory.Get();
+    }
     void Update()
     {
         swapChain->Present(1, 0);
@@ -117,6 +129,8 @@ private:
     ATL::CComPtr<ID2D1Device> device2D = nullptr;
     ATL::CComPtr<ID2D1DeviceContext> context2D = nullptr;
     ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
+    ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
+    Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
 
     void SetViewport()
     {

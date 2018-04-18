@@ -18,6 +18,7 @@
 #include <dshow.h>
 #include <dwrite.h>
 #include <wincodec.h>
+#include <wrl.h>
 
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "d3d11.lib")
@@ -101,6 +102,14 @@ public:
     static IDXGISwapChain& GetGraphicsSwapChain()
     {
         return GetGraphics().GetSwapChain();
+    }
+    static IWICImagingFactory& GetTextureFactory()
+    {
+        return GetGraphics().GetTextureFactory();
+    }
+    static IDWriteFactory& GetTextFactory()
+    {
+        return GetGraphics().GetTextFactory();
     }
     static bool GetKey(int VK_CODE)
     {

@@ -20,12 +20,9 @@ public:
     }
     void Load(const wchar_t* const filePath)
     {
-        ATL::CComPtr<IWICImagingFactory> factory = nullptr;
-        factory.CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER);
-
         ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
 
-        factory->CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+        App::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
         ATL::CComPtr<IWICBitmapFrameDecode> frame = nullptr;
         decoder->GetFrame(0, &frame);
         UINT width, height;
@@ -38,7 +35,7 @@ public:
         if (pixelFormat != GUID_WICPixelFormat32bppBGRA)
         {
             ATL::CComPtr<IWICFormatConverter> formatConverter = nullptr;
-            factory->CreateFormatConverter(&formatConverter);
+            App::GetTextureFactory().CreateFormatConverter(&formatConverter);
 
             formatConverter->Initialize(frame, GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
 
