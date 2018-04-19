@@ -12,6 +12,7 @@ int MAIN()
     Camera camera;
     camera.position = Float3(0.0f, 1.0f, -5.0f);
     camera.SetPerspective(60.0f, 0.1f, 100.0f);
+	camera.SetDepthTest(true);
 
     Texture texture(L"assets/box.jpg");
 
@@ -34,6 +35,10 @@ int MAIN()
     music.Play();
 
     Sound sound(L"assets/sound.wav");
+
+	Sprite sprite1(L"assets/box.jpg");
+	sprite1.position.x = 1.0f;
+	sprite1.scale = 1.0f / 256.0f;
 
     Sprite sprite(L"assets/clock.png");
     sprite.position.z = 100.0f;
@@ -61,11 +66,18 @@ int MAIN()
             number.Draw();
         }
 
-        mesh.angles.y += 1.0f;
-        mesh.Draw();
+		mesh.angles.y += 1.0f;
+		
+		mesh.position.x = 0.5f;
+		mesh.Draw();
+
+		mesh.position.x = -0.5f;
+		mesh.Draw();
 
         if (App::GetKey('1'))
             App::SetMousePosition(0.0f, 0.0f);
+
+		sprite1.Draw();
 
         sprite.position.x = App::GetMousePosition().x / 5.0f;
         sprite.position.y = App::GetMousePosition().y / 5.0f;
