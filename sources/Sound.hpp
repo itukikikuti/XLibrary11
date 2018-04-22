@@ -120,31 +120,31 @@ public:
 			Stop();
 		}
 
-		isPlaying = true;
+		state = play;
 		soundBuffer->Play(0, 0, DSBPLAY_LOOPING);
 	}
 	void Pause()
 	{
-		isPlaying = false;
+		state = pause;
 		soundBuffer->Stop();
 	}
 	void Stop()
 	{
-		isPlaying = false;
-		soundBuffer->Stop();
+		state = stop;
 		Reset();
 
 		bufferIndex = 0;
 		soundBuffer->SetCurrentPosition(0);
-
-		void* buffer = nullptr;
-		DWORD bufferSize = 0;
-		soundBuffer->Lock(0, 0, &buffer, &bufferSize, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
-		memset(buffer, 0, bufferSize);
-		soundBuffer->Unlock(buffer, bufferSize, nullptr, 0);
 	}
 
 private:
+	enum State
+	{
+		play,
+		pause,
+		stop,
+	};
+
 	struct Properties
 	{
 		bool isLoop = false;
@@ -156,7 +156,7 @@ private:
 	DWORD bufferSize;
 	int bufferIndex = 0;
 	WAVEFORMATEX* format;
-	bool isPlaying = false;
+	State state = stop;
 
 	void Initialize()
 	{
@@ -176,7 +176,7 @@ private:
 		if (buffer == nullptr)
 			return;
 
-		memset(buffer, 128, size);
+		memset(buffer, 256, size);
 
 		ATL::CComPtr<IMFSample> sample = nullptr;
 		DWORD flags = 0;
@@ -210,30 +210,38 @@ private:
 		if (message != WM_APP)
 			return;
 
-		if (!isPlaying)
-			return;
-
 		DWORD position;
 		soundBuffer->GetCurrentPosition(&position, 0);
 
-		void* buffer1 = nullptr;
-		DWORD bufferSize1 = 0;
-		void* buffer2 = nullptr;
-		DWORD bufferSize2 = 0;
-
-		if (bufferIndex == 0 && position < bufferSize)
+		if (state == stop)
 		{
-			soundBuffer->Lock(bufferSize, bufferSize * 2, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
-			Push(buffer1, bufferSize1);
-			soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
-			bufferIndex = 1;
+			void* buffer = nullptr;
+			DWORD bufferSize = 0;
+			soundBuffer->Lock(0, 0, &buffer, &bufferSize, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
+			memset(buffer, 256, bufferSize);
+			soundBuffer->Unlock(buffer, bufferSize, nullptr, 0);
 		}
-		if (bufferIndex == 1 && position >= bufferSize)
+		else
 		{
-			soundBuffer->Lock(0, bufferSize, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
-			Push(buffer1, bufferSize1);
-			soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
-			bufferIndex = 0;
+			void* buffer1 = nullptr;
+			DWORD bufferSize1 = 0;
+			void* buffer2 = nullptr;
+			DWORD bufferSize2 = 0;
+
+			if (bufferIndex == 0 && position < bufferSize)
+			{
+				soundBuffer->Lock(bufferSize, bufferSize * 2, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
+				Push(buffer1, bufferSize1);
+				soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
+				bufferIndex = 1;
+			}
+			if (bufferIndex == 1 && position >= bufferSize)
+			{
+				soundBuffer->Lock(0, bufferSize, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
+				Push(buffer1, bufferSize1);
+				soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
+				bufferIndex = 0;
+			}
 		}
 	}
 };
