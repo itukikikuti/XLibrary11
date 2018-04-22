@@ -30,13 +30,10 @@ int MAIN()
     number.scale = 1.0f / 100.0f;
     number.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
 
-    Sound music(L"assets/DIVE.mp3");
+    Sound music(L"assets/music.mp3");
 	music.SetPitch(1.1f);
-	music.SetVolume(0.0f);
-	music.SetVolume(1.0f);
+	music.SetVolume(0.5f);
 	music.SetPan(0.0f);
-	music.SetPan(-1.0f);
-	music.SetPan(1.0f);
 	//music.SetLoop(true);
     music.Play();
 
