@@ -115,7 +115,28 @@ public:
 	}
 	void Play()
 	{
+		isPlaying = true;
 		soundBuffer->Play(0, 0, DSBPLAY_LOOPING);
+	}
+	void Pause()
+	{
+		isPlaying = false;
+		soundBuffer->Stop();
+	}
+	void Stop()
+	{
+		isPlaying = false;
+		soundBuffer->Stop();
+		Reset();
+
+		bufferIndex = 0;
+		soundBuffer->SetCurrentPosition(0);
+
+		void* buffer = nullptr;
+		DWORD bufferSize = 0;
+		soundBuffer->Lock(0, 0, &buffer, &bufferSize, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
+		memset(buffer, 0, bufferSize);
+		soundBuffer->Unlock(buffer, bufferSize, nullptr, 0);
 	}
 
 private:
@@ -130,12 +151,20 @@ private:
 	DWORD bufferSize;
 	int bufferIndex = 0;
 	WAVEFORMATEX* format;
+	bool isPlaying = false;
 
 	void Initialize()
 	{
 		App::Initialize();
 
 		App::Window::AddProcedure(this);
+	}
+	void Reset()
+	{
+		PROPVARIANT position = {};
+		position.vt = VT_I8;
+		position.hVal.QuadPart = 0;
+		sourceReader->SetCurrentPosition(GUID_NULL, position);
 	}
 	void Push(void* buffer, DWORD size)
 	{
@@ -150,10 +179,13 @@ private:
 
 		if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
 		{
-			PROPVARIANT position = {};
-			position.vt = VT_I8;
-			position.hVal.QuadPart = 0;
-			sourceReader->SetCurrentPosition(GUID_NULL, position);
+			if (!properties.isLoop)
+			{
+				Stop();
+				return;
+			}
+
+			Reset();
 
 			sample.Release();
 			sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
@@ -171,6 +203,9 @@ private:
 	void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
 	{
 		if (message != WM_APP)
+			return;
+
+		if (!isPlaying)
 			return;
 
 		DWORD position;
