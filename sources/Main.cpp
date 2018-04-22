@@ -37,7 +37,7 @@ int MAIN()
 	music.SetLoop(true);
     music.Play();
 
-    //Sound sound(L"assets/sound.wav");
+    Sound sound(L"assets/sound.wav");
 
     Sprite sprite(L"assets/clock.png");
     sprite.position.z = 100.0f;
@@ -59,7 +59,7 @@ int MAIN()
 
 		if (App::GetKeyDown(VK_SPACE))
 		{
-			//sound.Play();
+			sound.Play();
 		}
 
         if (!App::GetKey('2'))

@@ -2029,6 +2029,11 @@ public:
 	}
 	void Play()
 	{
+		if (!properties.isLoop)
+		{
+			Stop();
+		}
+
 		isPlaying = true;
 		soundBuffer->Play(0, 0, DSBPLAY_LOOPING);
 	}
