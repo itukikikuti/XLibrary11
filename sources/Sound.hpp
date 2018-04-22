@@ -1,17 +1,17 @@
 class Sound : public App::Window::Proceedable
 {
 public:
-    Sound()
-    {
+	Sound()
+	{
 		Initialize();
-    }
-    Sound(const wchar_t* const filePath)
-    {
+	}
+	Sound(const wchar_t* const filePath)
+	{
 		Initialize();
-        Load(filePath);
-    }
-    virtual ~Sound()
-    {
+		Load(filePath);
+	}
+	virtual ~Sound()
+	{
 		App::Window::RemoveProcedure(this);
 	}
 	void Load(const wchar_t* const filePath)
@@ -35,32 +35,83 @@ public:
 		mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
 		mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
 
-		sourceReader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType);
+		sourceReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType);
 		mediaType.Release();
-		sourceReader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, &mediaType);
+		sourceReader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, &mediaType);
 
 		UINT32 waveFormatSize = sizeof(WAVEFORMATEX);
-		WAVEFORMATEX* waveFormat;
-		MFCreateWaveFormatExFromMFMediaType(mediaType, &waveFormat, &waveFormatSize);
+		MFCreateWaveFormatExFromMFMediaType(mediaType, &format, &waveFormatSize);
 
 		ATL::CComPtr<IMFSample> sample = nullptr;
 		DWORD flags = 0;
-		sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+		sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
 
 		ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
 		sample->ConvertToContiguousBuffer(&mediaBuffer);
 
-		mediaBuffer->GetMaxLength(&size);
-		size -= waveFormat->nBlockAlign;
+		mediaBuffer->GetMaxLength(&bufferSize);
+		bufferSize -= format->nBlockAlign;
 
 		DSBUFFERDESC bufferDesc = {};
 		bufferDesc.dwSize = sizeof(DSBUFFERDESC);
-		bufferDesc.dwFlags = DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY | DSBCAPS_GETCURRENTPOSITION2;
-		bufferDesc.dwBufferBytes = size * 2;
-		bufferDesc.lpwfxFormat = waveFormat;
+		bufferDesc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY | DSBCAPS_GETCURRENTPOSITION2;
+		bufferDesc.dwBufferBytes = bufferSize * 2;
+		bufferDesc.lpwfxFormat = format;
 
 		soundBuffer.Release();
 		App::GetAudioDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
+	}
+	void SetLoop(bool isLoop)
+	{
+		properties.isLoop = isLoop;
+	}
+	void SetVolume(float volume)
+	{
+		if (volume < 0.00000001f)
+			volume = 0.00000001f;
+
+		LONG decibel = (LONG)(log10f(volume) * 20.0f * 100.0f);
+
+		if (decibel < DSBVOLUME_MIN)
+			decibel = DSBVOLUME_MIN;
+
+		if (decibel > DSBVOLUME_MAX)
+			decibel = DSBVOLUME_MAX;
+
+		soundBuffer->SetVolume(decibel);
+	}
+	void SetPan(float pan)
+	{
+		int sign = (pan > 0) - (pan < 0);
+
+		pan = 1.0f - fabsf(pan);
+		if (pan < 0.00000001f)
+			pan = 0.00000001f;
+
+		LONG decibel = (LONG)(log10f(pan) * 20.0f * 100.0f) * -sign;
+
+		if (decibel < DSBPAN_LEFT)
+			decibel = DSBPAN_LEFT;
+
+		if (decibel > DSBPAN_RIGHT)
+			decibel = DSBPAN_RIGHT;
+
+		soundBuffer->SetPan(decibel);
+	}
+	void SetPitch(float pitch)
+	{
+		if (pitch < 0.0f)
+			pitch = 0.0f;
+
+		DWORD frequency = (DWORD)(format->nSamplesPerSec * pitch);
+
+		if (frequency < DSBFREQUENCY_MIN)
+			frequency = DSBFREQUENCY_MIN;
+
+		if (frequency > DSBFREQUENCY_MAX)
+			frequency = DSBFREQUENCY_MAX;
+
+		soundBuffer->SetFrequency(frequency);
 	}
 	void Play()
 	{
@@ -68,10 +119,17 @@ public:
 	}
 
 private:
+	struct Properties
+	{
+		bool isLoop = false;
+	}
+	properties;
+
 	ATL::CComPtr<IMFSourceReader> sourceReader = nullptr;
 	ATL::CComPtr<IDirectSoundBuffer> soundBuffer = nullptr;
-	DWORD size;
+	DWORD bufferSize;
 	int bufferIndex = 0;
+	WAVEFORMATEX* format;
 
 	void Initialize()
 	{
@@ -88,7 +146,7 @@ private:
 
 		ATL::CComPtr<IMFSample> sample = nullptr;
 		DWORD flags = 0;
-		sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+		sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
 
 		if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
 		{
@@ -98,18 +156,12 @@ private:
 			sourceReader->SetCurrentPosition(GUID_NULL, position);
 
 			sample.Release();
-			sourceReader->ReadSample(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+			sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
 		}
 
 		ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
 		sample->ConvertToContiguousBuffer(&mediaBuffer);
-
-		DWORD wief;
-		mediaBuffer->GetCurrentLength(&wief);
-
 		mediaBuffer->SetCurrentLength(size);
-
-		printf("%d %d\n", wief, size);
 
 		BYTE* temp = nullptr;
 		mediaBuffer->Lock(&temp, nullptr, &size);
@@ -129,16 +181,16 @@ private:
 		void* buffer2 = nullptr;
 		DWORD bufferSize2 = 0;
 
-		if (bufferIndex == 0 && position < size)
+		if (bufferIndex == 0 && position < bufferSize)
 		{
-			soundBuffer->Lock(size, size * 2, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
+			soundBuffer->Lock(bufferSize, bufferSize * 2, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
 			Push(buffer1, bufferSize1);
 			soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
 			bufferIndex = 1;
 		}
-		if (bufferIndex == 1 && position >= size)
+		if (bufferIndex == 1 && position >= bufferSize)
 		{
-			soundBuffer->Lock(0, size, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
+			soundBuffer->Lock(0, bufferSize, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
 			Push(buffer1, bufferSize1);
 			soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
 			bufferIndex = 0;

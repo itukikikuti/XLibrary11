@@ -7,7 +7,7 @@
 using namespace std;
 using namespace DirectX;
 
-int main()
+int MAIN()
 {
     Library::Generate(L"sources/App.hpp", L"XLibrary11.hpp");
 
@@ -30,9 +30,14 @@ int main()
     number.scale = 1.0f / 100.0f;
     number.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
 
-    Sound music(L"assets/music.mp3");
-    //music.SetLoop(true);
-    //music.SetVolume(0.5f);
+    Sound music(L"assets/DIVE.mp3");
+	music.SetPitch(1.1f);
+	music.SetVolume(0.0f);
+	music.SetVolume(1.0f);
+	music.SetPan(0.0f);
+	music.SetPan(-1.0f);
+	music.SetPan(1.0f);
+	//music.SetLoop(true);
     music.Play();
 
     //Sound sound(L"assets/sound.wav");
@@ -44,6 +49,9 @@ int main()
     while (App::Refresh())
     {
         camera.Update();
+
+		music.SetVolume(App::GetMousePosition().y / (App::GetWindowSize().y / 2.0f));
+		music.SetPan(App::GetMousePosition().x / (App::GetWindowSize().x / 2.0f));
 
 		if (App::GetKeyDown(VK_SPACE))
 		{
