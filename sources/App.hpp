@@ -16,6 +16,7 @@
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <dshow.h>
+#include <dsound.h>
 #include <dwrite.h>
 #include <wincodec.h>
 #include <wrl.h>
@@ -23,6 +24,7 @@
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "dsound.lib")
 #pragma comment(lib, "dwrite.lib")
 #pragma comment(lib, "strmiids.lib")
 
@@ -37,6 +39,7 @@ class App final
 public:
 #include "Window.hpp"
 #include "Graphics.hpp"
+#include "Audio.hpp"
 #include "Input.hpp"
 #include "Timer.hpp"
 
@@ -111,6 +114,10 @@ public:
     {
         return GetGraphics().GetTextFactory();
     }
+	static IDirectSound8& GetAudioDevice()
+	{
+		return GetAudio().GetDevice();
+	}
     static bool GetKey(int VK_CODE)
     {
         return GetInput().GetKey(VK_CODE);
@@ -163,6 +170,11 @@ private:
         static std::unique_ptr<Graphics> graphics(new Graphics());
         return *graphics.get();
     }
+	static Audio& GetAudio()
+	{
+		static std::unique_ptr<Audio> audio(new Audio());
+		return *audio.get();
+	}
     static Input& GetInput()
     {
         static std::unique_ptr<Input> input(new Input());
