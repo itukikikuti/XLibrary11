@@ -97,6 +97,8 @@ public:
             DispatchMessageW(&message);
         }
 
+		PostMessageW(handle, WM_APP, 0, 0);
+
         return true;
     }
     static void AddProcedure(Proceedable* const procedure)

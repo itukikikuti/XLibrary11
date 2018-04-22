@@ -3,6 +3,7 @@
 #include "App.hpp"
 #include "Library.cpp"
 #include <sstream>
+
 using namespace std;
 
 int MAIN()
@@ -30,8 +31,10 @@ int MAIN()
     number.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
 
     Sound music(L"assets/music.mp3");
-    music.SetLoop(true);
-    music.SetVolume(0.5f);
+	music.SetPitch(1.5f);
+	music.SetVolume(0.5f);
+	music.SetPan(0.0f);
+	music.SetLoop(true);
     music.Play();
 
     Sound sound(L"assets/sound.wav");
@@ -48,8 +51,20 @@ int MAIN()
     {
         camera.Update();
 
-        if (App::GetKeyDown(VK_SPACE))
-            sound.Play();
+		music.SetVolume(App::GetMousePosition().y / (App::GetWindowSize().y / 2.0f));
+		music.SetPan(App::GetMousePosition().x / (App::GetWindowSize().x / 2.0f));
+
+		if (App::GetKeyDown('J'))
+			music.Play();
+		if (App::GetKeyDown('K'))
+			music.Pause();
+		if (App::GetKeyDown('L'))
+			music.Stop();
+
+		if (App::GetKeyDown(VK_SPACE))
+		{
+			sound.Play();
+		}
 
         if (!App::GetKey('2'))
         {
