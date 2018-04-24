@@ -43,7 +43,7 @@ namespace Library
             if (sourceCode[i] != '#') continue;
             if (sourceCode.substr(i, 10) != L"#include \"") continue;
             i += 10;
-            int end = i;
+			size_t end = i;
             while (sourceCode[end] != '"') end++;
             list.push_back(sourceCode.substr(i, end - i));
         }

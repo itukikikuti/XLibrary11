@@ -38,7 +38,7 @@ public:
         mesh.GetMaterial().SetTexture(0, &texture);
 
         SetPivot(0.0f);
-    }
+	}
     DirectX::XMINT2 GetSize() const
     {
         return texture.GetSize();
@@ -121,5 +121,6 @@ protected:
         );
 
         mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
-    }
+		mesh.SetCullingMode(D3D11_CULL_NONE);
+	}
 };

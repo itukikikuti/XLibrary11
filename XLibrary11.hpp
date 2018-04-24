@@ -1625,7 +1625,8 @@ public:
         D3D11_RASTERIZER_DESC rasterizerDesc = {};
         rasterizerDesc.FillMode = D3D11_FILL_SOLID;
         rasterizerDesc.CullMode = cullingMode;
-        App::GetGraphicsDevice3D().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+		rasterizerState.Release();
+		App::GetGraphicsDevice3D().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
     }
     void Apply()
     {
@@ -1739,7 +1740,7 @@ public:
         mesh.GetMaterial().SetTexture(0, &texture);
 
         SetPivot(0.0f);
-    }
+	}
     DirectX::XMINT2 GetSize() const
     {
         return texture.GetSize();
@@ -1822,7 +1823,8 @@ protected:
         );
 
         mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
-    }
+		mesh.SetCullingMode(D3D11_CULL_NONE);
+	}
 };
 class Text : public Sprite
 {

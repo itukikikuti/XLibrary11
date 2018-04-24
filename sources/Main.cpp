@@ -66,7 +66,8 @@ int MAIN()
 			sound.Play();
 		}
 
-        if (!App::GetKey('2'))
+		number.angles.y += 1.0f;
+		if (!App::GetKey('2'))
         {
             text.angles.z += 1.0f;
             text.Draw();
