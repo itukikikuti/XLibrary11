@@ -2054,6 +2054,12 @@ public:
 
 		bufferIndex = 0;
 		soundBuffer->SetCurrentPosition(0);
+
+		void* buffer = nullptr;
+		DWORD bufferSize = 0;
+		soundBuffer->Lock(0, 0, &buffer, &bufferSize, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
+		memset(buffer, 256, bufferSize);
+		soundBuffer->Unlock(buffer, bufferSize, nullptr, 0);
 	}
 
 private:
