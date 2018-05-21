@@ -13,7 +13,7 @@ int MAIN()
     Camera camera;
     camera.position = Float3(0.0f, 1.0f, -5.0f);
     camera.SetPerspective(60.0f, 0.1f, 100.0f);
-	camera.SetDepthTest(true);
+    camera.SetDepthTest(true);
 
     Texture texture(L"assets/box.jpg");
 
@@ -30,70 +30,77 @@ int MAIN()
     number.scale = 1.0f / 100.0f;
     number.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
 
-    Sound music(L"assets/music.mp3");
-	music.SetPitch(1.5f);
-	music.SetVolume(0.5f);
-	music.SetPan(0.0f);
-	music.SetLoop(true);
+    Sound music(L"assets/もののけ姫.mp3");
+    music.SetPitch(1.0f);
+    music.SetVolume(0.5f);
+    music.SetPan(0.0f);
+    music.SetLoop(true);
     music.Play();
 
     Sound sound(L"assets/sound.wav");
 
-	Sprite sprite1(L"assets/box.jpg");
-	sprite1.position.x = 1.0f;
-	sprite1.scale = 1.0f / 256.0f;
+    Sprite sprite1(L"assets/box.jpg");
+    sprite1.position.x = 1.0f;
+    sprite1.scale = 1.0f / 256.0f;
 
     Sprite sprite(L"assets/clock.png");
     sprite.position.z = 100.0f;
     sprite.scale = 0.1f;
 
+    float pos1 = -2.0f;
+    float pos2 = -3.0f;
     while (App::Refresh())
     {
         camera.Update();
 
-		music.SetVolume(App::GetMousePosition().y / (App::GetWindowSize().y / 2.0f));
-		music.SetPan(App::GetMousePosition().x / (App::GetWindowSize().x / 2.0f));
+        music.SetPitch(App::GetMousePosition().x / (App::GetWindowSize().x / 2.0f));
 
-		if (App::GetKeyDown('J'))
-			music.Play();
-		if (App::GetKeyDown('K'))
-			music.Pause();
-		if (App::GetKeyDown('L'))
-			music.Stop();
+        if (App::GetKeyDown('J'))
+            music.Play();
+        if (App::GetKeyDown('K'))
+            music.Pause();
+        if (App::GetKeyDown('L'))
+            music.Stop();
 
-		if (App::GetKeyDown(VK_SPACE))
-		{
-			sound.Play();
-		}
+        if (App::GetKeyDown(VK_SPACE))
+        {
+            sound.Play();
+        }
 
-		number.angles.y += 1.0f;
-		if (!App::GetKey('2'))
+        number.angles.y += 1.0f;
+        if (!App::GetKey('2'))
         {
             text.angles.z += 1.0f;
             text.Draw();
-
-            number.Draw();
         }
         else
         {
             wstringstream ss;
             ss << App::GetTime();
             number.Create(ss.str(), 100.0f);
-            number.Draw();
         }
 
-		mesh.angles.y += 1.0f;
-		
-		mesh.position.x = 0.5f;
-		mesh.Draw();
+        number.position.x = pos1;
+        number.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
+        number.Draw();
 
-		mesh.position.x = -0.5f;
-		mesh.Draw();
+        pos2 += 0.01f;
+        number.position.x = pos2;
+        number.color = Float4(0.0f, 0.0f, 1.0f, 1.0f);
+        number.Draw();
+
+        mesh.angles.y += 1.0f;
+
+        mesh.position.x = 0.5f;
+        mesh.Draw();
+
+        mesh.position.x = -0.5f;
+        mesh.Draw();
 
         if (App::GetKey('1'))
             App::SetMousePosition(0.0f, 0.0f);
 
-		sprite1.Draw();
+        sprite1.Draw();
 
         sprite.position.x = App::GetMousePosition().x / 5.0f;
         sprite.position.y = App::GetMousePosition().y / 5.0f;

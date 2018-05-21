@@ -97,7 +97,7 @@ public:
             DispatchMessageW(&message);
         }
 
-		PostMessageW(handle, WM_APP, 0, 0);
+        PostMessageW(handle, WM_APP, 0, 0);
 
         return true;
     }

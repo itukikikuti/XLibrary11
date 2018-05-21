@@ -4,7 +4,7 @@ public:
     Float3 position;
     Float3 angles;
     Float4 color;
-    
+
     Camera()
     {
         App::Initialize();
