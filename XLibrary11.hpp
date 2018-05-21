@@ -1662,8 +1662,6 @@ public:
 		if (vertexBuffer == nullptr)
 			return;
 
-		material.Attach();
-
 		constant.world = DirectX::XMMatrixTranspose(
 			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
 			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
@@ -1671,6 +1669,8 @@ public:
 			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z)
 		);
+
+		material.Attach();
 
 		App::GetGraphicsContext3D().RSSetState(rasterizerState);
 
@@ -1752,7 +1752,6 @@ public:
         Float2 offset = textureSize / 2.0f * -pivot;
 
         mesh.CreatePlane(textureSize / 2.0f, Float3(offset.x, offset.y, 0.0f));
-        mesh.Apply();
     }
     Material& GetMaterial()
     {

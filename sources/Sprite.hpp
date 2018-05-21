@@ -49,7 +49,6 @@ public:
         Float2 offset = textureSize / 2.0f * -pivot;
 
         mesh.CreatePlane(textureSize / 2.0f, Float3(offset.x, offset.y, 0.0f));
-        mesh.Apply();
     }
     Material& GetMaterial()
     {
