@@ -7,7 +7,9 @@
 #include <cstdio>
 #include <forward_list>
 #include <fstream>
+#include <iostream>
 #include <memory>
+#include <string>
 #include <vector>
 #include <Windows.h>
 #include <atlbase.h>
@@ -31,14 +33,13 @@
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mfuuid.lib")
-#pragma comment(lib, "strmiids.lib")
+
+#define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 namespace XLibrary11
 {
 
 using namespace DirectX;
-
-#define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 struct Float2 : public DirectX::XMFLOAT2
 {
@@ -456,7 +457,12 @@ struct Vertex
     Float3 position;
     Float3 normal;
     Float2 uv;
+    uint32_t blendIndices[8] = { 999, 999, 999, 999, 999, 999, 999, 999 };
+    float blendWeights[8] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 
+    Vertex()
+    {
+    }
     Vertex(Float3 position, Float3 normal, Float2 uv)
     {
         this->position = position;
@@ -567,7 +573,7 @@ public:
             DispatchMessageW(&message);
         }
 
-		PostMessageW(handle, WM_APP, 0, 0);
+        PostMessageW(handle, WM_APP, 0, 0);
 
         return true;
     }
@@ -758,27 +764,27 @@ private:
 class Audio
 {
 public:
-	Audio()
-	{
-		App::Initialize();
+    Audio()
+    {
+        App::Initialize();
 
-		DirectSoundCreate8(nullptr, &device, nullptr);
+        DirectSoundCreate8(nullptr, &device, nullptr);
 
-		device->SetCooperativeLevel(App::GetWindowHandle(), DSSCL_NORMAL);
+        device->SetCooperativeLevel(App::GetWindowHandle(), DSSCL_NORMAL);
 
-		MFStartup(MF_VERSION);
-	}
-	~Audio()
-	{
-		MFShutdown();
-	}
-	IDirectSound8& GetDevice() const
-	{
-		return *device;
-	}
+        MFStartup(MF_VERSION);
+    }
+    ~Audio()
+    {
+        MFShutdown();
+    }
+    IDirectSound8& GetDevice() const
+    {
+        return *device;
+    }
 
 private:
-	ATL::CComPtr<IDirectSound8> device = nullptr;
+    ATL::CComPtr<IDirectSound8> device = nullptr;
 };
 class Input
 {
@@ -918,7 +924,7 @@ private:
         return frequency;
     }
 };
-	 
+
     App() = delete;
     static bool Refresh()
     {
@@ -990,10 +996,10 @@ private:
     {
         return GetGraphics().GetTextFactory();
     }
-	static IDirectSound8& GetAudioDevice()
-	{
-		return GetAudio().GetDevice();
-	}
+    static IDirectSound8& GetAudioDevice()
+    {
+        return GetAudio().GetDevice();
+    }
     static bool GetKey(int VK_CODE)
     {
         return GetInput().GetKey(VK_CODE);
@@ -1046,11 +1052,11 @@ private:
         static std::unique_ptr<Graphics> graphics(new Graphics());
         return *graphics.get();
     }
-	static Audio& GetAudio()
-	{
-		static std::unique_ptr<Audio> audio(new Audio());
-		return *audio.get();
-	}
+    static Audio& GetAudio()
+    {
+        static std::unique_ptr<Audio> audio(new Audio());
+        return *audio.get();
+    }
     static Input& GetInput()
     {
         static std::unique_ptr<Input> input(new Input());
@@ -1147,9 +1153,9 @@ public:
         samplerState.Release();
         D3D11_SAMPLER_DESC samplerDesc = {};
         samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-        samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-        samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-        samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+        samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+        samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+        samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
         samplerDesc.MipLODBias = 0.0f;
         samplerDesc.MaxAnisotropy = 1;
         samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
@@ -1231,6 +1237,10 @@ public:
         inputElementDesc.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
         inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
         inputElementDesc.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+        inputElementDesc.push_back({ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+        inputElementDesc.push_back({ "BLENDINDICES", 1, DXGI_FORMAT_R32G32B32A32_UINT, 0, 48, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+        inputElementDesc.push_back({ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+        inputElementDesc.push_back({ "BLENDWEIGHT", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 80, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
         App::GetGraphicsDevice3D().CreateInputLayout(inputElementDesc.data(), inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
     }
@@ -1327,7 +1337,7 @@ public:
     Float3 position;
     Float3 angles;
     Float4 color;
-    
+
     Camera()
     {
         App::Initialize();
@@ -1508,198 +1518,198 @@ private:
 class Mesh
 {
 public:
-	Float3 position;
-	Float3 angles;
-	Float3 scale;
-	std::vector<Vertex> vertices;
-	std::vector<UINT> indices;
+    Float3 position;
+    Float3 angles;
+    Float3 scale;
+    std::vector<Vertex> vertices;
+    std::vector<UINT> indices;
 
-	Mesh()
-	{
-		App::Initialize();
+    Mesh()
+    {
+        App::Initialize();
 
-		position = Float3(0.0f, 0.0f, 0.0f);
-		angles = Float3(0.0f, 0.0f, 0.0f);
-		scale = Float3(1.0f, 1.0f, 1.0f);
+        position = Float3(0.0f, 0.0f, 0.0f);
+        angles = Float3(0.0f, 0.0f, 0.0f);
+        scale = Float3(1.0f, 1.0f, 1.0f);
 
-		material.Create(
-			"cbuffer Camera : register(b0)"
-			"{"
-			"    matrix view;"
-			"    matrix projection;"
-			"};"
-			"cbuffer Object : register(b1)"
-			"{"
-			"    matrix world;"
-			"};"
-			"Texture2D texture0 : register(t0);"
-			"SamplerState sampler0 : register(s0);"
-			"struct Vertex"
-			"{"
-			"    float4 position : POSITION;"
-			"    float3 normal : NORMAL;"
-			"    float2 uv : TEXCOORD;"
-			"};"
-			"struct Pixel"
-			"{"
-			"    float4 position : SV_POSITION;"
-			"    float3 normal : NORMAL;"
-			"    float2 uv : TEXCOORD;"
-			"};"
-			"Pixel VS(Vertex vertex)"
-			"{"
-			"    Pixel output;"
-			"    output.position = mul(vertex.position, world);"
-			"    output.position = mul(output.position, view);"
-			"    output.position = mul(output.position, projection);"
-			"    output.normal = mul(vertex.normal, (float3x3)world);"
-			"    output.uv = vertex.uv;"
-			"    return output;"
-			"}"
-			"float4 PS(Pixel pixel) : SV_TARGET"
-			"{"
-			"    float3 normal = normalize(pixel.normal);"
-			"    float3 lightDirection = normalize(float3(0.25, -1.0, 0.5));"
-			"    float3 lightColor = float3(1.0, 1.0, 1.0);"
-			"    float4 diffuseColor = texture0.Sample(sampler0, pixel.uv);"
-			"    float3 diffuseIntensity = dot(-lightDirection, normal) * lightColor;"
-			"    float3 ambientIntensity = lightColor * 0.2;"
-			"    return diffuseColor * float4(diffuseIntensity + ambientIntensity, 1);"
-			"}"
-		);
+        material.Create(
+            "cbuffer Camera : register(b0)"
+            "{"
+            "    matrix view;"
+            "    matrix projection;"
+            "};"
+            "cbuffer Object : register(b1)"
+            "{"
+            "    matrix world;"
+            "};"
+            "Texture2D texture0 : register(t0);"
+            "SamplerState sampler0 : register(s0);"
+            "struct Vertex"
+            "{"
+            "    float4 position : POSITION;"
+            "    float3 normal : NORMAL;"
+            "    float2 uv : TEXCOORD;"
+            "};"
+            "struct Pixel"
+            "{"
+            "    float4 position : SV_POSITION;"
+            "    float3 normal : NORMAL;"
+            "    float2 uv : TEXCOORD;"
+            "};"
+            "Pixel VS(Vertex vertex)"
+            "{"
+            "    Pixel output;"
+            "    output.position = mul(vertex.position, world);"
+            "    output.position = mul(output.position, view);"
+            "    output.position = mul(output.position, projection);"
+            "    output.normal = mul(vertex.normal, (float3x3)world);"
+            "    output.uv = vertex.uv;"
+            "    return output;"
+            "}"
+            "float4 PS(Pixel pixel) : SV_TARGET"
+            "{"
+            "    float3 normal = normalize(pixel.normal);"
+            "    float3 lightDirection = normalize(float3(0.25, -1.0, 0.5));"
+            "    float3 lightColor = float3(1.0, 1.0, 1.0);"
+            "    float4 diffuseColor = texture0.Sample(sampler0, pixel.uv);"
+            "    float3 diffuseIntensity = dot(-lightDirection, normal) * lightColor;"
+            "    float3 ambientIntensity = lightColor * 0.2;"
+            "    return diffuseColor * float4(diffuseIntensity + ambientIntensity, 1);"
+            "}"
+        );
 
-		SetCullingMode(D3D11_CULL_BACK);
+        SetCullingMode(D3D11_CULL_BACK);
 
-		CreateCube();
-	}
-	~Mesh()
-	{
-	}
-	void CreatePlane(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f))
-	{
-		if (shouldClear)
-		{
-			vertices.clear();
-			indices.clear();
-		}
+        CreateCube();
+    }
+    ~Mesh()
+    {
+    }
+    void CreatePlane(Float2 size, Float3 offset = Float3(0.0f, 0.0f, 0.0f), bool shouldClear = true, Float3 leftDirection = Float3(1.0f, 0.0f, 0.0f), Float3 upDirection = Float3(0.0f, 1.0f, 0.0f), Float3 forwardDirection = Float3(0.0f, 0.0f, 1.0f))
+    {
+        if (shouldClear)
+        {
+            vertices.clear();
+            indices.clear();
+        }
 
-		leftDirection = DirectX::XMVector3Normalize(leftDirection);
-		upDirection = DirectX::XMVector3Normalize(upDirection);
-		forwardDirection = DirectX::XMVector3Normalize(forwardDirection);
+        leftDirection = DirectX::XMVector3Normalize(leftDirection);
+        upDirection = DirectX::XMVector3Normalize(upDirection);
+        forwardDirection = DirectX::XMVector3Normalize(forwardDirection);
 
-		vertices.push_back(Vertex(leftDirection * -size.x + upDirection * size.y + offset, -forwardDirection, Float2(0.0f, 0.0f)));
-		vertices.push_back(Vertex(leftDirection * size.x + upDirection * size.y + offset, -forwardDirection, Float2(1.0f, 0.0f)));
-		vertices.push_back(Vertex(leftDirection * -size.x + upDirection * -size.y + offset, -forwardDirection, Float2(0.0f, 1.0f)));
-		vertices.push_back(Vertex(leftDirection * size.x + upDirection * -size.y + offset, -forwardDirection, Float2(1.0f, 1.0f)));
+        vertices.push_back(Vertex(leftDirection * -size.x + upDirection * size.y + offset, -forwardDirection, Float2(0.0f, 0.0f)));
+        vertices.push_back(Vertex(leftDirection * size.x + upDirection * size.y + offset, -forwardDirection, Float2(1.0f, 0.0f)));
+        vertices.push_back(Vertex(leftDirection * -size.x + upDirection * -size.y + offset, -forwardDirection, Float2(0.0f, 1.0f)));
+        vertices.push_back(Vertex(leftDirection * size.x + upDirection * -size.y + offset, -forwardDirection, Float2(1.0f, 1.0f)));
 
-		size_t indexOffset = vertices.size() - 4;
-		indices.push_back(indexOffset + 0);
-		indices.push_back(indexOffset + 1);
-		indices.push_back(indexOffset + 2);
-		indices.push_back(indexOffset + 3);
-		indices.push_back(indexOffset + 2);
-		indices.push_back(indexOffset + 1);
+        size_t indexOffset = vertices.size() - 4;
+        indices.push_back(indexOffset + 0);
+        indices.push_back(indexOffset + 1);
+        indices.push_back(indexOffset + 2);
+        indices.push_back(indexOffset + 3);
+        indices.push_back(indexOffset + 2);
+        indices.push_back(indexOffset + 1);
 
-		Apply();
-	}
-	void CreateCube(bool shouldClear = true)
-	{
-		if (shouldClear)
-		{
-			vertices.clear();
-			indices.clear();
-		}
+        Apply();
+    }
+    void CreateCube(bool shouldClear = true)
+    {
+        if (shouldClear)
+        {
+            vertices.clear();
+            indices.clear();
+        }
 
-		CreatePlane(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, -0.5f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));	// front
-		CreatePlane(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, 0.5f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));	// back
-		CreatePlane(Float2(0.5f, 0.5f), Float3(0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));	// left
-		CreatePlane(Float2(0.5f, 0.5f), Float3(-0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));	// right
-		CreatePlane(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));	// up
-		CreatePlane(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
-	}
-	Material& GetMaterial()
-	{
-		return material;
-	}
-	void SetCullingMode(D3D11_CULL_MODE cullingMode)
-	{
-		D3D11_RASTERIZER_DESC rasterizerDesc = {};
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerDesc.CullMode = cullingMode;
-		rasterizerState.Release();
-		App::GetGraphicsDevice3D().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
-	}
-	void Apply()
-	{
-		vertexBuffer.Release();
-		if (vertices.size() > 0)
-		{
-			D3D11_BUFFER_DESC vertexBufferDesc = {};
-			vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertices.size();
-			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
-			vertexSubresourceData.pSysMem = vertices.data();
-			App::GetGraphicsDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
-		}
+        CreatePlane(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, -0.5f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));	// front
+        CreatePlane(Float2(0.5f, 0.5f), Float3(0.0f, 0.0f, 0.5f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));	// back
+        CreatePlane(Float2(0.5f, 0.5f), Float3(0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));	// left
+        CreatePlane(Float2(0.5f, 0.5f), Float3(-0.5f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));	// right
+        CreatePlane(Float2(0.5f, 0.5f), Float3(0.0f, 0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));	// up
+        CreatePlane(Float2(0.5f, 0.5f), Float3(0.0f, -0.5f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
+    }
+    Material& GetMaterial()
+    {
+        return material;
+    }
+    void SetCullingMode(D3D11_CULL_MODE cullingMode)
+    {
+        D3D11_RASTERIZER_DESC rasterizerDesc = {};
+        rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+        rasterizerDesc.CullMode = cullingMode;
+        rasterizerState.Release();
+        App::GetGraphicsDevice3D().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+    }
+    void Apply()
+    {
+        vertexBuffer.Release();
+        if (vertices.size() > 0)
+        {
+            D3D11_BUFFER_DESC vertexBufferDesc = {};
+            vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertices.size();
+            vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+            vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+            D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
+            vertexSubresourceData.pSysMem = vertices.data();
+            App::GetGraphicsDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+        }
 
-		indexBuffer.Release();
-		if (indices.size() > 0)
-		{
-			D3D11_BUFFER_DESC indexBufferDesc = {};
-			indexBufferDesc.ByteWidth = sizeof(int) * indices.size();
-			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-			D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
-			indexSubresourceData.pSysMem = indices.data();
-			App::GetGraphicsDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
-		}
+        indexBuffer.Release();
+        if (indices.size() > 0)
+        {
+            D3D11_BUFFER_DESC indexBufferDesc = {};
+            indexBufferDesc.ByteWidth = sizeof(int) * indices.size();
+            indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+            indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+            D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
+            indexSubresourceData.pSysMem = indices.data();
+            App::GetGraphicsDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+        }
 
-		material.SetBuffer(1, &constant, sizeof(Constant));
-	}
-	void Draw()
-	{
-		if (vertexBuffer == nullptr)
-			return;
+        material.SetBuffer(1, &constant, sizeof(Constant));
+    }
+    void Draw()
+    {
+        if (vertexBuffer == nullptr)
+            return;
 
-		constant.world = DirectX::XMMatrixTranspose(
-			DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
-			DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
-			DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
-			DirectX::XMMatrixTranslation(position.x, position.y, position.z)
-		);
+        constant.world = DirectX::XMMatrixTranspose(
+            DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
+            DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
+            DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
+            DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+            DirectX::XMMatrixTranslation(position.x, position.y, position.z)
+        );
 
-		material.Attach();
+        material.Attach();
 
-		App::GetGraphicsContext3D().RSSetState(rasterizerState);
+        App::GetGraphicsContext3D().RSSetState(rasterizerState);
 
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-		App::GetGraphicsContext3D().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
+        UINT stride = sizeof(Vertex);
+        UINT offset = 0;
+        App::GetGraphicsContext3D().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
 
-		if (indexBuffer == nullptr)
-		{
-			App::GetGraphicsContext3D().Draw(vertices.size(), 0);
-		}
-		else
-		{
-			App::GetGraphicsContext3D().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-			App::GetGraphicsContext3D().DrawIndexed(indices.size(), 0, 0);
-		}
-	}
+        if (indexBuffer == nullptr)
+        {
+            App::GetGraphicsContext3D().Draw(vertices.size(), 0);
+        }
+        else
+        {
+            App::GetGraphicsContext3D().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+            App::GetGraphicsContext3D().DrawIndexed(indices.size(), 0, 0);
+        }
+    }
 
 private:
-	struct Constant
-	{
-		DirectX::XMMATRIX world;
-	};
+    struct Constant
+    {
+        DirectX::XMMATRIX world;
+    };
 
-	Material material;
-	Constant constant;
-	ATL::CComPtr<ID3D11Buffer> vertexBuffer = nullptr;
-	ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;
-	ATL::CComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
+    Material material;
+    Constant constant;
+    ATL::CComPtr<ID3D11Buffer> vertexBuffer = nullptr;
+    ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;
+    ATL::CComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
 };
 class Sprite
 {
@@ -1741,7 +1751,7 @@ public:
         mesh.GetMaterial().SetTexture(0, &texture);
 
         SetPivot(0.0f);
-	}
+    }
     DirectX::XMINT2 GetSize() const
     {
         return texture.GetSize();
@@ -1823,8 +1833,8 @@ protected:
         );
 
         mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
-		mesh.SetCullingMode(D3D11_CULL_NONE);
-	}
+        mesh.SetCullingMode(D3D11_CULL_NONE);
+    }
 };
 class Text : public Sprite
 {
@@ -1919,255 +1929,255 @@ private:
 class Sound : public App::Window::Proceedable
 {
 public:
-	Sound()
-	{
-		Initialize();
-	}
-	Sound(const wchar_t* const filePath)
-	{
-		Initialize();
-		Load(filePath);
-	}
-	virtual ~Sound()
-	{
-		App::Window::RemoveProcedure(this);
-	}
-	void Load(const wchar_t* const filePath)
-	{
-		App::GetAudioDevice();
+    Sound()
+    {
+        Initialize();
+    }
+    Sound(const wchar_t* const filePath)
+    {
+        Initialize();
+        Load(filePath);
+    }
+    virtual ~Sound()
+    {
+        App::Window::RemoveProcedure(this);
+    }
+    void Load(const wchar_t* const filePath)
+    {
+        App::GetAudioDevice();
 
-		ATL::CComPtr<IStream> stream = nullptr;
-		SHCreateStreamOnFileW(filePath, STGM_READ, &stream);
+        ATL::CComPtr<IStream> stream = nullptr;
+        SHCreateStreamOnFileW(filePath, STGM_READ, &stream);
 
-		ATL::CComPtr<IMFByteStream> byteStream = nullptr;
-		MFCreateMFByteStreamOnStream(stream, &byteStream);
+        ATL::CComPtr<IMFByteStream> byteStream = nullptr;
+        MFCreateMFByteStreamOnStream(stream, &byteStream);
 
-		ATL::CComPtr<IMFAttributes> attributes = nullptr;
-		MFCreateAttributes(&attributes, 1);
+        ATL::CComPtr<IMFAttributes> attributes = nullptr;
+        MFCreateAttributes(&attributes, 1);
 
-		sourceReader.Release();
-		MFCreateSourceReaderFromByteStream(byteStream, attributes, &sourceReader);
+        sourceReader.Release();
+        MFCreateSourceReaderFromByteStream(byteStream, attributes, &sourceReader);
 
-		ATL::CComPtr<IMFMediaType> mediaType = nullptr;
-		MFCreateMediaType(&mediaType);
-		mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
-		mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
+        ATL::CComPtr<IMFMediaType> mediaType = nullptr;
+        MFCreateMediaType(&mediaType);
+        mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+        mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
 
-		sourceReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType);
-		mediaType.Release();
-		sourceReader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, &mediaType);
+        sourceReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType);
+        mediaType.Release();
+        sourceReader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, &mediaType);
 
-		UINT32 waveFormatSize = sizeof(WAVEFORMATEX);
-		MFCreateWaveFormatExFromMFMediaType(mediaType, &format, &waveFormatSize);
+        UINT32 waveFormatSize = sizeof(WAVEFORMATEX);
+        MFCreateWaveFormatExFromMFMediaType(mediaType, &format, &waveFormatSize);
 
-		ATL::CComPtr<IMFSample> sample = nullptr;
-		DWORD flags = 0;
-		sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+        ATL::CComPtr<IMFSample> sample = nullptr;
+        DWORD flags = 0;
+        sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
 
-		ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
-		sample->ConvertToContiguousBuffer(&mediaBuffer);
+        ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
+        sample->ConvertToContiguousBuffer(&mediaBuffer);
 
-		mediaBuffer->GetMaxLength(&bufferSize);
-		bufferSize -= format->nBlockAlign;
+        mediaBuffer->GetMaxLength(&bufferSize);
+        bufferSize -= format->nBlockAlign;
 
-		DSBUFFERDESC bufferDesc = {};
-		bufferDesc.dwSize = sizeof(DSBUFFERDESC);
-		bufferDesc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY | DSBCAPS_GETCURRENTPOSITION2;
-		bufferDesc.dwBufferBytes = bufferSize * 2;
-		bufferDesc.lpwfxFormat = format;
+        DSBUFFERDESC bufferDesc = {};
+        bufferDesc.dwSize = sizeof(DSBUFFERDESC);
+        bufferDesc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY | DSBCAPS_GETCURRENTPOSITION2;
+        bufferDesc.dwBufferBytes = bufferSize * 2;
+        bufferDesc.lpwfxFormat = format;
 
-		soundBuffer.Release();
-		App::GetAudioDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
-	}
-	void SetLoop(bool isLoop)
-	{
-		properties.isLoop = isLoop;
-	}
-	void SetVolume(float volume)
-	{
-		if (volume < 0.00000001f)
-			volume = 0.00000001f;
+        soundBuffer.Release();
+        App::GetAudioDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
+    }
+    void SetLoop(bool isLoop)
+    {
+        properties.isLoop = isLoop;
+    }
+    void SetVolume(float volume)
+    {
+        if (volume < 0.00000001f)
+            volume = 0.00000001f;
 
-		LONG decibel = (LONG)(log10f(volume) * 20.0f * 100.0f);
+        LONG decibel = (LONG)(log10f(volume) * 20.0f * 100.0f);
 
-		if (decibel < DSBVOLUME_MIN)
-			decibel = DSBVOLUME_MIN;
+        if (decibel < DSBVOLUME_MIN)
+            decibel = DSBVOLUME_MIN;
 
-		if (decibel > DSBVOLUME_MAX)
-			decibel = DSBVOLUME_MAX;
+        if (decibel > DSBVOLUME_MAX)
+            decibel = DSBVOLUME_MAX;
 
-		soundBuffer->SetVolume(decibel);
-	}
-	void SetPan(float pan)
-	{
-		int sign = (pan > 0) - (pan < 0);
+        soundBuffer->SetVolume(decibel);
+    }
+    void SetPan(float pan)
+    {
+        int sign = (pan > 0) - (pan < 0);
 
-		pan = 1.0f - fabsf(pan);
-		if (pan < 0.00000001f)
-			pan = 0.00000001f;
+        pan = 1.0f - fabsf(pan);
+        if (pan < 0.00000001f)
+            pan = 0.00000001f;
 
-		LONG decibel = (LONG)(log10f(pan) * 20.0f * 100.0f) * -sign;
+        LONG decibel = (LONG)(log10f(pan) * 20.0f * 100.0f) * -sign;
 
-		if (decibel < DSBPAN_LEFT)
-			decibel = DSBPAN_LEFT;
+        if (decibel < DSBPAN_LEFT)
+            decibel = DSBPAN_LEFT;
 
-		if (decibel > DSBPAN_RIGHT)
-			decibel = DSBPAN_RIGHT;
+        if (decibel > DSBPAN_RIGHT)
+            decibel = DSBPAN_RIGHT;
 
-		soundBuffer->SetPan(decibel);
-	}
-	void SetPitch(float pitch)
-	{
-		if (pitch < 0.0f)
-			pitch = 0.0f;
+        soundBuffer->SetPan(decibel);
+    }
+    void SetPitch(float pitch)
+    {
+        if (pitch < 0.0f)
+            pitch = 0.0f;
 
-		DWORD frequency = (DWORD)(format->nSamplesPerSec * pitch);
+        DWORD frequency = (DWORD)(format->nSamplesPerSec * pitch);
 
-		if (frequency < DSBFREQUENCY_MIN)
-			frequency = DSBFREQUENCY_MIN;
+        if (frequency < DSBFREQUENCY_MIN)
+            frequency = DSBFREQUENCY_MIN;
 
-		if (frequency > DSBFREQUENCY_MAX)
-			frequency = DSBFREQUENCY_MAX;
+        if (frequency > DSBFREQUENCY_MAX)
+            frequency = DSBFREQUENCY_MAX;
 
-		soundBuffer->SetFrequency(frequency);
-	}
-	void Play()
-	{
-		if (!properties.isLoop)
-		{
-			Stop();
-		}
+        soundBuffer->SetFrequency(frequency);
+    }
+    void Play()
+    {
+        if (!properties.isLoop)
+        {
+            Stop();
+        }
 
-		state = play;
-		soundBuffer->Play(0, 0, DSBPLAY_LOOPING);
-	}
-	void Pause()
-	{
-		state = pause;
-		soundBuffer->Stop();
-	}
-	void Stop()
-	{
-		state = stop;
-		Reset();
+        state = play;
+        soundBuffer->Play(0, 0, DSBPLAY_LOOPING);
+    }
+    void Pause()
+    {
+        state = pause;
+        soundBuffer->Stop();
+    }
+    void Stop()
+    {
+        state = stop;
+        Reset();
 
-		bufferIndex = 0;
-		soundBuffer->SetCurrentPosition(0);
+        bufferIndex = 0;
+        soundBuffer->SetCurrentPosition(0);
 
-		void* buffer = nullptr;
-		DWORD bufferSize = 0;
-		soundBuffer->Lock(0, 0, &buffer, &bufferSize, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
-		memset(buffer, 256, bufferSize);
-		soundBuffer->Unlock(buffer, bufferSize, nullptr, 0);
-	}
+        void* buffer = nullptr;
+        DWORD bufferSize = 0;
+        soundBuffer->Lock(0, 0, &buffer, &bufferSize, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
+        memset(buffer, 256, bufferSize);
+        soundBuffer->Unlock(buffer, bufferSize, nullptr, 0);
+    }
 
 private:
-	enum State
-	{
-		play,
-		pause,
-		stop,
-	};
+    enum State
+    {
+        play,
+        pause,
+        stop,
+    };
 
-	struct Properties
-	{
-		bool isLoop = false;
-	}
-	properties;
+    struct Properties
+    {
+        bool isLoop = false;
+    }
+    properties;
 
-	ATL::CComPtr<IMFSourceReader> sourceReader = nullptr;
-	ATL::CComPtr<IDirectSoundBuffer> soundBuffer = nullptr;
-	DWORD bufferSize;
-	int bufferIndex = 0;
-	WAVEFORMATEX* format;
-	State state = stop;
+    ATL::CComPtr<IMFSourceReader> sourceReader = nullptr;
+    ATL::CComPtr<IDirectSoundBuffer> soundBuffer = nullptr;
+    DWORD bufferSize;
+    int bufferIndex = 0;
+    WAVEFORMATEX* format;
+    State state = stop;
 
-	void Initialize()
-	{
-		App::Initialize();
+    void Initialize()
+    {
+        App::Initialize();
 
-		App::Window::AddProcedure(this);
-	}
-	void Reset()
-	{
-		PROPVARIANT position = {};
-		position.vt = VT_I8;
-		position.hVal.QuadPart = 0;
-		sourceReader->SetCurrentPosition(GUID_NULL, position);
-	}
-	void Push(void* buffer, DWORD size)
-	{
-		if (buffer == nullptr)
-			return;
+        App::Window::AddProcedure(this);
+    }
+    void Reset()
+    {
+        PROPVARIANT position = {};
+        position.vt = VT_I8;
+        position.hVal.QuadPart = 0;
+        sourceReader->SetCurrentPosition(GUID_NULL, position);
+    }
+    void Push(void* buffer, DWORD size)
+    {
+        if (buffer == nullptr)
+            return;
 
-		memset(buffer, 256, size);
+        memset(buffer, 256, size);
 
-		ATL::CComPtr<IMFSample> sample = nullptr;
-		DWORD flags = 0;
-		sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+        ATL::CComPtr<IMFSample> sample = nullptr;
+        DWORD flags = 0;
+        sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
 
-		if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
-		{
-			if (!properties.isLoop)
-			{
-				Stop();
-				return;
-			}
+        if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
+        {
+            if (!properties.isLoop)
+            {
+                Stop();
+                return;
+            }
 
-			Reset();
+            Reset();
 
-			sample.Release();
-			sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
-		}
+            sample.Release();
+            sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+        }
 
-		ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
-		sample->ConvertToContiguousBuffer(&mediaBuffer);
-		mediaBuffer->SetCurrentLength(size);
+        ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
+        sample->ConvertToContiguousBuffer(&mediaBuffer);
+        mediaBuffer->SetCurrentLength(size);
 
-		BYTE* temp = nullptr;
-		mediaBuffer->Lock(&temp, nullptr, &size);
-		memcpy(buffer, temp, size);
-		mediaBuffer->Unlock();
-	}
-	void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
-	{
-		if (message != WM_APP)
-			return;
+        BYTE* temp = nullptr;
+        mediaBuffer->Lock(&temp, nullptr, &size);
+        memcpy(buffer, temp, size);
+        mediaBuffer->Unlock();
+    }
+    void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
+    {
+        if (message != WM_APP)
+            return;
 
-		DWORD position;
-		soundBuffer->GetCurrentPosition(&position, 0);
+        DWORD position;
+        soundBuffer->GetCurrentPosition(&position, 0);
 
-		if (state == stop)
-		{
-			void* buffer = nullptr;
-			DWORD bufferSize = 0;
-			soundBuffer->Lock(0, 0, &buffer, &bufferSize, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
-			memset(buffer, 256, bufferSize);
-			soundBuffer->Unlock(buffer, bufferSize, nullptr, 0);
-		}
-		else
-		{
-			void* buffer1 = nullptr;
-			DWORD bufferSize1 = 0;
-			void* buffer2 = nullptr;
-			DWORD bufferSize2 = 0;
+        if (state == stop)
+        {
+            void* buffer = nullptr;
+            DWORD bufferSize = 0;
+            soundBuffer->Lock(0, 0, &buffer, &bufferSize, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
+            memset(buffer, 256, bufferSize);
+            soundBuffer->Unlock(buffer, bufferSize, nullptr, 0);
+        }
+        else
+        {
+            void* buffer1 = nullptr;
+            DWORD bufferSize1 = 0;
+            void* buffer2 = nullptr;
+            DWORD bufferSize2 = 0;
 
-			if (bufferIndex == 0 && position < bufferSize)
-			{
-				soundBuffer->Lock(bufferSize, bufferSize * 2, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
-				Push(buffer1, bufferSize1);
-				soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
-				bufferIndex = 1;
-			}
-			if (bufferIndex == 1 && position >= bufferSize)
-			{
-				soundBuffer->Lock(0, bufferSize, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
-				Push(buffer1, bufferSize1);
-				soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
-				bufferIndex = 0;
-			}
-		}
-	}
+            if (bufferIndex == 0 && position < bufferSize)
+            {
+                soundBuffer->Lock(bufferSize, bufferSize * 2, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
+                Push(buffer1, bufferSize1);
+                soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
+                bufferIndex = 1;
+            }
+            if (bufferIndex == 1 && position >= bufferSize)
+            {
+                soundBuffer->Lock(0, bufferSize, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
+                Push(buffer1, bufferSize1);
+                soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
+                bufferIndex = 0;
+            }
+        }
+    }
 };
 
 

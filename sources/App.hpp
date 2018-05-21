@@ -7,7 +7,9 @@
 #include <cstdio>
 #include <forward_list>
 #include <fstream>
+#include <iostream>
 #include <memory>
+#include <string>
 #include <vector>
 #include <Windows.h>
 #include <atlbase.h>
@@ -31,13 +33,12 @@
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mfuuid.lib")
-#pragma comment(lib, "strmiids.lib")
+
+#define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 XLIBRARY_NAMESPACE_BEGIN
 
 using namespace DirectX;
-
-#define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 #include "Utility.hpp"
 

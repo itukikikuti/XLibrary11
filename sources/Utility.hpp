@@ -414,7 +414,12 @@ struct Vertex
     Float3 position;
     Float3 normal;
     Float2 uv;
+    uint32_t blendIndices[8] = { 999, 999, 999, 999, 999, 999, 999, 999 };
+    float blendWeights[8] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 
+    Vertex()
+    {
+    }
     Vertex(Float3 position, Float3 normal, Float2 uv)
     {
         this->position = position;
