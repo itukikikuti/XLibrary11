@@ -5,9 +5,9 @@
 
 #define OEMRESOURCE
 #include <cstdio>
-#include <forward_list>
 #include <fstream>
 #include <iostream>
+#include <list>
 #include <memory>
 #include <random>
 #include <string>
@@ -578,11 +578,11 @@ public:
 
         return true;
     }
-    static void AddProcedure(Proceedable* const procedure)
+    void AddProcedure(Proceedable* const procedure)
     {
-        GetProcedures().push_front(procedure);
+        GetProcedures().push_back(procedure);
     }
-    static void RemoveProcedure(Proceedable* const procedure)
+    void RemoveProcedure(Proceedable* const procedure)
     {
         GetProcedures().remove(procedure);
     }
@@ -591,9 +591,9 @@ private:
     const wchar_t* className = L"XLibrary11";
     HWND handle;
 
-    static std::forward_list<Proceedable*>& GetProcedures()
+    static std::list<Proceedable*>& GetProcedures()
     {
-        static std::forward_list<Proceedable*> procedures;
+        static std::list<Proceedable*> procedures;
         return procedures;
     }
     static LRESULT CALLBACK ProceedMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
@@ -680,13 +680,13 @@ public:
 
         DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &textFactory);
 
-        App::Window::AddProcedure(this);
-
         Create();
+
+        App::AddWindowProcedure(this);
     }
     virtual ~Graphics()
     {
-        App::Window::RemoveProcedure(this);
+        App::RemoveWindowProcedure(this);
     }
     ID3D11Device& GetDevice3D() const
     {
@@ -739,8 +739,6 @@ private:
 
     void Create()
     {
-        context3D->Flush();
-
         ATL::CComPtr<IDXGIDevice> dxgi = nullptr;
         device3D.QueryInterface(&dxgi);
 
@@ -1018,6 +1016,14 @@ private:
     static void SetFullScreen(bool isFullScreen)
     {
         GetWindowInstance().SetFullScreen(isFullScreen);
+    }
+    static void AddWindowProcedure(Window::Proceedable* const procedure)
+    {
+        GetWindowInstance().AddProcedure(procedure);
+    }
+    static void RemoveWindowProcedure(Window::Proceedable* const procedure)
+    {
+        GetWindowInstance().RemoveProcedure(procedure);
     }
     static ID3D11Device& GetGraphicsDevice3D()
     {
@@ -1413,13 +1419,13 @@ public:
         isDepthTest = false;
         SetOrthographic(1.0f, -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
 
-        App::Window::AddProcedure(this);
-
         Create();
+
+        App::AddWindowProcedure(this);
     }
     ~Camera()
     {
-        App::Window::RemoveProcedure(this);
+        App::RemoveWindowProcedure(this);
     }
     void SetPerspective(float fieldOfView, float nearClip, float farClip)
     {
@@ -1994,7 +2000,7 @@ public:
     }
     virtual ~Sound()
     {
-        App::Window::RemoveProcedure(this);
+        App::RemoveWindowProcedure(this);
     }
     void Load(const wchar_t* const filePath)
     {
@@ -2150,7 +2156,7 @@ private:
     {
         App::Initialize();
 
-        App::Window::AddProcedure(this);
+        App::AddWindowProcedure(this);
     }
     void Reset()
     {

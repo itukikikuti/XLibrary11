@@ -16,9 +16,9 @@ public:
         isDepthTest = false;
         SetOrthographic(1.0f, -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
 
-        App::AddWindowProcedure(this);
-
         Create();
+
+        App::AddWindowProcedure(this);
     }
     ~Camera()
     {

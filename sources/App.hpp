@@ -5,9 +5,9 @@
 
 #define OEMRESOURCE
 #include <cstdio>
-#include <forward_list>
 #include <fstream>
 #include <iostream>
+#include <list>
 #include <memory>
 #include <random>
 #include <string>

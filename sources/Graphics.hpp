@@ -69,9 +69,9 @@ public:
 
         DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &textFactory);
 
-        App::AddWindowProcedure(this);
-
         Create();
+
+        App::AddWindowProcedure(this);
     }
     virtual ~Graphics()
     {

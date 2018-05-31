@@ -103,7 +103,7 @@ public:
     }
     void AddProcedure(Proceedable* const procedure)
     {
-        GetProcedures().push_front(procedure);
+        GetProcedures().push_back(procedure);
     }
     void RemoveProcedure(Proceedable* const procedure)
     {
@@ -114,9 +114,9 @@ private:
     const wchar_t* className = L"XLibrary11";
     HWND handle;
 
-    static std::forward_list<Proceedable*>& GetProcedures()
+    static std::list<Proceedable*>& GetProcedures()
     {
-        static std::forward_list<Proceedable*> procedures;
+        static std::list<Proceedable*> procedures;
         return procedures;
     }
     static LRESULT CALLBACK ProceedMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
