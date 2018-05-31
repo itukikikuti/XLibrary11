@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <string>
 #include <vector>
 #include <Windows.h>
@@ -50,14 +51,15 @@ public:
 #include "Audio.hpp"
 #include "Input.hpp"
 #include "Timer.hpp"
+#include "Random.hpp"
 
     App() = delete;
     static bool Refresh()
     {
-        GetGraphics().Update();
-        GetInput().Update();
-        GetTimer().Update();
-        return GetWindow().Update();
+        GetGraphicsInstance().Update();
+        GetInputInstance().Update();
+        GetTimerInstance().Update();
+        return GetWindowInstance().Update();
     }
     static void Initialize()
     {
@@ -72,95 +74,103 @@ public:
     }
     static HWND GetWindowHandle()
     {
-        return GetWindow().GetHandle();
+        return GetWindowInstance().GetHandle();
     }
     static DirectX::XMINT2 GetWindowSize()
     {
-        return GetWindow().GetSize();
+        return GetWindowInstance().GetSize();
     }
     static void SetWindowSize(int width, int height)
     {
-        GetWindow().SetSize(width, height);
+        GetWindowInstance().SetSize(width, height);
     }
     static wchar_t* const GetTitle()
     {
-        return GetWindow().GetTitle();
+        return GetWindowInstance().GetTitle();
     }
     static void SetTitle(const wchar_t* const title)
     {
-        GetWindow().SetTitle(title);
+        GetWindowInstance().SetTitle(title);
     }
     static void SetFullScreen(bool isFullScreen)
     {
-        GetWindow().SetFullScreen(isFullScreen);
+        GetWindowInstance().SetFullScreen(isFullScreen);
     }
     static ID3D11Device& GetGraphicsDevice3D()
     {
-        return GetGraphics().GetDevice3D();
+        return GetGraphicsInstance().GetDevice3D();
     }
     static ID3D11DeviceContext& GetGraphicsContext3D()
     {
-        return GetGraphics().GetContext3D();
+        return GetGraphicsInstance().GetContext3D();
     }
     static ID2D1Device& GetGraphicsDevice2D()
     {
-        return GetGraphics().GetDevice2D();
+        return GetGraphicsInstance().GetDevice2D();
     }
     static ID2D1DeviceContext& GetGraphicsContext2D()
     {
-        return GetGraphics().GetContext2D();
+        return GetGraphicsInstance().GetContext2D();
     }
     static IDXGISwapChain& GetGraphicsSwapChain()
     {
-        return GetGraphics().GetSwapChain();
+        return GetGraphicsInstance().GetSwapChain();
     }
     static IWICImagingFactory& GetTextureFactory()
     {
-        return GetGraphics().GetTextureFactory();
+        return GetGraphicsInstance().GetTextureFactory();
     }
     static IDWriteFactory& GetTextFactory()
     {
-        return GetGraphics().GetTextFactory();
+        return GetGraphicsInstance().GetTextFactory();
     }
     static IDirectSound8& GetAudioDevice()
     {
-        return GetAudio().GetDevice();
+        return GetAudioInstance().GetDevice();
     }
     static bool GetKey(int VK_CODE)
     {
-        return GetInput().GetKey(VK_CODE);
+        return GetInputInstance().GetKey(VK_CODE);
     }
     static bool GetKeyUp(int VK_CODE)
     {
-        return GetInput().GetKeyUp(VK_CODE);
+        return GetInputInstance().GetKeyUp(VK_CODE);
     }
     static bool GetKeyDown(int VK_CODE)
     {
-        return GetInput().GetKeyDown(VK_CODE);
+        return GetInputInstance().GetKeyDown(VK_CODE);
     }
     static Float2 GetMousePosition()
     {
-        return GetInput().GetMousePosition();
+        return GetInputInstance().GetMousePosition();
     }
     static void SetMousePosition(float x, float y)
     {
-        GetInput().SetMousePosition(x, y);
+        GetInputInstance().SetMousePosition(x, y);
     }
     static void SetShowCursor(bool isShowCursor)
     {
-        GetInput().SetShowCursor(isShowCursor);
+        GetInputInstance().SetShowCursor(isShowCursor);
     }
     static float GetTime()
     {
-        return GetTimer().GetTime();
+        return GetTimerInstance().GetTime();
     }
     static float GetDeltaTime()
     {
-        return GetTimer().GetDeltaTime();
+        return GetTimerInstance().GetDeltaTime();
     }
     static int GetFrameRate()
     {
-        return GetTimer().GetFrameRate();
+        return GetTimerInstance().GetFrameRate();
+    }
+    static void SetRandomSeed(int seed)
+    {
+        return GetRandomInstance().SetSeed(seed);
+    }
+    static float GetRandom()
+    {
+        return GetRandomInstance().Get();
     }
     static void AddFont(const wchar_t* filePath)
     {
@@ -168,30 +178,35 @@ public:
     }
 
 private:
-    static Window& GetWindow()
+    static Window& GetWindowInstance()
     {
         static std::unique_ptr<Window> window(new Window());
         return *window.get();
     }
-    static Graphics& GetGraphics()
+    static Graphics& GetGraphicsInstance()
     {
         static std::unique_ptr<Graphics> graphics(new Graphics());
         return *graphics.get();
     }
-    static Audio& GetAudio()
+    static Audio& GetAudioInstance()
     {
         static std::unique_ptr<Audio> audio(new Audio());
         return *audio.get();
     }
-    static Input& GetInput()
+    static Input& GetInputInstance()
     {
         static std::unique_ptr<Input> input(new Input());
         return *input.get();
     }
-    static Timer& GetTimer()
+    static Timer& GetTimerInstance()
     {
         static std::unique_ptr<Timer> timer(new Timer());
         return *timer.get();
+    }
+    static Random& GetRandomInstance()
+    {
+        static std::unique_ptr<Random> random(new Random());
+        return *random.get();
     }
 };
 

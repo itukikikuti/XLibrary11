@@ -123,6 +123,7 @@
     <ClInclude Include="sources\Graphics.hpp" />
     <ClInclude Include="sources\Input.hpp" />
     <ClInclude Include="sources\Material.hpp" />
+    <ClInclude Include="sources\Random.hpp" />
     <ClInclude Include="sources\Utility.hpp" />
     <ClInclude Include="sources\Mesh.hpp" />
     <ClInclude Include="sources\Sprite.hpp" />

@@ -48,6 +48,9 @@
     <ClInclude Include="sources\Audio.hpp">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\Random.hpp">
+      <Filter>sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\Library.cpp">

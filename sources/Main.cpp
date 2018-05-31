@@ -101,6 +101,7 @@ int main()
         if (App::GetKey('1'))
             App::SetMousePosition(0.0f, 0.0f);
 
+        sprite1.angles.z = App::GetRandom() * 360.0f;
         sprite1.Draw();
 
         sprite.position.x = App::GetMousePosition().x / 5.0f;
