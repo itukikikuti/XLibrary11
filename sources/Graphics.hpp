@@ -107,6 +107,12 @@ public:
     }
     void Update()
     {
+        if (App::GetKey(VK_MENU) && App::GetKeyDown(VK_RETURN))
+        {
+            isFullScreen = !isFullScreen;
+            App::SetFullScreen(isFullScreen);
+        }
+
         swapChain->Present(1, 0);
     }
 
@@ -118,6 +124,7 @@ private:
     ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
     ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
     Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
+    bool isFullScreen = false;
 
     void Create()
     {
@@ -147,6 +154,7 @@ private:
 
         swapChain.Release();
         factory->CreateSwapChain(device3D, &swapChainDesc, &swapChain);
+        factory->MakeWindowAssociation(App::GetWindowHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
         D3D11_VIEWPORT viewPort = {};
         viewPort.Width = static_cast<float>(App::GetWindowSize().x);

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-int MAIN()
+int main()
 {
     Library::Generate(L"sources/App.hpp", L"XLibrary11.hpp");
 
