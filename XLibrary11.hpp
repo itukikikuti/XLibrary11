@@ -1361,7 +1361,7 @@ public:
         color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
         isDepthTest = false;
-        SetOrthographic(static_cast<float>(App::GetWindowSize().y), -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
+        SetOrthographic(2.0f, -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
 
         App::Window::AddProcedure(this);
 
@@ -1388,9 +1388,8 @@ public:
         this->size = size;
         this->nearClip = nearClip;
         this->farClip = farClip;
-        float aspectRatio = App::GetWindowSize().x / (float)App::GetWindowSize().y;
         constant.projection = DirectX::XMMatrixTranspose(
-            DirectX::XMMatrixOrthographicLH(size * aspectRatio, size, nearClip, farClip)
+            DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x * size, App::GetWindowSize().y * size, nearClip, farClip)
         );
     }
     void SetDepthTest(bool isDepthTest)
