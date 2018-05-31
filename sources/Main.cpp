@@ -12,7 +12,7 @@ int MAIN()
 
     Camera camera;
     camera.position = Float3(0.0f, 1.0f, -5.0f);
-    //camera.SetPerspective(60.0f, 0.1f, 100.0f);
+    camera.SetPerspective(60.0f, 0.1f, 100.0f);
     camera.SetDepthTest(true);
 
     Texture texture(L"assets/box.jpg");
@@ -23,11 +23,11 @@ int MAIN()
     Text text(L"菊池いつきです。\n今日は天気も良くおならが出そうです。\n何を言ってるのかわからないですよね、僕もわからないです！\nabcdefghijklmnopqrstuvwxyz", 16.0f);
     //text.SetPivot(Float2(-1.0f, 1.0f));
     text.position.y = 2.0f;
-    //text.scale = 1.0f / 50.0f;
+    text.scale = 1.0f / 50.0f;
 
     Text number(L"0", 100.0f);
     number.position.y = 3.0f;
-    //number.scale = 1.0f / 100.0f;
+    number.scale = 1.0f / 100.0f;
     number.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
 
     Sound music(L"assets/music.mp3");
@@ -41,11 +41,11 @@ int MAIN()
 
     Sprite sprite1(L"assets/box.jpg");
     sprite1.position.x = 1.0f;
-    //sprite1.scale = 1.0f / 256.0f;
+    sprite1.scale = 1.0f / 256.0f;
 
     Sprite sprite(L"assets/clock.png");
     sprite.position.z = 100.0f;
-    //sprite.scale = 0.1f;
+    sprite.scale = 0.1f;
 
     float pos1 = -2.0f;
     float pos2 = -3.0f;
