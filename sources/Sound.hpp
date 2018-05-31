@@ -12,7 +12,7 @@ public:
     }
     virtual ~Sound()
     {
-        App::Window::RemoveProcedure(this);
+        App::RemoveWindowProcedure(this);
     }
     void Load(const wchar_t* const filePath)
     {
@@ -168,7 +168,7 @@ private:
     {
         App::Initialize();
 
-        App::Window::AddProcedure(this);
+        App::AddWindowProcedure(this);
     }
     void Reset()
     {

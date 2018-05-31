@@ -69,13 +69,13 @@ public:
 
         DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &textFactory);
 
-        App::Window::AddProcedure(this);
+        App::AddWindowProcedure(this);
 
         Create();
     }
     virtual ~Graphics()
     {
-        App::Window::RemoveProcedure(this);
+        App::RemoveWindowProcedure(this);
     }
     ID3D11Device& GetDevice3D() const
     {
@@ -128,8 +128,6 @@ private:
 
     void Create()
     {
-        context3D->Flush();
-
         ATL::CComPtr<IDXGIDevice> dxgi = nullptr;
         device3D.QueryInterface(&dxgi);
 

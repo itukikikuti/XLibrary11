@@ -16,13 +16,13 @@ public:
         isDepthTest = false;
         SetOrthographic(1.0f, -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
 
-        App::Window::AddProcedure(this);
+        App::AddWindowProcedure(this);
 
         Create();
     }
     ~Camera()
     {
-        App::Window::RemoveProcedure(this);
+        App::RemoveWindowProcedure(this);
     }
     void SetPerspective(float fieldOfView, float nearClip, float farClip)
     {

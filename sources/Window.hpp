@@ -101,11 +101,11 @@ public:
 
         return true;
     }
-    static void AddProcedure(Proceedable* const procedure)
+    void AddProcedure(Proceedable* const procedure)
     {
         GetProcedures().push_front(procedure);
     }
-    static void RemoveProcedure(Proceedable* const procedure)
+    void RemoveProcedure(Proceedable* const procedure)
     {
         GetProcedures().remove(procedure);
     }

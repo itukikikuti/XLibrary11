@@ -96,6 +96,14 @@ public:
     {
         GetWindowInstance().SetFullScreen(isFullScreen);
     }
+    static void AddWindowProcedure(Window::Proceedable* const procedure)
+    {
+        GetWindowInstance().AddProcedure(procedure);
+    }
+    static void RemoveWindowProcedure(Window::Proceedable* const procedure)
+    {
+        GetWindowInstance().RemoveProcedure(procedure);
+    }
     static ID3D11Device& GetGraphicsDevice3D()
     {
         return GetGraphicsInstance().GetDevice3D();
