@@ -18,6 +18,7 @@ int MAIN()
     Texture texture(L"assets/box.jpg");
 
     Mesh mesh;
+    mesh.CreateCube(Float3(1.0f, 0.5f, 0.3f));
     mesh.GetMaterial().SetTexture(0, &texture);
 
     Text text(L"菊池いつきです。\n今日は天気も良くおならが出そうです。\n何を言ってるのかわからないですよね、僕もわからないです！\nabcdefghijklmnopqrstuvwxyz", 16.0f);
