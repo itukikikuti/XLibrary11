@@ -1361,7 +1361,7 @@ public:
         color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
         isDepthTest = false;
-        SetOrthographic(2.0f, -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
+        SetOrthographic(1.0f, -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
 
         App::Window::AddProcedure(this);
 
