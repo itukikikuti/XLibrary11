@@ -25,22 +25,9 @@ public:
             D3D_FEATURE_LEVEL_10_0,
         };
 
-        DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-        swapChainDesc.BufferDesc.Width = App::GetWindowSize().x;
-        swapChainDesc.BufferDesc.Height = App::GetWindowSize().y;
-        swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-        swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-        swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        swapChainDesc.SampleDesc.Count = 1;
-        swapChainDesc.SampleDesc.Quality = 0;
-        swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.BufferCount = 1;
-        swapChainDesc.OutputWindow = App::GetWindowHandle();
-        swapChainDesc.Windowed = true;
-
         for (size_t i = 0; i < driverTypes.size(); i++)
         {
-            HRESULT r = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), featureLevels.size(), D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device3D, nullptr, &context3D);
+            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), featureLevels.size(), D3D11_SDK_VERSION, &device3D, nullptr, &context3D);
 
             if (SUCCEEDED(r))
                 break;
@@ -84,7 +71,7 @@ public:
 
         App::Window::AddProcedure(this);
 
-        SetViewport();
+        Create();
     }
     virtual ~Graphics()
     {
@@ -132,8 +119,35 @@ private:
     ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
     Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
 
-    void SetViewport()
+    void Create()
     {
+        context3D->Flush();
+
+        ATL::CComPtr<IDXGIDevice> dxgi = nullptr;
+        device3D.QueryInterface(&dxgi);
+
+        ATL::CComPtr<IDXGIAdapter> adapter = nullptr;
+        dxgi->GetAdapter(&adapter);
+
+        ATL::CComPtr<IDXGIFactory> factory = nullptr;
+        adapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory));
+
+        DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+        swapChainDesc.BufferDesc.Width = App::GetWindowSize().x;
+        swapChainDesc.BufferDesc.Height = App::GetWindowSize().y;
+        swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+        swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+        swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        swapChainDesc.SampleDesc.Count = 1;
+        swapChainDesc.SampleDesc.Quality = 0;
+        swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        swapChainDesc.BufferCount = 1;
+        swapChainDesc.OutputWindow = App::GetWindowHandle();
+        swapChainDesc.Windowed = true;
+
+        swapChain.Release();
+        factory->CreateSwapChain(device3D, &swapChainDesc, &swapChain);
+
         D3D11_VIEWPORT viewPort = {};
         viewPort.Width = static_cast<float>(App::GetWindowSize().x);
         viewPort.Height = static_cast<float>(App::GetWindowSize().y);
@@ -148,6 +162,6 @@ private:
         if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
             return;
 
-        SetViewport();
+        Create();
     }
 };

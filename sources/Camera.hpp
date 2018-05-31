@@ -161,19 +161,6 @@ private:
         if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
             return;
 
-        DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-        App::GetGraphicsSwapChain().GetDesc(&swapChainDesc);
-
-        ATL::CComPtr<ID3D11RenderTargetView> nullRenderTarget = nullptr;
-        ATL::CComPtr<ID3D11DepthStencilView> nullDepthStencil = nullptr;
-        App::GetGraphicsContext3D().OMSetRenderTargets(1, &nullRenderTarget, nullDepthStencil);
-        renderTargetView.Release();
-        depthStencilView.Release();
-        renderTexture.Release();
-        depthTexture.Release();
-        App::GetGraphicsContext3D().Flush();
-        App::GetGraphicsSwapChain().ResizeBuffers(swapChainDesc.BufferCount, static_cast<UINT>(App::GetWindowSize().x), static_cast<UINT>(App::GetWindowSize().y), swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
-
         if (isPerspective)
             SetPerspective(fieldOfView, nearClip, farClip);
         else
