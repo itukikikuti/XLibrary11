@@ -13,29 +13,28 @@ public:
             return;
 
         this->text = text;
+        
+        brush.Reset();
+        App::GetGraphicsContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), brush.GetAddressOf());
+        App::GetGraphicsContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
-        length = DirectX::XMINT2(0, 1);
-        int maxLength = 0;
-        for (int i = 0; i < text.length(); i++)
-        {
-            if (text[i] == L'\n')
-            {
-                maxLength = 0;
-                length.y++;
-                continue;
-            }
+        textFormat.Reset();
+        App::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
 
-            maxLength++;
+        textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+        textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
-            if (length.x < maxLength)
-            {
-                length.x = maxLength;
-            }
-        }
+        textLayout.Reset();
+        App::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), FLT_MAX, FLT_MAX, textLayout.GetAddressOf());
+        
+        DWRITE_TEXT_METRICS textMetrics;
+        textLayout->GetMetrics(&textMetrics);
 
-        DirectX::XMINT2 textureSize(static_cast<int>(length.x * fontSize), static_cast<int>(length.y * fontSize * 2.0f));
-        std::unique_ptr<BYTE[]> buffer(new BYTE[textureSize.x * textureSize.y * 4]);
-        texture.Create(buffer.get(), textureSize.x, textureSize.y);
+        textLayout.Reset();
+        App::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, textLayout.GetAddressOf());
+
+        std::unique_ptr<BYTE[]> buffer(new BYTE[textMetrics.width * textMetrics.height * 4]);
+        texture.Create(buffer.get(), textMetrics.width, textMetrics.height);
 
         ATL::CComPtr<IDXGISurface> surface = nullptr;
         texture.GetInterface().QueryInterface(&surface);
@@ -48,16 +47,6 @@ public:
         bitmap.Release();
         App::GetGraphicsContext2D().CreateBitmapFromDxgiSurface(surface, bitmapProperties, &bitmap);
 
-        brush.Reset();
-        App::GetGraphicsContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), brush.GetAddressOf());
-        App::GetGraphicsContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
-
-        textFormat.Reset();
-        App::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
-
-        textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
-        textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-
         mesh.GetMaterial().SetTexture(0, &texture);
 
         SetPivot(0.0f);
@@ -67,11 +56,8 @@ public:
         App::GetGraphicsContext2D().SetTarget(bitmap);
 
         App::GetGraphicsContext2D().BeginDraw();
+
         App::GetGraphicsContext2D().Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
-
-        Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayout = nullptr;
-        App::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), static_cast<float>(texture.GetSize().x), static_cast<float>(texture.GetSize().y), textLayout.GetAddressOf());
-
         App::GetGraphicsContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), textLayout.Get(), brush.Get());
 
         App::GetGraphicsContext2D().EndDraw();
@@ -83,8 +69,8 @@ public:
 
 private:
     std::wstring text;
-    DirectX::XMINT2 length;
     ATL::CComPtr<ID2D1Bitmap1> bitmap = nullptr;
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush = nullptr;
     Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat = nullptr;
+    Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayout = nullptr;
 };
