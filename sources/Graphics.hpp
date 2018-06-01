@@ -27,7 +27,7 @@ public:
 
         for (size_t i = 0; i < driverTypes.size(); i++)
         {
-            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), featureLevels.size(), D3D11_SDK_VERSION, &device3D, nullptr, &context3D);
+            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), (UINT)featureLevels.size(), D3D11_SDK_VERSION, &device3D, nullptr, &context3D);
 
             if (SUCCEEDED(r))
                 break;

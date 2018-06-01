@@ -576,7 +576,7 @@ public:
 
         PostMessageW(handle, WM_APP, 0, 0);
 
-        //if (GetSize().x <= 0.0f || GetSize().y <= 0.0f)
+        if (GetSize().x <= 0.0f || GetSize().y <= 0.0f)
             Sleep(100);
 
         return true;
@@ -641,7 +641,7 @@ public:
 
         for (size_t i = 0; i < driverTypes.size(); i++)
         {
-            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), featureLevels.size(), D3D11_SDK_VERSION, &device3D, nullptr, &context3D);
+            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), (UINT)featureLevels.size(), D3D11_SDK_VERSION, &device3D, nullptr, &context3D);
 
             if (SUCCEEDED(r))
                 break;
@@ -1315,7 +1315,7 @@ public:
         inputElementDesc.push_back({ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64, D3D11_INPUT_PER_VERTEX_DATA, 0 });
         inputElementDesc.push_back({ "BLENDWEIGHT", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 80, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
-        App::GetGraphicsDevice3D().CreateInputLayout(inputElementDesc.data(), inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
+        App::GetGraphicsDevice3D().CreateInputLayout(inputElementDesc.data(), (UINT)inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
     }
     void SetBuffer(int slot, void* cbuffer, size_t size)
     {
@@ -1323,7 +1323,7 @@ public:
 
         constantBuffer[slot].buffer.Release();
         D3D11_BUFFER_DESC constantBufferDesc = {};
-        constantBufferDesc.ByteWidth = size;
+        constantBufferDesc.ByteWidth = (UINT)size;
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         App::GetGraphicsDevice3D().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer[slot].buffer);
@@ -1661,7 +1661,7 @@ public:
         vertices.push_back(Vertex(leftDirection * -size.x + upDirection * -size.y + offset, -forwardDirection, Float2(0.0f, 1.0f)));
         vertices.push_back(Vertex(leftDirection * size.x + upDirection * -size.y + offset, -forwardDirection, Float2(1.0f, 1.0f)));
 
-        size_t indexOffset = vertices.size() - 4;
+        int indexOffset = (int)vertices.size() - 4;
         indices.push_back(indexOffset + 0);
         indices.push_back(indexOffset + 1);
         indices.push_back(indexOffset + 2);
@@ -1708,7 +1708,7 @@ public:
         if (vertices.size() > 0)
         {
             D3D11_BUFFER_DESC vertexBufferDesc = {};
-            vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertices.size();
+            vertexBufferDesc.ByteWidth = sizeof(Vertex) * (UINT)vertices.size();
             vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
             vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
             D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
@@ -1720,7 +1720,7 @@ public:
         if (indices.size() > 0)
         {
             D3D11_BUFFER_DESC indexBufferDesc = {};
-            indexBufferDesc.ByteWidth = sizeof(int) * indices.size();
+            indexBufferDesc.ByteWidth = sizeof(int) * (UINT)indices.size();
             indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
             indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
             D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
@@ -1753,12 +1753,12 @@ public:
 
         if (indexBuffer == nullptr)
         {
-            App::GetGraphicsContext3D().Draw(vertices.size(), 0);
+            App::GetGraphicsContext3D().Draw((UINT)vertices.size(), 0);
         }
         else
         {
             App::GetGraphicsContext3D().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-            App::GetGraphicsContext3D().DrawIndexed(indices.size(), 0, 0);
+            App::GetGraphicsContext3D().DrawIndexed((UINT)indices.size(), 0, 0);
         }
     }
 
@@ -1934,8 +1934,8 @@ public:
         textLayout.Reset();
         App::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, textLayout.GetAddressOf());
 
-        std::unique_ptr<BYTE[]> buffer(new BYTE[textMetrics.width * textMetrics.height * 4]);
-        texture.Create(buffer.get(), textMetrics.width, textMetrics.height);
+        std::unique_ptr<BYTE[]> buffer(new BYTE[(int)textMetrics.width * (int)textMetrics.height * 4]);
+        texture.Create(buffer.get(), (int)textMetrics.width, (int)textMetrics.height);
 
         ATL::CComPtr<IDXGISurface> surface = nullptr;
         texture.GetInterface().QueryInterface(&surface);

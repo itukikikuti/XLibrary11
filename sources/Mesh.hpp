@@ -85,7 +85,7 @@ public:
         vertices.push_back(Vertex(leftDirection * -size.x + upDirection * -size.y + offset, -forwardDirection, Float2(0.0f, 1.0f)));
         vertices.push_back(Vertex(leftDirection * size.x + upDirection * -size.y + offset, -forwardDirection, Float2(1.0f, 1.0f)));
 
-        size_t indexOffset = vertices.size() - 4;
+        int indexOffset = (int)vertices.size() - 4;
         indices.push_back(indexOffset + 0);
         indices.push_back(indexOffset + 1);
         indices.push_back(indexOffset + 2);
@@ -132,7 +132,7 @@ public:
         if (vertices.size() > 0)
         {
             D3D11_BUFFER_DESC vertexBufferDesc = {};
-            vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertices.size();
+            vertexBufferDesc.ByteWidth = sizeof(Vertex) * (UINT)vertices.size();
             vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
             vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
             D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
@@ -144,7 +144,7 @@ public:
         if (indices.size() > 0)
         {
             D3D11_BUFFER_DESC indexBufferDesc = {};
-            indexBufferDesc.ByteWidth = sizeof(int) * indices.size();
+            indexBufferDesc.ByteWidth = sizeof(int) * (UINT)indices.size();
             indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
             indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
             D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
@@ -177,12 +177,12 @@ public:
 
         if (indexBuffer == nullptr)
         {
-            App::GetGraphicsContext3D().Draw(vertices.size(), 0);
+            App::GetGraphicsContext3D().Draw((UINT)vertices.size(), 0);
         }
         else
         {
             App::GetGraphicsContext3D().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-            App::GetGraphicsContext3D().DrawIndexed(indices.size(), 0, 0);
+            App::GetGraphicsContext3D().DrawIndexed((UINT)indices.size(), 0, 0);
         }
     }
 

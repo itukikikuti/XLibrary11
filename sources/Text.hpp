@@ -33,8 +33,8 @@ public:
         textLayout.Reset();
         App::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, textLayout.GetAddressOf());
 
-        std::unique_ptr<BYTE[]> buffer(new BYTE[textMetrics.width * textMetrics.height * 4]);
-        texture.Create(buffer.get(), textMetrics.width, textMetrics.height);
+        std::unique_ptr<BYTE[]> buffer(new BYTE[(int)textMetrics.width * (int)textMetrics.height * 4]);
+        texture.Create(buffer.get(), (int)textMetrics.width, (int)textMetrics.height);
 
         ATL::CComPtr<IDXGISurface> surface = nullptr;
         texture.GetInterface().QueryInterface(&surface);
