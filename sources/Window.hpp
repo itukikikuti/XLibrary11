@@ -99,6 +99,9 @@ public:
 
         PostMessageW(handle, WM_APP, 0, 0);
 
+        if (GetSize().x <= 0.0f || GetSize().y <= 0.0f)
+            Sleep(100);
+
         return true;
     }
     void AddProcedure(Proceedable* const procedure)
