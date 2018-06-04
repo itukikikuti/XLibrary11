@@ -1913,13 +1913,11 @@ public:
         if (text == L"")
             return;
 
-        this->text = text;
-        
         brush.Reset();
         App::GetGraphicsContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), brush.GetAddressOf());
         App::GetGraphicsContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
-        textFormat.Reset();
+        Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat = nullptr;
         App::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
 
         textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
@@ -1969,10 +1967,8 @@ public:
     void Create(const BYTE* const buffer, int width, int height) = delete;
 
 private:
-    std::wstring text;
     ATL::CComPtr<ID2D1Bitmap1> bitmap = nullptr;
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush = nullptr;
-    Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat = nullptr;
     Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayout = nullptr;
 };
 class Sound : public App::Window::Proceedable
