@@ -41,12 +41,24 @@ XLIBRARY_NAMESPACE_BEGIN
 
 using namespace DirectX;
 
+inline void XLibraryInitialize()
+{
+    static bool isInitialized = false;
+
+    if (!isInitialized)
+    {
+        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+        isInitialized = true;
+    }
+}
+
 #include "Utility.hpp"
+#include "Window.hpp"
 
 class App final
 {
 public:
-#include "Window.hpp"
 #include "Graphics.hpp"
 #include "Audio.hpp"
 #include "Input.hpp"
@@ -59,50 +71,7 @@ public:
         GetGraphicsInstance().Update();
         GetInputInstance().Update();
         GetTimerInstance().Update();
-        return GetWindowInstance().Update();
-    }
-    static void Initialize()
-    {
-        static bool isInitialized = false;
-
-        if (!isInitialized)
-        {
-            CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-            _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-            isInitialized = true;
-        }
-    }
-    static HWND GetWindowHandle()
-    {
-        return GetWindowInstance().GetHandle();
-    }
-    static DirectX::XMINT2 GetWindowSize()
-    {
-        return GetWindowInstance().GetSize();
-    }
-    static void SetWindowSize(int width, int height)
-    {
-        GetWindowInstance().SetSize(width, height);
-    }
-    static wchar_t* const GetTitle()
-    {
-        return GetWindowInstance().GetTitle();
-    }
-    static void SetTitle(const wchar_t* const title)
-    {
-        GetWindowInstance().SetTitle(title);
-    }
-    static void SetFullScreen(bool isFullScreen)
-    {
-        GetWindowInstance().SetFullScreen(isFullScreen);
-    }
-    static void AddWindowProcedure(Window::Proceedable* const procedure)
-    {
-        GetWindowInstance().AddProcedure(procedure);
-    }
-    static void RemoveWindowProcedure(Window::Proceedable* const procedure)
-    {
-        GetWindowInstance().RemoveProcedure(procedure);
+        return Window::Update();
     }
     static ID3D11Device& GetGraphicsDevice3D()
     {
@@ -186,11 +155,6 @@ public:
     }
 
 private:
-    static Window& GetWindowInstance()
-    {
-        static std::unique_ptr<Window> window(new Window());
-        return *window.get();
-    }
     static Graphics& GetGraphicsInstance()
     {
         static std::unique_ptr<Graphics> graphics(new Graphics());

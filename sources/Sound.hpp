@@ -1,4 +1,4 @@
-class Sound : public App::Window::Proceedable
+class Sound : public Window::Proceedable
 {
 public:
     Sound()
@@ -12,7 +12,7 @@ public:
     }
     virtual ~Sound()
     {
-        App::RemoveWindowProcedure(this);
+        Window::RemoveProcedure(this);
     }
     void Load(const wchar_t* const filePath)
     {
@@ -166,9 +166,9 @@ private:
 
     void Initialize()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
-        App::AddWindowProcedure(this);
+        Window::AddProcedure(this);
     }
     void Reset()
     {

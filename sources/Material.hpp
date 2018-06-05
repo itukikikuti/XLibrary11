@@ -115,7 +115,7 @@ private:
 
     void Initialize()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         for (int i = 0; i < 10; i++)
         {
@@ -135,7 +135,7 @@ private:
         if (errorBlob != nullptr)
         {
             OutputDebugStringA(static_cast<char*>(errorBlob->GetBufferPointer()));
-            MessageBoxA(App::GetWindowHandle(), static_cast<char*>(errorBlob->GetBufferPointer()), "Shader Error", MB_OK);
+            MessageBoxA(Window::GetHandle(), static_cast<char*>(errorBlob->GetBufferPointer()), "Shader Error", MB_OK);
         }
     }
 };

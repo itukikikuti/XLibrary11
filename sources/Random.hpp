@@ -3,7 +3,7 @@ class Random
 public:
     Random()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         std::random_device device;
         mt.seed(device());

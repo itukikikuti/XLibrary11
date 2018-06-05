@@ -42,6 +42,18 @@ namespace XLibrary11
 
 using namespace DirectX;
 
+inline void XLibraryInitialize()
+{
+    static bool isInitialized = false;
+
+    if (!isInitialized)
+    {
+        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+        isInitialized = true;
+    }
+}
+
 struct Float2 : public DirectX::XMFLOAT2
 {
     Float2() : DirectX::XMFLOAT2()
@@ -471,10 +483,6 @@ struct Vertex
         this->uv = uv;
     }
 };
-
-class App final
-{
-public:
 class Window
 {
 public:
@@ -484,9 +492,97 @@ public:
         virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
     };
 
+    static HWND GetHandle()
+    {
+        return GetInstance().handle;
+    }
+    static DirectX::XMINT2 GetSize()
+    {
+        RECT clientRect = {};
+        GetClientRect(GetInstance().handle, &clientRect);
+
+        return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+    }
+    static void SetSize(int width, int height)
+    {
+        RECT windowRect = {};
+        RECT clientRect = {};
+        GetWindowRect(GetInstance().handle, &windowRect);
+        GetClientRect(GetInstance().handle, &clientRect);
+
+        int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + width;
+        int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + height;
+        int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
+        int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
+
+        SetWindowPos(GetInstance().handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
+    }
+    static wchar_t* const GetTitle()
+    {
+        wchar_t* title = nullptr;
+        GetWindowTextW(GetInstance().handle, title, GetWindowTextLengthW(GetInstance().handle));
+        return title;
+    }
+    static void SetTitle(const wchar_t* const title)
+    {
+        SetWindowTextW(GetInstance().handle, title);
+    }
+    static void SetFullScreen(bool isFullScreen)
+    {
+        static DirectX::XMINT2 size = GetSize();
+
+        if (isFullScreen)
+        {
+            size = GetSize();
+            int w = GetSystemMetrics(SM_CXSCREEN);
+            int h = GetSystemMetrics(SM_CYSCREEN);
+            SetWindowLongPtrW(GetInstance().handle, GWL_STYLE, WS_VISIBLE | WS_POPUP);
+            SetWindowPos(GetInstance().handle, HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
+        }
+        else
+        {
+            SetWindowLongPtrW(GetInstance().handle, GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+            SetWindowPos(GetInstance().handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+            SetSize(size.x, size.y);
+        }
+    }
+    static bool Update()
+    {
+        MSG message = {};
+
+        while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE))
+        {
+            if (message.message == WM_QUIT)
+                return false;
+
+            TranslateMessage(&message);
+            DispatchMessageW(&message);
+        }
+
+        PostMessageW(GetInstance().handle, WM_APP, 0, 0);
+
+        if (GetSize().x <= 0.0f || GetSize().y <= 0.0f)
+            Sleep(100);
+
+        return true;
+    }
+    static void AddProcedure(Proceedable* const procedure)
+    {
+        GetInstance().procedures.push_back(procedure);
+    }
+    static void RemoveProcedure(Proceedable* const procedure)
+    {
+        GetInstance().procedures.remove(procedure);
+    }
+
+private:
+    const wchar_t* className = L"XLibrary11";
+    HWND handle;
+    std::list<Proceedable*> procedures;
+
     Window()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         HINSTANCE instance = GetModuleHandleW(nullptr);
 
@@ -507,101 +603,14 @@ public:
         UnregisterClassW(className, GetModuleHandleW(nullptr));
         CoUninitialize();
     }
-    HWND GetHandle() const
+    static Window& GetInstance()
     {
-        return handle;
-    }
-    DirectX::XMINT2 GetSize() const
-    {
-        RECT clientRect = {};
-        GetClientRect(handle, &clientRect);
-
-        return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
-    }
-    void SetSize(int width, int height)
-    {
-        RECT windowRect = {};
-        RECT clientRect = {};
-        GetWindowRect(handle, &windowRect);
-        GetClientRect(handle, &clientRect);
-
-        int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + width;
-        int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + height;
-        int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
-        int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
-
-        SetWindowPos(handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
-    }
-    wchar_t* const GetTitle() const
-    {
-        wchar_t* title = nullptr;
-        GetWindowTextW(handle, title, GetWindowTextLengthW(handle));
-        return title;
-    }
-    void SetTitle(const wchar_t* const title)
-    {
-        SetWindowTextW(handle, title);
-    }
-    void SetFullScreen(bool isFullScreen)
-    {
-        static DirectX::XMINT2 size = GetSize();
-
-        if (isFullScreen)
-        {
-            size = GetSize();
-            int w = GetSystemMetrics(SM_CXSCREEN);
-            int h = GetSystemMetrics(SM_CYSCREEN);
-            SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | WS_POPUP);
-            SetWindowPos(handle, HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
-        }
-        else
-        {
-            SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
-            SetWindowPos(handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
-            SetSize(size.x, size.y);
-        }
-    }
-    bool Update()
-    {
-        MSG message = {};
-
-        while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE))
-        {
-            if (message.message == WM_QUIT)
-                return false;
-
-            TranslateMessage(&message);
-            DispatchMessageW(&message);
-        }
-
-        PostMessageW(handle, WM_APP, 0, 0);
-
-        if (GetSize().x <= 0.0f || GetSize().y <= 0.0f)
-            Sleep(100);
-
-        return true;
-    }
-    void AddProcedure(Proceedable* const procedure)
-    {
-        GetProcedures().push_back(procedure);
-    }
-    void RemoveProcedure(Proceedable* const procedure)
-    {
-        GetProcedures().remove(procedure);
-    }
-
-private:
-    const wchar_t* className = L"XLibrary11";
-    HWND handle;
-
-    static std::list<Proceedable*>& GetProcedures()
-    {
-        static std::list<Proceedable*> procedures;
-        return procedures;
+        static Window instance;
+        return instance;
     }
     static LRESULT CALLBACK ProceedMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
     {
-        for (Proceedable* procedure : GetProcedures())
+        for (Proceedable* procedure : GetInstance().procedures)
         {
             procedure->OnProceed(window, message, wParam, lParam);
         }
@@ -612,12 +621,16 @@ private:
         return DefWindowProcW(window, message, wParam, lParam);
     }
 };
-class Graphics : public App::Window::Proceedable
+
+class App final
+{
+public:
+class Graphics : public Window::Proceedable
 {
 public:
     Graphics()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)
@@ -685,11 +698,11 @@ public:
 
         Create();
 
-        App::AddWindowProcedure(this);
+        Window::AddProcedure(this);
     }
     virtual ~Graphics()
     {
-        App::RemoveWindowProcedure(this);
+        Window::RemoveProcedure(this);
     }
     ID3D11Device& GetDevice3D() const
     {
@@ -724,7 +737,7 @@ public:
         if (App::GetKey(VK_MENU) && App::GetKeyDown(VK_RETURN))
         {
             isFullScreen = !isFullScreen;
-            App::SetFullScreen(isFullScreen);
+            Window::SetFullScreen(isFullScreen);
         }
 
         swapChain->Present(1, 0);
@@ -752,8 +765,8 @@ private:
         adapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory));
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-        swapChainDesc.BufferDesc.Width = App::GetWindowSize().x;
-        swapChainDesc.BufferDesc.Height = App::GetWindowSize().y;
+        swapChainDesc.BufferDesc.Width = Window::GetSize().x;
+        swapChainDesc.BufferDesc.Height = Window::GetSize().y;
         swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
         swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
         swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -761,16 +774,16 @@ private:
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         swapChainDesc.BufferCount = 1;
-        swapChainDesc.OutputWindow = App::GetWindowHandle();
+        swapChainDesc.OutputWindow = Window::GetHandle();
         swapChainDesc.Windowed = true;
 
         swapChain.Release();
         factory->CreateSwapChain(device3D, &swapChainDesc, &swapChain);
-        factory->MakeWindowAssociation(App::GetWindowHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
+        factory->MakeWindowAssociation(Window::GetHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
         D3D11_VIEWPORT viewPort = {};
-        viewPort.Width = static_cast<float>(App::GetWindowSize().x);
-        viewPort.Height = static_cast<float>(App::GetWindowSize().y);
+        viewPort.Width = static_cast<float>(Window::GetSize().x);
+        viewPort.Height = static_cast<float>(Window::GetSize().y);
         viewPort.MaxDepth = 1.0f;
         context3D->RSSetViewports(1, &viewPort);
     }
@@ -779,7 +792,7 @@ private:
         if (message != WM_SIZE)
             return;
 
-        if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
+        if (Window::GetSize().x <= 0.0f || Window::GetSize().y <= 0.0f)
             return;
 
         Create();
@@ -790,11 +803,11 @@ class Audio
 public:
     Audio()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         DirectSoundCreate8(nullptr, &device, nullptr);
 
-        device->SetCooperativeLevel(App::GetWindowHandle(), DSSCL_NORMAL);
+        device->SetCooperativeLevel(Window::GetHandle(), DSSCL_NORMAL);
 
         MFStartup(MF_VERSION);
     }
@@ -815,7 +828,7 @@ class Input
 public:
     Input()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         Update();
     }
@@ -840,13 +853,13 @@ public:
     }
     void SetMousePosition(float x, float y)
     {
-        if (GetActiveWindow() != App::GetWindowHandle())
+        if (GetActiveWindow() != Window::GetHandle())
             return;
 
         POINT point = {};
-        point.x = static_cast<int>(x) + App::GetWindowSize().x / 2;
-        point.y = static_cast<int>(-y) + App::GetWindowSize().y / 2;
-        ClientToScreen(App::GetWindowHandle(), &point);
+        point.x = static_cast<int>(x) + Window::GetSize().x / 2;
+        point.y = static_cast<int>(-y) + Window::GetSize().y / 2;
+        ClientToScreen(Window::GetHandle(), &point);
         SetCursorPos(point.x, point.y);
 
         mousePosition.x = x;
@@ -864,10 +877,10 @@ public:
     {
         POINT point = {};
         GetCursorPos(&point);
-        ScreenToClient(App::GetWindowHandle(), &point);
+        ScreenToClient(Window::GetHandle(), &point);
 
-        mousePosition.x = static_cast<float>(point.x - App::GetWindowSize().x / 2);
-        mousePosition.y = static_cast<float>(-point.y + App::GetWindowSize().y / 2);
+        mousePosition.x = static_cast<float>(point.x - Window::GetSize().x / 2);
+        mousePosition.y = static_cast<float>(-point.y + Window::GetSize().y / 2);
 
         for (int i = 0; i < 256; i++)
         {
@@ -888,7 +901,7 @@ class Timer
 public:
     Timer()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         preCount = GetCounter();
         frequency = GetCountFrequency();
@@ -953,7 +966,7 @@ class Random
 public:
     Random()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         std::random_device device;
         mt.seed(device());
@@ -983,50 +996,7 @@ private:
         GetGraphicsInstance().Update();
         GetInputInstance().Update();
         GetTimerInstance().Update();
-        return GetWindowInstance().Update();
-    }
-    static void Initialize()
-    {
-        static bool isInitialized = false;
-
-        if (!isInitialized)
-        {
-            CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-            _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-            isInitialized = true;
-        }
-    }
-    static HWND GetWindowHandle()
-    {
-        return GetWindowInstance().GetHandle();
-    }
-    static DirectX::XMINT2 GetWindowSize()
-    {
-        return GetWindowInstance().GetSize();
-    }
-    static void SetWindowSize(int width, int height)
-    {
-        GetWindowInstance().SetSize(width, height);
-    }
-    static wchar_t* const GetTitle()
-    {
-        return GetWindowInstance().GetTitle();
-    }
-    static void SetTitle(const wchar_t* const title)
-    {
-        GetWindowInstance().SetTitle(title);
-    }
-    static void SetFullScreen(bool isFullScreen)
-    {
-        GetWindowInstance().SetFullScreen(isFullScreen);
-    }
-    static void AddWindowProcedure(Window::Proceedable* const procedure)
-    {
-        GetWindowInstance().AddProcedure(procedure);
-    }
-    static void RemoveWindowProcedure(Window::Proceedable* const procedure)
-    {
-        GetWindowInstance().RemoveProcedure(procedure);
+        return Window::Update();
     }
     static ID3D11Device& GetGraphicsDevice3D()
     {
@@ -1110,11 +1080,6 @@ private:
     }
 
 private:
-    static Window& GetWindowInstance()
-    {
-        static std::unique_ptr<Window> window(new Window());
-        return *window.get();
-    }
     static Graphics& GetGraphicsInstance()
     {
         static std::unique_ptr<Graphics> graphics(new Graphics());
@@ -1147,16 +1112,16 @@ class Texture
 public:
     Texture()
     {
-        App::Initialize();
+        XLibraryInitialize();
     }
     Texture(const wchar_t* const filePath)
     {
-        App::Initialize();
+        XLibraryInitialize();
         Load(filePath);
     }
     Texture(const BYTE* const buffer, int width, int height)
     {
-        App::Initialize();
+        XLibraryInitialize();
         Create(buffer, width, height);
     }
     ~Texture()
@@ -1380,7 +1345,7 @@ private:
 
     void Initialize()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         for (int i = 0; i < 10; i++)
         {
@@ -1400,11 +1365,11 @@ private:
         if (errorBlob != nullptr)
         {
             OutputDebugStringA(static_cast<char*>(errorBlob->GetBufferPointer()));
-            MessageBoxA(App::GetWindowHandle(), static_cast<char*>(errorBlob->GetBufferPointer()), "Shader Error", MB_OK);
+            MessageBoxA(Window::GetHandle(), static_cast<char*>(errorBlob->GetBufferPointer()), "Shader Error", MB_OK);
         }
     }
 };
-class Camera : public App::Window::Proceedable
+class Camera : public Window::Proceedable
 {
 public:
     Float3 position;
@@ -1413,7 +1378,7 @@ public:
 
     Camera()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1424,11 +1389,11 @@ public:
 
         Create();
 
-        App::AddWindowProcedure(this);
+        Window::AddProcedure(this);
     }
     ~Camera()
     {
-        App::RemoveWindowProcedure(this);
+        Window::RemoveProcedure(this);
     }
     void SetPerspective(float fieldOfView, float nearClip, float farClip)
     {
@@ -1436,7 +1401,7 @@ public:
         this->fieldOfView = fieldOfView;
         this->nearClip = nearClip;
         this->farClip = farClip;
-        float aspectRatio = App::GetWindowSize().x / (float)App::GetWindowSize().y;
+        float aspectRatio = Window::GetSize().x / (float)Window::GetSize().y;
         constant.projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
@@ -1448,7 +1413,7 @@ public:
         this->nearClip = nearClip;
         this->farClip = farClip;
         constant.projection = DirectX::XMMatrixTranspose(
-            DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x * size, App::GetWindowSize().y * size, nearClip, farClip)
+            DirectX::XMMatrixOrthographicLH(Window::GetSize().x * size, Window::GetSize().y * size, nearClip, farClip)
         );
     }
     void SetDepthTest(bool isDepthTest)
@@ -1523,8 +1488,8 @@ private:
 
         depthTexture.Release();
         D3D11_TEXTURE2D_DESC textureDesc = {};
-        textureDesc.Width = static_cast<UINT>(App::GetWindowSize().x);
-        textureDesc.Height = static_cast<UINT>(App::GetWindowSize().y);
+        textureDesc.Width = static_cast<UINT>(Window::GetSize().x);
+        textureDesc.Height = static_cast<UINT>(Window::GetSize().y);
         textureDesc.MipLevels = 1;
         textureDesc.ArraySize = 1;
         textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -1563,7 +1528,7 @@ private:
         if (message != WM_SIZE)
             return;
 
-        if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
+        if (Window::GetSize().x <= 0.0f || Window::GetSize().y <= 0.0f)
             return;
 
         if (isPerspective)
@@ -1585,7 +1550,7 @@ public:
 
     Mesh()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1844,7 +1809,7 @@ protected:
 
     void Initialize()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1971,7 +1936,7 @@ private:
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush = nullptr;
     Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayout = nullptr;
 };
-class Sound : public App::Window::Proceedable
+class Sound : public Window::Proceedable
 {
 public:
     Sound()
@@ -1985,7 +1950,7 @@ public:
     }
     virtual ~Sound()
     {
-        App::RemoveWindowProcedure(this);
+        Window::RemoveProcedure(this);
     }
     void Load(const wchar_t* const filePath)
     {
@@ -2139,9 +2104,9 @@ private:
 
     void Initialize()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
-        App::AddWindowProcedure(this);
+        Window::AddProcedure(this);
     }
     void Reset()
     {

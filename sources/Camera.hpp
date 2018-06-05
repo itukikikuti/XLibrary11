@@ -1,4 +1,4 @@
-class Camera : public App::Window::Proceedable
+class Camera : public Window::Proceedable
 {
 public:
     Float3 position;
@@ -7,7 +7,7 @@ public:
 
     Camera()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -18,11 +18,11 @@ public:
 
         Create();
 
-        App::AddWindowProcedure(this);
+        Window::AddProcedure(this);
     }
     ~Camera()
     {
-        App::RemoveWindowProcedure(this);
+        Window::RemoveProcedure(this);
     }
     void SetPerspective(float fieldOfView, float nearClip, float farClip)
     {
@@ -30,7 +30,7 @@ public:
         this->fieldOfView = fieldOfView;
         this->nearClip = nearClip;
         this->farClip = farClip;
-        float aspectRatio = App::GetWindowSize().x / (float)App::GetWindowSize().y;
+        float aspectRatio = Window::GetSize().x / (float)Window::GetSize().y;
         constant.projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
@@ -42,7 +42,7 @@ public:
         this->nearClip = nearClip;
         this->farClip = farClip;
         constant.projection = DirectX::XMMatrixTranspose(
-            DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x * size, App::GetWindowSize().y * size, nearClip, farClip)
+            DirectX::XMMatrixOrthographicLH(Window::GetSize().x * size, Window::GetSize().y * size, nearClip, farClip)
         );
     }
     void SetDepthTest(bool isDepthTest)
@@ -117,8 +117,8 @@ private:
 
         depthTexture.Release();
         D3D11_TEXTURE2D_DESC textureDesc = {};
-        textureDesc.Width = static_cast<UINT>(App::GetWindowSize().x);
-        textureDesc.Height = static_cast<UINT>(App::GetWindowSize().y);
+        textureDesc.Width = static_cast<UINT>(Window::GetSize().x);
+        textureDesc.Height = static_cast<UINT>(Window::GetSize().y);
         textureDesc.MipLevels = 1;
         textureDesc.ArraySize = 1;
         textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -157,7 +157,7 @@ private:
         if (message != WM_SIZE)
             return;
 
-        if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
+        if (Window::GetSize().x <= 0.0f || Window::GetSize().y <= 0.0f)
             return;
 
         if (isPerspective)

@@ -68,7 +68,7 @@ protected:
 
     void Initialize()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);

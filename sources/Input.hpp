@@ -3,7 +3,7 @@ class Input
 public:
     Input()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         Update();
     }
@@ -28,13 +28,13 @@ public:
     }
     void SetMousePosition(float x, float y)
     {
-        if (GetActiveWindow() != App::GetWindowHandle())
+        if (GetActiveWindow() != Window::GetHandle())
             return;
 
         POINT point = {};
-        point.x = static_cast<int>(x) + App::GetWindowSize().x / 2;
-        point.y = static_cast<int>(-y) + App::GetWindowSize().y / 2;
-        ClientToScreen(App::GetWindowHandle(), &point);
+        point.x = static_cast<int>(x) + Window::GetSize().x / 2;
+        point.y = static_cast<int>(-y) + Window::GetSize().y / 2;
+        ClientToScreen(Window::GetHandle(), &point);
         SetCursorPos(point.x, point.y);
 
         mousePosition.x = x;
@@ -52,10 +52,10 @@ public:
     {
         POINT point = {};
         GetCursorPos(&point);
-        ScreenToClient(App::GetWindowHandle(), &point);
+        ScreenToClient(Window::GetHandle(), &point);
 
-        mousePosition.x = static_cast<float>(point.x - App::GetWindowSize().x / 2);
-        mousePosition.y = static_cast<float>(-point.y + App::GetWindowSize().y / 2);
+        mousePosition.x = static_cast<float>(point.x - Window::GetSize().x / 2);
+        mousePosition.y = static_cast<float>(-point.y + Window::GetSize().y / 2);
 
         for (int i = 0; i < 256; i++)
         {

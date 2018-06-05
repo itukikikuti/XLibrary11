@@ -3,7 +3,7 @@ class Timer
 public:
     Timer()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         preCount = GetCounter();
         frequency = GetCountFrequency();
