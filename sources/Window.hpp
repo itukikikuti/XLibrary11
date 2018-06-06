@@ -91,10 +91,16 @@ public:
     }
 
 private:
+    friend std::unique_ptr<Window>::deleter_type;
+
     const wchar_t* className = L"XLibrary11";
     HWND handle;
     std::list<Proceedable*> procedures;
 
+    Window(Window&) = delete;
+    Window(const Window&) = delete;
+    Window& operator=(Window&) = delete;
+    Window& operator=(const Window&) = delete;
     Window()
     {
         XLibraryInitialize();
@@ -110,25 +116,34 @@ private:
 
         handle = CreateWindowW(className, className, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, instance, nullptr);
 
-        SetSize(640, 480);
         ShowWindow(handle, SW_SHOWNORMAL);
     }
     ~Window()
     {
-        UnregisterClassW(className, GetModuleHandleW(nullptr));
         CoUninitialize();
     }
     static Window& GetInstance()
     {
-        static Window instance;
-        return instance;
+        static std::unique_ptr<Window> instance;
+
+        if (instance == nullptr)
+        {
+            instance.reset(Instantiate());
+            SetSize(640, 480);
+        }
+
+        return *instance;
+    }
+    static Window* Instantiate()
+    {
+        return new Window();
     }
     static LRESULT CALLBACK ProceedMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
     {
-        for (Proceedable* procedure : GetInstance().procedures)
-        {
-            procedure->OnProceed(window, message, wParam, lParam);
-        }
+        //for (Proceedable* procedure : GetInstance().procedures)
+        //{
+        //    procedure->OnProceed(window, message, wParam, lParam);
+        //}
 
         if (message == WM_DESTROY)
             PostQuitMessage(0);
