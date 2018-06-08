@@ -1,8 +1,8 @@
 # Minimum Game Library by DirectX 11
 
 ### 詳しくはこちら！
-* [Wiki](https://github.com/itukikikuti/XLibrary11/wiki)
+* [Wiki](https://gitlab.com/itukikikuti/XLibrary11/wikis/home)
 
 ### ダウンロード
-* [XLibrary11.hpp](https://raw.githubusercontent.com/itukikikuti/XLibrary11/master/XLibrary11.hpp)  
-* [XModelLibrary11.hpp](https://raw.githubusercontent.com/itukikikuti/XModelLibrary11/master/XModelLibrary11.hpp)（「FBX SDK」が必要です。）
+* [XLibrary11.hpp](https://gitlab.com/itukikikuti/XLibrary11/raw/master/XLibrary11.hpp)  
+* ~~XModelLibrary11.hpp（「FBX SDK」が必要です。）~~
