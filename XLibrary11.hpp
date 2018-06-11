@@ -148,35 +148,35 @@ struct Float2 : public DirectX::XMFLOAT2
     }
 };
 
-Float2 operator+(const Float2& t1, const Float2& t2)
+inline Float2 operator+(const Float2& t1, const Float2& t2)
 {
     return Float2(t1) += t2;
 }
-Float2 operator+(const Float2& t1, const float& t2)
+inline Float2 operator+(const Float2& t1, const float& t2)
 {
     return Float2(t1) += t2;
 }
-Float2 operator-(const Float2& t1, const Float2& t2)
+inline Float2 operator-(const Float2& t1, const Float2& t2)
 {
     return Float2(t1) -= t2;
 }
-Float2 operator-(const Float2& t1, const float& t2)
+inline Float2 operator-(const Float2& t1, const float& t2)
 {
     return Float2(t1) -= t2;
 }
-Float2 operator*(const Float2& t1, const Float2& t2)
+inline Float2 operator*(const Float2& t1, const Float2& t2)
 {
     return Float2(t1) *= t2;
 }
-Float2 operator*(const Float2& t1, const float& t2)
+inline Float2 operator*(const Float2& t1, const float& t2)
 {
     return Float2(t1) *= t2;
 }
-Float2 operator/(const Float2& t1, const Float2& t2)
+inline Float2 operator/(const Float2& t1, const Float2& t2)
 {
     return Float2(t1) /= t2;
 }
-Float2 operator/(const Float2& t1, const float& t2)
+inline Float2 operator/(const Float2& t1, const float& t2)
 {
     return Float2(t1) /= t2;
 }
@@ -285,35 +285,35 @@ struct Float3 : public DirectX::XMFLOAT3
     }
 };
 
-Float3 operator+(const Float3& t1, const Float3& t2)
+inline Float3 operator+(const Float3& t1, const Float3& t2)
 {
     return Float3(t1) += t2;
 }
-Float3 operator+(const Float3& t1, const float& t2)
+inline Float3 operator+(const Float3& t1, const float& t2)
 {
     return Float3(t1) += t2;
 }
-Float3 operator-(const Float3& t1, const Float3& t2)
+inline Float3 operator-(const Float3& t1, const Float3& t2)
 {
     return Float3(t1) -= t2;
 }
-Float3 operator-(const Float3& t1, const float& t2)
+inline Float3 operator-(const Float3& t1, const float& t2)
 {
     return Float3(t1) -= t2;
 }
-Float3 operator*(const Float3& t1, const Float3& t2)
+inline Float3 operator*(const Float3& t1, const Float3& t2)
 {
     return Float3(t1) *= t2;
 }
-Float3 operator*(const Float3& t1, const float& t2)
+inline Float3 operator*(const Float3& t1, const float& t2)
 {
     return Float3(t1) *= t2;
 }
-Float3 operator/(const Float3& t1, const Float3& t2)
+inline Float3 operator/(const Float3& t1, const Float3& t2)
 {
     return Float3(t1) /= t2;
 }
-Float3 operator/(const Float3& t1, const float& t2)
+inline Float3 operator/(const Float3& t1, const float& t2)
 {
     return Float3(t1) /= t2;
 }
@@ -432,35 +432,35 @@ struct Float4 : public DirectX::XMFLOAT4
     }
 };
 
-Float4 operator+(const Float4& t1, const Float4& t2)
+inline Float4 operator+(const Float4& t1, const Float4& t2)
 {
     return Float4(t1) += t2;
 }
-Float4 operator+(const Float4& t1, const float& t2)
+inline Float4 operator+(const Float4& t1, const float& t2)
 {
     return Float4(t1) += t2;
 }
-Float4 operator-(const Float4& t1, const Float4& t2)
+inline Float4 operator-(const Float4& t1, const Float4& t2)
 {
     return Float4(t1) -= t2;
 }
-Float4 operator-(const Float4& t1, const float& t2)
+inline Float4 operator-(const Float4& t1, const float& t2)
 {
     return Float4(t1) -= t2;
 }
-Float4 operator*(const Float4& t1, const Float4& t2)
+inline Float4 operator*(const Float4& t1, const Float4& t2)
 {
     return Float4(t1) *= t2;
 }
-Float4 operator*(const Float4& t1, const float& t2)
+inline Float4 operator*(const Float4& t1, const float& t2)
 {
     return Float4(t1) *= t2;
 }
-Float4 operator/(const Float4& t1, const Float4& t2)
+inline Float4 operator/(const Float4& t1, const Float4& t2)
 {
     return Float4(t1) /= t2;
 }
-Float4 operator/(const Float4& t1, const float& t2)
+inline Float4 operator/(const Float4& t1, const float& t2)
 {
     return Float4(t1) /= t2;
 }
