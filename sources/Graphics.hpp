@@ -1,6 +1,57 @@
 ﻿class Graphics : public Window::Proceedable
 {
 public:
+    static ID3D11Device& GetDevice3D()
+    {
+        return *GetInstance().device3D;
+    }
+    static ID3D11DeviceContext& GetContext3D()
+    {
+        return *GetInstance().context3D;
+    }
+    static ID2D1Device& GetDevice2D()
+    {
+        return *GetInstance().device2D;
+    }
+    static ID2D1DeviceContext& GetContext2D()
+    {
+        return *GetInstance().context2D;
+    }
+    static IDXGISwapChain& GetSwapChain()
+    {
+        return *GetInstance().swapChain;
+    }
+    static IWICImagingFactory& GetTextureFactory()
+    {
+        return *GetInstance().textureFactory;
+    }
+    static IDWriteFactory& GetTextFactory()
+    {
+        return *GetInstance().textFactory.Get();
+    }
+    static void Update()
+    {
+        if (Input::GetKey(VK_MENU) && Input::GetKeyDown(VK_RETURN))
+        {
+            GetInstance().isFullScreen = !GetInstance().isFullScreen;
+            Window::SetFullScreen(GetInstance().isFullScreen);
+        }
+
+        GetInstance().swapChain->Present(1, 0);
+    }
+
+private:
+    friend std::unique_ptr<Graphics>::deleter_type;
+
+    ATL::CComPtr<ID3D11Device> device3D = nullptr;
+    ATL::CComPtr<ID3D11DeviceContext> context3D = nullptr;
+    ATL::CComPtr<ID2D1Device> device2D = nullptr;
+    ATL::CComPtr<ID2D1DeviceContext> context2D = nullptr;
+    ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
+    ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
+    Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
+    bool isFullScreen = false;
+
     Graphics()
     {
         XLibraryInitialize();
@@ -77,55 +128,21 @@ public:
     {
         Window::RemoveProcedure(this);
     }
-    ID3D11Device& GetDevice3D() const
+    static Graphics& GetInstance()
     {
-        return *device3D;
-    }
-    ID3D11DeviceContext& GetContext3D() const
-    {
-        return *context3D;
-    }
-    ID2D1Device& GetDevice2D() const
-    {
-        return *device2D;
-    }
-    ID2D1DeviceContext& GetContext2D() const
-    {
-        return *context2D;
-    }
-    IDXGISwapChain& GetSwapChain() const
-    {
-        return *swapChain;
-    }
-    IWICImagingFactory& GetTextureFactory() const
-    {
-        return *textureFactory;
-    }
-    IDWriteFactory& GetTextFactory() const
-    {
-        return *textFactory.Get();
-    }
-    void Update()
-    {
-        if (App::GetKey(VK_MENU) && App::GetKeyDown(VK_RETURN))
+        static std::unique_ptr<Graphics> instance;
+
+        if (instance == nullptr)
         {
-            isFullScreen = !isFullScreen;
-            Window::SetFullScreen(isFullScreen);
+            instance.reset(Instantiate());
         }
 
-        swapChain->Present(1, 0);
+        return *instance;
     }
-
-private:
-    ATL::CComPtr<ID3D11Device> device3D = nullptr;
-    ATL::CComPtr<ID3D11DeviceContext> context3D = nullptr;
-    ATL::CComPtr<ID2D1Device> device2D = nullptr;
-    ATL::CComPtr<ID2D1DeviceContext> context2D = nullptr;
-    ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
-    ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
-    Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
-    bool isFullScreen = false;
-
+    static Graphics* Instantiate()
+    {
+        return new Graphics();
+    }
     void Create()
     {
         ATL::CComPtr<IDXGIDevice> dxgi = nullptr;

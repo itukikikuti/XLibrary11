@@ -13,23 +13,23 @@ public:
             return;
 
         brush.Reset();
-        App::GetGraphicsContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), brush.GetAddressOf());
-        App::GetGraphicsContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+        Graphics::GetContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), brush.GetAddressOf());
+        Graphics::GetContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
         Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat = nullptr;
-        App::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
+        Graphics::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
 
         textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
         textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
         textLayout.Reset();
-        App::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), FLT_MAX, FLT_MAX, textLayout.GetAddressOf());
+        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), FLT_MAX, FLT_MAX, textLayout.GetAddressOf());
         
         DWRITE_TEXT_METRICS textMetrics;
         textLayout->GetMetrics(&textMetrics);
 
         textLayout.Reset();
-        App::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, textLayout.GetAddressOf());
+        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, textLayout.GetAddressOf());
 
         std::unique_ptr<BYTE[]> buffer(new BYTE[(int)textMetrics.width * (int)textMetrics.height * 4]);
         texture.Create(buffer.get(), (int)textMetrics.width, (int)textMetrics.height);
@@ -43,7 +43,7 @@ public:
         bitmapProperties.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET;
 
         bitmap.Release();
-        App::GetGraphicsContext2D().CreateBitmapFromDxgiSurface(surface, bitmapProperties, &bitmap);
+        Graphics::GetContext2D().CreateBitmapFromDxgiSurface(surface, bitmapProperties, &bitmap);
 
         mesh.GetMaterial().SetTexture(0, &texture);
 
@@ -51,14 +51,14 @@ public:
     }
     void Draw()
     {
-        App::GetGraphicsContext2D().SetTarget(bitmap);
+        Graphics::GetContext2D().SetTarget(bitmap);
 
-        App::GetGraphicsContext2D().BeginDraw();
+        Graphics::GetContext2D().BeginDraw();
 
-        App::GetGraphicsContext2D().Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
-        App::GetGraphicsContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), textLayout.Get(), brush.Get());
+        Graphics::GetContext2D().Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
+        Graphics::GetContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), textLayout.Get(), brush.Get());
 
-        App::GetGraphicsContext2D().EndDraw();
+        Graphics::GetContext2D().EndDraw();
 
         Sprite::Draw();
     }

@@ -55,79 +55,27 @@ inline void XLibraryInitialize()
 
 #include "Utility.hpp"
 #include "Window.hpp"
+#include "Input.hpp"
+#include "Graphics.hpp"
 
 class App final
 {
 public:
-#include "Graphics.hpp"
 #include "Audio.hpp"
-#include "Input.hpp"
 #include "Timer.hpp"
 #include "Random.hpp"
 
     App() = delete;
     static bool Refresh()
     {
-        GetGraphicsInstance().Update();
-        GetInputInstance().Update();
+        Graphics::Update();
+        Input::Update();
         GetTimerInstance().Update();
         return Window::Update();
-    }
-    static ID3D11Device& GetGraphicsDevice3D()
-    {
-        return GetGraphicsInstance().GetDevice3D();
-    }
-    static ID3D11DeviceContext& GetGraphicsContext3D()
-    {
-        return GetGraphicsInstance().GetContext3D();
-    }
-    static ID2D1Device& GetGraphicsDevice2D()
-    {
-        return GetGraphicsInstance().GetDevice2D();
-    }
-    static ID2D1DeviceContext& GetGraphicsContext2D()
-    {
-        return GetGraphicsInstance().GetContext2D();
-    }
-    static IDXGISwapChain& GetGraphicsSwapChain()
-    {
-        return GetGraphicsInstance().GetSwapChain();
-    }
-    static IWICImagingFactory& GetTextureFactory()
-    {
-        return GetGraphicsInstance().GetTextureFactory();
-    }
-    static IDWriteFactory& GetTextFactory()
-    {
-        return GetGraphicsInstance().GetTextFactory();
     }
     static IDirectSound8& GetAudioDevice()
     {
         return GetAudioInstance().GetDevice();
-    }
-    static bool GetKey(int VK_CODE)
-    {
-        return GetInputInstance().GetKey(VK_CODE);
-    }
-    static bool GetKeyUp(int VK_CODE)
-    {
-        return GetInputInstance().GetKeyUp(VK_CODE);
-    }
-    static bool GetKeyDown(int VK_CODE)
-    {
-        return GetInputInstance().GetKeyDown(VK_CODE);
-    }
-    static Float2 GetMousePosition()
-    {
-        return GetInputInstance().GetMousePosition();
-    }
-    static void SetMousePosition(float x, float y)
-    {
-        GetInputInstance().SetMousePosition(x, y);
-    }
-    static void SetShowCursor(bool isShowCursor)
-    {
-        GetInputInstance().SetShowCursor(isShowCursor);
     }
     static float GetTime()
     {
@@ -155,20 +103,10 @@ public:
     }
 
 private:
-    static Graphics& GetGraphicsInstance()
-    {
-        static std::unique_ptr<Graphics> graphics(new Graphics());
-        return *graphics.get();
-    }
     static Audio& GetAudioInstance()
     {
         static std::unique_ptr<Audio> audio(new Audio());
         return *audio.get();
-    }
-    static Input& GetInputInstance()
-    {
-        static std::unique_ptr<Input> input(new Input());
-        return *input.get();
     }
     static Timer& GetTimerInstance()
     {
