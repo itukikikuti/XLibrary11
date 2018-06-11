@@ -52,7 +52,7 @@ int MAIN()
 
     float pos1 = -2.0f;
     float pos2 = -3.0f;
-    while (App::Refresh())
+    while (Refresh())
     {
         camera.Update();
 
@@ -79,7 +79,7 @@ int MAIN()
         else
         {
             wstringstream ss;
-            ss << App::GetTime();
+            ss << Timer::GetTime();
             number.Create(ss.str(), 100.0f);
         }
 
@@ -103,7 +103,7 @@ int MAIN()
         if (Input::GetKey('1'))
             Input::SetMousePosition(0.0f, 0.0f);
 
-        sprite1.angles.z = App::GetRandom() * 360.0f;
+        sprite1.angles.z = Random::Get() * 360.0f;
         sprite1.Draw();
 
         uiCamera.Update(false);

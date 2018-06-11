@@ -103,7 +103,7 @@ private:
     Window& operator=(const Window&) = delete;
     Window()
     {
-        XLibraryInitialize();
+        InitializeApplication();
 
         HINSTANCE instance = GetModuleHandleW(nullptr);
 

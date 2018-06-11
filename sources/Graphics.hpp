@@ -52,9 +52,13 @@ private:
     Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
     bool isFullScreen = false;
 
+    Graphics(Graphics&) = delete;
+    Graphics(const Graphics&) = delete;
+    Graphics& operator=(Graphics&) = delete;
+    Graphics& operator=(const Graphics&) = delete;
     Graphics()
     {
-        XLibraryInitialize();
+        InitializeApplication();
 
         UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)

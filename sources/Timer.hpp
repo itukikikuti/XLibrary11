@@ -1,47 +1,39 @@
 class Timer
 {
 public:
-    Timer()
+    static float GetTime()
     {
-        XLibraryInitialize();
+        return GetInstance().time;
+    }
+    static float GetDeltaTime()
+    {
+        return GetInstance().deltaTime;
+    }
+    static int GetFrameRate()
+    {
+        return GetInstance().frameRate;
+    }
+    static void Update()
+    {
+        LARGE_INTEGER count = GetInstance().GetCounter();
+        GetInstance().deltaTime = static_cast<float>(count.QuadPart - GetInstance().preCount.QuadPart) / GetInstance().frequency.QuadPart;
+        GetInstance().preCount = GetInstance().GetCounter();
 
-        preCount = GetCounter();
-        frequency = GetCountFrequency();
-    }
-    ~Timer()
-    {
-    }
-    float GetTime() const
-    {
-        return time;
-    }
-    float GetDeltaTime() const
-    {
-        return deltaTime;
-    }
-    int GetFrameRate() const
-    {
-        return frameRate;
-    }
-    void Update()
-    {
-        LARGE_INTEGER count = GetCounter();
-        deltaTime = static_cast<float>(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
-        preCount = GetCounter();
+        GetInstance().time += GetInstance().deltaTime;
 
-        time += deltaTime;
-
-        frameCount++;
-        second += deltaTime;
-        if (second >= 1.0f)
+        GetInstance().frameCount++;
+        GetInstance().second += GetInstance().deltaTime;
+        if (GetInstance().second >= 1.0f)
         {
-            frameRate = frameCount;
-            frameCount = 0;
-            second -= 1.0f;
+            GetInstance().frameRate = GetInstance().frameCount;
+            GetInstance().frameCount = 0;
+            GetInstance().second -= 1.0f;
         }
     }
 
 private:
+    friend std::unique_ptr<Timer>::deleter_type;
+
     float time = 0.0f;
     float deltaTime = 0.0f;
     int frameRate = 0;
@@ -50,6 +42,35 @@ private:
     LARGE_INTEGER preCount;
     LARGE_INTEGER frequency;
 
+    Timer(Timer&) = delete;
+    Timer(const Timer&) = delete;
+    Timer& operator=(Timer&) = delete;
+    Timer& operator=(const Timer&) = delete;
+    Timer()
+    {
+        InitializeApplication();
+
+        preCount = GetCounter();
+        frequency = GetCountFrequency();
+    }
+    ~Timer()
+    {
+    }
+    static Timer& GetInstance()
+    {
+        static std::unique_ptr<Timer> instance;
+
+        if (instance == nullptr)
+        {
+            instance.reset(Instantiate());
+        }
+
+        return *instance;
+    }
+    static Timer* Instantiate()
+    {
+        return new Timer();
+    }
     LARGE_INTEGER GetCounter() const
     {
         LARGE_INTEGER counter;

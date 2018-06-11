@@ -3,16 +3,16 @@
 public:
     Texture()
     {
-        XLibraryInitialize();
+        InitializeApplication();
     }
     Texture(const wchar_t* const filePath)
     {
-        XLibraryInitialize();
+        InitializeApplication();
         Load(filePath);
     }
     Texture(const BYTE* const buffer, int width, int height)
     {
-        XLibraryInitialize();
+        InitializeApplication();
         Create(buffer, width, height);
     }
     ~Texture()

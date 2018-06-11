@@ -42,7 +42,7 @@ namespace XLibrary11
 
 using namespace DirectX;
 
-inline void XLibraryInitialize()
+static void InitializeApplication()
 {
     static bool isInitialized = false;
 
@@ -483,6 +483,7 @@ struct Vertex
         this->uv = uv;
     }
 };
+
 class Window
 {
 public:
@@ -588,7 +589,7 @@ private:
     Window& operator=(const Window&) = delete;
     Window()
     {
-        XLibraryInitialize();
+        InitializeApplication();
 
         HINSTANCE instance = GetModuleHandleW(nullptr);
 
@@ -703,9 +704,13 @@ private:
     BYTE keyState[256];
     bool isShowCursor = true;
 
+    Input(Input&) = delete;
+    Input(const Input&) = delete;
+    Input& operator=(Input&) = delete;
+    Input& operator=(const Input&) = delete;
     Input()
     {
-        XLibraryInitialize();
+        InitializeApplication();
     }
     ~Input()
     {
@@ -781,9 +786,13 @@ private:
     Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
     bool isFullScreen = false;
 
+    Graphics(Graphics&) = delete;
+    Graphics(const Graphics&) = delete;
+    Graphics& operator=(Graphics&) = delete;
+    Graphics& operator=(const Graphics&) = delete;
     Graphics()
     {
-        XLibraryInitialize();
+        InitializeApplication();
 
         UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)
@@ -917,16 +926,26 @@ private:
         Create();
     }
 };
-
-class App final
-{
-public:
 class Audio
 {
 public:
+    static IDirectSound8& GetDevice()
+    {
+        return *GetInstance().device;
+    }
+
+private:
+    friend std::unique_ptr<Audio>::deleter_type;
+
+    ATL::CComPtr<IDirectSound8> device = nullptr;
+
+    Audio(Audio&) = delete;
+    Audio(const Audio&) = delete;
+    Audio& operator=(Audio&) = delete;
+    Audio& operator=(const Audio&) = delete;
     Audio()
     {
-        XLibraryInitialize();
+        InitializeApplication();
 
         DirectSoundCreate8(nullptr, &device, nullptr);
 
@@ -938,58 +957,58 @@ public:
     {
         MFShutdown();
     }
-    IDirectSound8& GetDevice() const
+    static Audio& GetInstance()
     {
-        return *device;
-    }
+        static std::unique_ptr<Audio> instance;
 
-private:
-    ATL::CComPtr<IDirectSound8> device = nullptr;
+        if (instance == nullptr)
+        {
+            instance.reset(Instantiate());
+        }
+
+        return *instance;
+    }
+    static Audio* Instantiate()
+    {
+        return new Audio();
+    }
 };
 class Timer
 {
 public:
-    Timer()
+    static float GetTime()
     {
-        XLibraryInitialize();
+        return GetInstance().time;
+    }
+    static float GetDeltaTime()
+    {
+        return GetInstance().deltaTime;
+    }
+    static int GetFrameRate()
+    {
+        return GetInstance().frameRate;
+    }
+    static void Update()
+    {
+        LARGE_INTEGER count = GetInstance().GetCounter();
+        GetInstance().deltaTime = static_cast<float>(count.QuadPart - GetInstance().preCount.QuadPart) / GetInstance().frequency.QuadPart;
+        GetInstance().preCount = GetInstance().GetCounter();
 
-        preCount = GetCounter();
-        frequency = GetCountFrequency();
-    }
-    ~Timer()
-    {
-    }
-    float GetTime() const
-    {
-        return time;
-    }
-    float GetDeltaTime() const
-    {
-        return deltaTime;
-    }
-    int GetFrameRate() const
-    {
-        return frameRate;
-    }
-    void Update()
-    {
-        LARGE_INTEGER count = GetCounter();
-        deltaTime = static_cast<float>(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
-        preCount = GetCounter();
+        GetInstance().time += GetInstance().deltaTime;
 
-        time += deltaTime;
-
-        frameCount++;
-        second += deltaTime;
-        if (second >= 1.0f)
+        GetInstance().frameCount++;
+        GetInstance().second += GetInstance().deltaTime;
+        if (GetInstance().second >= 1.0f)
         {
-            frameRate = frameCount;
-            frameCount = 0;
-            second -= 1.0f;
+            GetInstance().frameRate = GetInstance().frameCount;
+            GetInstance().frameCount = 0;
+            GetInstance().second -= 1.0f;
         }
     }
 
 private:
+    friend std::unique_ptr<Timer>::deleter_type;
+
     float time = 0.0f;
     float deltaTime = 0.0f;
     int frameRate = 0;
@@ -998,6 +1017,35 @@ private:
     LARGE_INTEGER preCount;
     LARGE_INTEGER frequency;
 
+    Timer(Timer&) = delete;
+    Timer(const Timer&) = delete;
+    Timer& operator=(Timer&) = delete;
+    Timer& operator=(const Timer&) = delete;
+    Timer()
+    {
+        InitializeApplication();
+
+        preCount = GetCounter();
+        frequency = GetCountFrequency();
+    }
+    ~Timer()
+    {
+    }
+    static Timer& GetInstance()
+    {
+        static std::unique_ptr<Timer> instance;
+
+        if (instance == nullptr)
+        {
+            instance.reset(Instantiate());
+        }
+
+        return *instance;
+    }
+    static Timer* Instantiate()
+    {
+        return new Timer();
+    }
     LARGE_INTEGER GetCounter() const
     {
         LARGE_INTEGER counter;
@@ -1014,9 +1062,29 @@ private:
 class Random
 {
 public:
+    static void SetSeed(int seed)
+    {
+        GetInstance().mt.seed(seed);
+    }
+    static float Get()
+    {
+        std::uniform_real_distribution<float> range(0.0f, 1.0f);
+
+        return range(GetInstance().mt);
+    }
+
+private:
+    friend std::unique_ptr<Random>::deleter_type;
+
+    std::mt19937 mt;
+
+    Random(Random&) = delete;
+    Random(const Random&) = delete;
+    Random& operator=(Random&) = delete;
+    Random& operator=(const Random&) = delete;
     Random()
     {
-        XLibraryInitialize();
+        InitializeApplication();
 
         std::random_device device;
         mt.seed(device());
@@ -1024,92 +1092,39 @@ public:
     ~Random()
     {
     }
-    void SetSeed(int seed)
+    static Random& GetInstance()
     {
-        mt.seed(seed);
+        static std::unique_ptr<Random> instance;
+
+        if (instance == nullptr)
+        {
+            instance.reset(Instantiate());
+        }
+
+        return *instance;
     }
-    float Get()
+    static Random* Instantiate()
     {
-        std::uniform_real_distribution<float> range(0.0f, 1.0f);
-
-        return range(mt);
+        return new Random();
     }
-
-private:
-    std::mt19937 mt;
 };
 
-
-    App() = delete;
-    static bool Refresh()
-    {
-        Graphics::Update();
-        Input::Update();
-        GetTimerInstance().Update();
-        return Window::Update();
-    }
-    static IDirectSound8& GetAudioDevice()
-    {
-        return GetAudioInstance().GetDevice();
-    }
-    static float GetTime()
-    {
-        return GetTimerInstance().GetTime();
-    }
-    static float GetDeltaTime()
-    {
-        return GetTimerInstance().GetDeltaTime();
-    }
-    static int GetFrameRate()
-    {
-        return GetTimerInstance().GetFrameRate();
-    }
-    static void SetRandomSeed(int seed)
-    {
-        return GetRandomInstance().SetSeed(seed);
-    }
-    static float GetRandom()
-    {
-        return GetRandomInstance().Get();
-    }
-    static void AddFont(const wchar_t* filePath)
-    {
-        AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
-    }
-
-private:
-    static Audio& GetAudioInstance()
-    {
-        static std::unique_ptr<Audio> audio(new Audio());
-        return *audio.get();
-    }
-    static Timer& GetTimerInstance()
-    {
-        static std::unique_ptr<Timer> timer(new Timer());
-        return *timer.get();
-    }
-    static Random& GetRandomInstance()
-    {
-        static std::unique_ptr<Random> random(new Random());
-        return *random.get();
-    }
-};
 
 class Texture
 {
 public:
     Texture()
     {
-        XLibraryInitialize();
+        InitializeApplication();
     }
     Texture(const wchar_t* const filePath)
     {
-        XLibraryInitialize();
+        InitializeApplication();
         Load(filePath);
     }
     Texture(const BYTE* const buffer, int width, int height)
     {
-        XLibraryInitialize();
+        InitializeApplication();
         Create(buffer, width, height);
     }
     ~Texture()
@@ -1333,7 +1348,7 @@ private:
 
     void Initialize()
     {
-        XLibraryInitialize();
+        InitializeApplication();
 
         for (int i = 0; i < 10; i++)
         {
@@ -1366,7 +1381,7 @@ public:
 
     Camera()
     {
-        XLibraryInitialize();
+        InitializeApplication();
 
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1538,7 +1553,7 @@ public:
 
     Mesh()
     {
-        XLibraryInitialize();
+        InitializeApplication();
 
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1797,7 +1812,7 @@ protected:
 
     void Initialize()
     {
-        XLibraryInitialize();
+        InitializeApplication();
 
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1942,7 +1957,7 @@ public:
     }
     void Load(const wchar_t* const filePath)
     {
-        App::GetAudioDevice();
+        Audio::GetDevice();
 
         ATL::CComPtr<IStream> stream = nullptr;
         SHCreateStreamOnFileW(filePath, STGM_READ, &stream);
@@ -1985,7 +2000,7 @@ public:
         bufferDesc.lpwfxFormat = format;
 
         soundBuffer.Release();
-        App::GetAudioDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
+        Audio::GetDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
     }
     void SetLoop(bool isLoop)
     {
@@ -2092,7 +2107,7 @@ private:
 
     void Initialize()
     {
-        XLibraryInitialize();
+        InitializeApplication();
 
         Window::AddProcedure(this);
     }
@@ -2178,5 +2193,13 @@ private:
     }
 };
 
+
+static bool Refresh()
+{
+    Graphics::Update();
+    Input::Update();
+    Timer::Update();
+    return Window::Update();
+}
 
 }

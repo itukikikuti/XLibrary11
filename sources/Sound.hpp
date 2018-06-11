@@ -16,7 +16,7 @@ public:
     }
     void Load(const wchar_t* const filePath)
     {
-        App::GetAudioDevice();
+        Audio::GetDevice();
 
         ATL::CComPtr<IStream> stream = nullptr;
         SHCreateStreamOnFileW(filePath, STGM_READ, &stream);
@@ -59,7 +59,7 @@ public:
         bufferDesc.lpwfxFormat = format;
 
         soundBuffer.Release();
-        App::GetAudioDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
+        Audio::GetDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
     }
     void SetLoop(bool isLoop)
     {
@@ -166,7 +166,7 @@ private:
 
     void Initialize()
     {
-        XLibraryInitialize();
+        InitializeApplication();
 
         Window::AddProcedure(this);
     }

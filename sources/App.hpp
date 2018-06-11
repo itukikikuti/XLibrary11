@@ -41,7 +41,7 @@ XLIBRARY_NAMESPACE_BEGIN
 
 using namespace DirectX;
 
-inline void XLibraryInitialize()
+static void InitializeApplication()
 {
     static bool isInitialized = false;
 
@@ -54,71 +54,13 @@ inline void XLibraryInitialize()
 }
 
 #include "Utility.hpp"
+
 #include "Window.hpp"
 #include "Input.hpp"
 #include "Graphics.hpp"
-
-class App final
-{
-public:
 #include "Audio.hpp"
 #include "Timer.hpp"
 #include "Random.hpp"
-
-    App() = delete;
-    static bool Refresh()
-    {
-        Graphics::Update();
-        Input::Update();
-        GetTimerInstance().Update();
-        return Window::Update();
-    }
-    static IDirectSound8& GetAudioDevice()
-    {
-        return GetAudioInstance().GetDevice();
-    }
-    static float GetTime()
-    {
-        return GetTimerInstance().GetTime();
-    }
-    static float GetDeltaTime()
-    {
-        return GetTimerInstance().GetDeltaTime();
-    }
-    static int GetFrameRate()
-    {
-        return GetTimerInstance().GetFrameRate();
-    }
-    static void SetRandomSeed(int seed)
-    {
-        return GetRandomInstance().SetSeed(seed);
-    }
-    static float GetRandom()
-    {
-        return GetRandomInstance().Get();
-    }
-    static void AddFont(const wchar_t* filePath)
-    {
-        AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
-    }
-
-private:
-    static Audio& GetAudioInstance()
-    {
-        static std::unique_ptr<Audio> audio(new Audio());
-        return *audio.get();
-    }
-    static Timer& GetTimerInstance()
-    {
-        static std::unique_ptr<Timer> timer(new Timer());
-        return *timer.get();
-    }
-    static Random& GetRandomInstance()
-    {
-        static std::unique_ptr<Random> random(new Random());
-        return *random.get();
-    }
-};
 
 #include "Texture.hpp"
 #include "Material.hpp"
@@ -127,5 +69,13 @@ private:
 #include "Sprite.hpp"
 #include "Text.hpp"
 #include "Sound.hpp"
+
+static bool Refresh()
+{
+    Graphics::Update();
+    Input::Update();
+    Timer::Update();
+    return Window::Update();
+}
 
 XLIBRARY_NAMESPACE_END
