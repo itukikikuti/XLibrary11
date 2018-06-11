@@ -53,10 +53,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sources\Library.cpp">
+    <ClCompile Include="sources\Main.cpp">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="sources\Main.cpp">
+    <ClCompile Include="sources\LibraryGenerator.cpp">
       <Filter>sources</Filter>
     </ClCompile>
   </ItemGroup>

@@ -134,7 +134,7 @@
     <ClInclude Include="sources\Window.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sources\Library.cpp" />
+    <ClCompile Include="sources\LibraryGenerator.cpp" />
     <ClCompile Include="sources\Main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

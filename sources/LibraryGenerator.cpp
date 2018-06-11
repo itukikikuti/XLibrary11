@@ -6,11 +6,12 @@
 #include <iostream>
 #include <regex>
 
-namespace Library
-{
-    using namespace std;
+using namespace std;
 
-    inline wstring GetSourceCode(const wchar_t* filePath)
+class LibraryGenerator
+{
+public:
+    static wstring GetSourceCode(const wchar_t* filePath)
     {
         wifstream sourceFile(filePath);
         if (sourceFile.fail())
@@ -25,8 +26,7 @@ namespace Library
         sourceFile.close();
         return sourceCode;
     }
-
-    inline void MargeSourceCode(const wchar_t* fileName, wstring& sourceCode)
+    static void MargeSourceCode(const wchar_t* fileName, wstring& sourceCode)
     {
         wstring from = L"#include \"" + wstring(fileName) + L"\"";
         wstring filePath = L"sources/" + wstring(fileName);
@@ -34,8 +34,7 @@ namespace Library
         wstring::size_type pos = sourceCode.find(from);
         sourceCode.replace(pos, from.size(), GetSourceCode(filePath.c_str()));
     }
-
-    inline vector<wstring> GetSourceFileNameList(wstring& sourceCode)
+    static vector<wstring> GetSourceFileNameList(wstring& sourceCode)
     {
         vector<wstring> list;
         for (size_t i = 0; i < sourceCode.length(); i++)
@@ -49,8 +48,7 @@ namespace Library
         }
         return list;
     }
-
-    inline void Generate(const wchar_t* inputFilePath, const wchar_t* outputFilePath)
+    static void Generate(const wchar_t* inputFilePath, const wchar_t* outputFilePath)
     {
 #if !defined(_DEBUG)
         return;
@@ -72,4 +70,4 @@ namespace Library
         libraryFile << library;
         libraryFile.close();
     }
-}
+};
