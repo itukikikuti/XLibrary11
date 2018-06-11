@@ -108,7 +108,7 @@ private:
         HINSTANCE instance = GetModuleHandleW(nullptr);
 
         WNDCLASSW windowClass = {};
-        windowClass.lpfnWndProc = ProceedMessage;
+        windowClass.lpfnWndProc = DefWindowProcW;
         windowClass.hInstance = instance;
         windowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED));
         windowClass.lpszClassName = className;
@@ -130,6 +130,7 @@ private:
         {
             instance.reset(Instantiate());
             SetSize(640, 480);
+            SetWindowLongPtrW(GetHandle(), GWLP_WNDPROC, (LONG_PTR)ProceedMessage);
         }
 
         return *instance;
@@ -140,10 +141,10 @@ private:
     }
     static LRESULT CALLBACK ProceedMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
     {
-        //for (Proceedable* procedure : GetInstance().procedures)
-        //{
-        //    procedure->OnProceed(window, message, wParam, lParam);
-        //}
+        for (Proceedable* procedure : GetInstance().procedures)
+        {
+            procedure->OnProceed(window, message, wParam, lParam);
+        }
 
         if (message == WM_DESTROY)
             PostQuitMessage(0);
