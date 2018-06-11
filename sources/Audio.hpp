@@ -3,11 +3,11 @@ class Audio
 public:
     Audio()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         DirectSoundCreate8(nullptr, &device, nullptr);
 
-        device->SetCooperativeLevel(App::GetWindowHandle(), DSSCL_NORMAL);
+        device->SetCooperativeLevel(Window::GetHandle(), DSSCL_NORMAL);
 
         MFStartup(MF_VERSION);
     }

@@ -54,7 +54,7 @@ int MAIN()
     {
         camera.Update();
 
-        music.SetPitch(App::GetMousePosition().x / (App::GetWindowSize().x / 2.0f));
+        music.SetPitch(App::GetMousePosition().x / (Window::GetSize().x / 2.0f));
 
         if (App::GetKeyDown('J'))
             music.Play();

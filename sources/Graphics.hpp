@@ -1,9 +1,9 @@
-﻿class Graphics : public App::Window::Proceedable
+﻿class Graphics : public Window::Proceedable
 {
 public:
     Graphics()
     {
-        App::Initialize();
+        XLibraryInitialize();
 
         UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)
@@ -71,11 +71,11 @@ public:
 
         Create();
 
-        App::AddWindowProcedure(this);
+        Window::AddProcedure(this);
     }
     virtual ~Graphics()
     {
-        App::RemoveWindowProcedure(this);
+        Window::RemoveProcedure(this);
     }
     ID3D11Device& GetDevice3D() const
     {
@@ -110,7 +110,7 @@ public:
         if (App::GetKey(VK_MENU) && App::GetKeyDown(VK_RETURN))
         {
             isFullScreen = !isFullScreen;
-            App::SetFullScreen(isFullScreen);
+            Window::SetFullScreen(isFullScreen);
         }
 
         swapChain->Present(1, 0);
@@ -138,8 +138,8 @@ private:
         adapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory));
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-        swapChainDesc.BufferDesc.Width = App::GetWindowSize().x;
-        swapChainDesc.BufferDesc.Height = App::GetWindowSize().y;
+        swapChainDesc.BufferDesc.Width = Window::GetSize().x;
+        swapChainDesc.BufferDesc.Height = Window::GetSize().y;
         swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
         swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
         swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -147,16 +147,16 @@ private:
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         swapChainDesc.BufferCount = 1;
-        swapChainDesc.OutputWindow = App::GetWindowHandle();
+        swapChainDesc.OutputWindow = Window::GetHandle();
         swapChainDesc.Windowed = true;
 
         swapChain.Release();
         factory->CreateSwapChain(device3D, &swapChainDesc, &swapChain);
-        factory->MakeWindowAssociation(App::GetWindowHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
+        factory->MakeWindowAssociation(Window::GetHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
         D3D11_VIEWPORT viewPort = {};
-        viewPort.Width = static_cast<float>(App::GetWindowSize().x);
-        viewPort.Height = static_cast<float>(App::GetWindowSize().y);
+        viewPort.Width = static_cast<float>(Window::GetSize().x);
+        viewPort.Height = static_cast<float>(Window::GetSize().y);
         viewPort.MaxDepth = 1.0f;
         context3D->RSSetViewports(1, &viewPort);
     }
@@ -165,7 +165,7 @@ private:
         if (message != WM_SIZE)
             return;
 
-        if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
+        if (Window::GetSize().x <= 0.0f || Window::GetSize().y <= 0.0f)
             return;
 
         Create();
