@@ -1,73 +1,94 @@
 class Input
 {
 public:
-    Input()
+    static bool GetKey(int keyCode)
     {
-        App::Initialize();
-
-        Update();
+        return GetInstance().keyState[keyCode] & 0x80;
     }
-    ~Input()
+    static bool GetKeyUp(int keyCode)
     {
+        return !(GetInstance().keyState[keyCode] & 0x80) && (GetInstance().preKeyState[keyCode] & 0x80);
     }
-    bool GetKey(int keyCode) const
+    static bool GetKeyDown(int keyCode)
     {
-        return keyState[keyCode] & 0x80;
+        return (GetInstance().keyState[keyCode] & 0x80) && !(GetInstance().preKeyState[keyCode] & 0x80);
     }
-    bool GetKeyUp(int keyCode) const
+    static Float2 GetMousePosition()
     {
-        return !(keyState[keyCode] & 0x80) && (preKeyState[keyCode] & 0x80);
+        return GetInstance().mousePosition;
     }
-    bool GetKeyDown(int keyCode) const
+    static void SetMousePosition(float x, float y)
     {
-        return (keyState[keyCode] & 0x80) && !(preKeyState[keyCode] & 0x80);
-    }
-    Float2 GetMousePosition() const
-    {
-        return mousePosition;
-    }
-    void SetMousePosition(float x, float y)
-    {
-        if (GetActiveWindow() != App::GetWindowHandle())
+        if (GetActiveWindow() != Window::GetHandle())
             return;
 
         POINT point = {};
-        point.x = static_cast<int>(x) + App::GetWindowSize().x / 2;
-        point.y = static_cast<int>(-y) + App::GetWindowSize().y / 2;
-        ClientToScreen(App::GetWindowHandle(), &point);
+        point.x = static_cast<int>(x) + Window::GetSize().x / 2;
+        point.y = static_cast<int>(-y) + Window::GetSize().y / 2;
+        ClientToScreen(Window::GetHandle(), &point);
         SetCursorPos(point.x, point.y);
 
-        mousePosition.x = x;
-        mousePosition.y = y;
+        GetInstance().mousePosition.x = x;
+        GetInstance().mousePosition.y = y;
     }
-    void SetShowCursor(bool isShowCursor)
+    static void SetShowCursor(bool isShowCursor)
     {
-        if (this->isShowCursor == isShowCursor)
+        if (GetInstance().isShowCursor == isShowCursor)
             return;
 
-        this->isShowCursor = isShowCursor;
+        GetInstance().isShowCursor = isShowCursor;
         ShowCursor(isShowCursor);
     }
-    void Update()
+    static void Update()
     {
         POINT point = {};
         GetCursorPos(&point);
-        ScreenToClient(App::GetWindowHandle(), &point);
+        ScreenToClient(Window::GetHandle(), &point);
 
-        mousePosition.x = static_cast<float>(point.x - App::GetWindowSize().x / 2);
-        mousePosition.y = static_cast<float>(-point.y + App::GetWindowSize().y / 2);
+        GetInstance().mousePosition.x = static_cast<float>(point.x - Window::GetSize().x / 2);
+        GetInstance().mousePosition.y = static_cast<float>(-point.y + Window::GetSize().y / 2);
 
         for (int i = 0; i < 256; i++)
         {
-            preKeyState[i] = keyState[i];
+            GetInstance().preKeyState[i] = GetInstance().keyState[i];
         }
 
-        GetKeyboardState(keyState);
+        GetKeyboardState(GetInstance().keyState);
     }
 
 private:
+    friend std::unique_ptr<Input>::deleter_type;
+
     Float2 mousePosition;
     BYTE preKeyState[256];
     BYTE keyState[256];
     bool isShowCursor = true;
+
+    Input(Input&) = delete;
+    Input(const Input&) = delete;
+    Input& operator=(Input&) = delete;
+    Input& operator=(const Input&) = delete;
+    Input()
+    {
+        InitializeApplication();
+    }
+    ~Input()
+    {
+    }
+    static Input& GetInstance()
+    {
+        static std::unique_ptr<Input> instance;
+
+        if (instance == nullptr)
+        {
+            instance.reset(Instantiate());
+            Update();
+        }
+
+        return *instance;
+    }
+    static Input* Instantiate()
+    {
+        return new Input();
+    }
 };

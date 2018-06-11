@@ -1,9 +1,64 @@
-﻿class Graphics : public App::Window::Proceedable
+﻿class Graphics : public Window::Proceedable
 {
 public:
+    static ID3D11Device& GetDevice3D()
+    {
+        return *GetInstance().device3D;
+    }
+    static ID3D11DeviceContext& GetContext3D()
+    {
+        return *GetInstance().context3D;
+    }
+    static ID2D1Device& GetDevice2D()
+    {
+        return *GetInstance().device2D;
+    }
+    static ID2D1DeviceContext& GetContext2D()
+    {
+        return *GetInstance().context2D;
+    }
+    static IDXGISwapChain& GetSwapChain()
+    {
+        return *GetInstance().swapChain;
+    }
+    static IWICImagingFactory& GetTextureFactory()
+    {
+        return *GetInstance().textureFactory;
+    }
+    static IDWriteFactory& GetTextFactory()
+    {
+        return *GetInstance().textFactory.Get();
+    }
+    static void Update()
+    {
+        if (Input::GetKey(VK_MENU) && Input::GetKeyDown(VK_RETURN))
+        {
+            GetInstance().isFullScreen = !GetInstance().isFullScreen;
+            Window::SetFullScreen(GetInstance().isFullScreen);
+        }
+
+        GetInstance().swapChain->Present(1, 0);
+    }
+
+private:
+    friend std::unique_ptr<Graphics>::deleter_type;
+
+    ATL::CComPtr<ID3D11Device> device3D = nullptr;
+    ATL::CComPtr<ID3D11DeviceContext> context3D = nullptr;
+    ATL::CComPtr<ID2D1Device> device2D = nullptr;
+    ATL::CComPtr<ID2D1DeviceContext> context2D = nullptr;
+    ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
+    ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
+    Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
+    bool isFullScreen = false;
+
+    Graphics(Graphics&) = delete;
+    Graphics(const Graphics&) = delete;
+    Graphics& operator=(Graphics&) = delete;
+    Graphics& operator=(const Graphics&) = delete;
     Graphics()
     {
-        App::Initialize();
+        InitializeApplication();
 
         UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)
@@ -71,61 +126,27 @@ public:
 
         Create();
 
-        App::AddWindowProcedure(this);
+        Window::AddProcedure(this);
     }
     virtual ~Graphics()
     {
-        App::RemoveWindowProcedure(this);
+        Window::RemoveProcedure(this);
     }
-    ID3D11Device& GetDevice3D() const
+    static Graphics& GetInstance()
     {
-        return *device3D;
-    }
-    ID3D11DeviceContext& GetContext3D() const
-    {
-        return *context3D;
-    }
-    ID2D1Device& GetDevice2D() const
-    {
-        return *device2D;
-    }
-    ID2D1DeviceContext& GetContext2D() const
-    {
-        return *context2D;
-    }
-    IDXGISwapChain& GetSwapChain() const
-    {
-        return *swapChain;
-    }
-    IWICImagingFactory& GetTextureFactory() const
-    {
-        return *textureFactory;
-    }
-    IDWriteFactory& GetTextFactory() const
-    {
-        return *textFactory.Get();
-    }
-    void Update()
-    {
-        if (App::GetKey(VK_MENU) && App::GetKeyDown(VK_RETURN))
+        static std::unique_ptr<Graphics> instance;
+
+        if (instance == nullptr)
         {
-            isFullScreen = !isFullScreen;
-            App::SetFullScreen(isFullScreen);
+            instance.reset(Instantiate());
         }
 
-        swapChain->Present(1, 0);
+        return *instance;
     }
-
-private:
-    ATL::CComPtr<ID3D11Device> device3D = nullptr;
-    ATL::CComPtr<ID3D11DeviceContext> context3D = nullptr;
-    ATL::CComPtr<ID2D1Device> device2D = nullptr;
-    ATL::CComPtr<ID2D1DeviceContext> context2D = nullptr;
-    ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
-    ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
-    Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
-    bool isFullScreen = false;
-
+    static Graphics* Instantiate()
+    {
+        return new Graphics();
+    }
     void Create()
     {
         ATL::CComPtr<IDXGIDevice> dxgi = nullptr;
@@ -138,8 +159,8 @@ private:
         adapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory));
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-        swapChainDesc.BufferDesc.Width = App::GetWindowSize().x;
-        swapChainDesc.BufferDesc.Height = App::GetWindowSize().y;
+        swapChainDesc.BufferDesc.Width = Window::GetSize().x;
+        swapChainDesc.BufferDesc.Height = Window::GetSize().y;
         swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
         swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
         swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -147,16 +168,16 @@ private:
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         swapChainDesc.BufferCount = 1;
-        swapChainDesc.OutputWindow = App::GetWindowHandle();
+        swapChainDesc.OutputWindow = Window::GetHandle();
         swapChainDesc.Windowed = true;
 
         swapChain.Release();
         factory->CreateSwapChain(device3D, &swapChainDesc, &swapChain);
-        factory->MakeWindowAssociation(App::GetWindowHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
+        factory->MakeWindowAssociation(Window::GetHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
         D3D11_VIEWPORT viewPort = {};
-        viewPort.Width = static_cast<float>(App::GetWindowSize().x);
-        viewPort.Height = static_cast<float>(App::GetWindowSize().y);
+        viewPort.Width = static_cast<float>(Window::GetSize().x);
+        viewPort.Height = static_cast<float>(Window::GetSize().y);
         viewPort.MaxDepth = 1.0f;
         context3D->RSSetViewports(1, &viewPort);
     }
@@ -165,7 +186,7 @@ private:
         if (message != WM_SIZE)
             return;
 
-        if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
+        if (Window::GetSize().x <= 0.0f || Window::GetSize().y <= 0.0f)
             return;
 
         Create();

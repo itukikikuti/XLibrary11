@@ -15,13 +15,17 @@ int MAIN()
     camera.SetPerspective(60.0f, 0.1f, 100.0f);
     camera.SetDepthTest(true);
 
+    Camera uiCamera;
+    uiCamera.color = Float4(1.0f, 0.0f, 1.0f, 1.0f);
+    uiCamera.SetDepthTest(false);
+
     Texture texture(L"assets/box.jpg");
 
     Mesh mesh;
     mesh.CreateCube(Float3(1.0f, 0.5f, 0.3f));
     mesh.GetMaterial().SetTexture(0, &texture);
 
-    Text text(L"菊池いつきです。\n今日は天気も良くおならが出そうです。\n何を言ってるのかわからないですよね、僕もわからないです！\nabcdefghijklmnopqrstuvwxyz", 16.0f);
+    Text text(L"あいうえおかきくけこさしすせそ\nabcdefghijklmnopqrstuvwxyz", 16.0f);
     //text.SetPivot(Float2(-1.0f, 1.0f));
     text.position.y = 2.0f;
     text.scale = 1.0f / 50.0f;
@@ -44,32 +48,30 @@ int MAIN()
     sprite1.position.x = 1.0f;
     sprite1.scale = 1.0f / 256.0f;
 
-    Sprite sprite(L"assets/clock.png");
-    sprite.position.z = 100.0f;
-    sprite.scale = 0.1f;
+    Sprite sprite(L"assets/box.jpg");
 
     float pos1 = -2.0f;
     float pos2 = -3.0f;
-    while (App::Refresh())
+    while (Refresh())
     {
         camera.Update();
 
-        music.SetPitch(App::GetMousePosition().x / (App::GetWindowSize().x / 2.0f));
+        music.SetPitch(Input::GetMousePosition().x / (Window::GetSize().x / 2.0f));
 
-        if (App::GetKeyDown('J'))
+        if (Input::GetKeyDown('J'))
             music.Play();
-        if (App::GetKeyDown('K'))
+        if (Input::GetKeyDown('K'))
             music.Pause();
-        if (App::GetKeyDown('L'))
+        if (Input::GetKeyDown('L'))
             music.Stop();
 
-        if (App::GetKeyDown(VK_SPACE))
+        if (Input::GetKeyDown(VK_SPACE))
         {
             sound.Play();
         }
 
         number.angles.y += 1.0f;
-        if (!App::GetKey('2'))
+        if (!Input::GetKey('2'))
         {
             text.angles.z += 1.0f;
             text.Draw();
@@ -77,7 +79,7 @@ int MAIN()
         else
         {
             wstringstream ss;
-            ss << App::GetTime();
+            ss << Timer::GetTime();
             number.Create(ss.str(), 100.0f);
         }
 
@@ -98,14 +100,16 @@ int MAIN()
         mesh.position.x = -0.5f;
         mesh.Draw();
 
-        if (App::GetKey('1'))
-            App::SetMousePosition(0.0f, 0.0f);
+        if (Input::GetKey('1'))
+            Input::SetMousePosition(0.0f, 0.0f);
 
-        sprite1.angles.z = App::GetRandom() * 360.0f;
+        sprite1.angles.z = Random::Get() * 360.0f;
         sprite1.Draw();
 
-        sprite.position.x = App::GetMousePosition().x / 5.0f;
-        sprite.position.y = App::GetMousePosition().y / 5.0f;
+        uiCamera.Update(false);
+
+        sprite.position.x = Window::GetSize().x / 2.0f - sprite.GetSize().x / 2.0f;
+        //sprite.angles.z += 10.0f;
         sprite.Draw();
     }
 

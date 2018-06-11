@@ -3,16 +3,16 @@
 public:
     Texture()
     {
-        App::Initialize();
+        InitializeApplication();
     }
     Texture(const wchar_t* const filePath)
     {
-        App::Initialize();
+        InitializeApplication();
         Load(filePath);
     }
     Texture(const BYTE* const buffer, int width, int height)
     {
-        App::Initialize();
+        InitializeApplication();
         Create(buffer, width, height);
     }
     ~Texture()
@@ -22,7 +22,7 @@ public:
     {
         ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
 
-        App::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+        Graphics::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
         ATL::CComPtr<IWICBitmapFrameDecode> frame = nullptr;
         decoder->GetFrame(0, &frame);
         UINT width, height;
@@ -35,7 +35,7 @@ public:
         if (pixelFormat != GUID_WICPixelFormat32bppBGRA)
         {
             ATL::CComPtr<IWICFormatConverter> formatConverter = nullptr;
-            App::GetTextureFactory().CreateFormatConverter(&formatConverter);
+            Graphics::GetTextureFactory().CreateFormatConverter(&formatConverter);
 
             formatConverter->Initialize(frame, GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
 
@@ -70,14 +70,14 @@ public:
         textureSubresourceData.pSysMem = buffer;
         textureSubresourceData.SysMemPitch = width * 4;
         textureSubresourceData.SysMemSlicePitch = width * height * 4;
-        App::GetGraphicsDevice3D().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
 
         shaderResourceView.Release();
         D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
         shaderResourceViewDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
         shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         shaderResourceViewDesc.Texture2D.MipLevels = 1;
-        App::GetGraphicsDevice3D().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+        Graphics::GetDevice3D().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
 
         samplerState.Release();
         D3D11_SAMPLER_DESC samplerDesc = {};
@@ -94,7 +94,7 @@ public:
         samplerDesc.BorderColor[3] = 0.0f;
         samplerDesc.MinLOD = 0.0f;
         samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-        App::GetGraphicsDevice3D().CreateSamplerState(&samplerDesc, &samplerState);
+        Graphics::GetDevice3D().CreateSamplerState(&samplerDesc, &samplerState);
     }
     DirectX::XMINT2 GetSize() const
     {
@@ -105,8 +105,8 @@ public:
         if (texture == nullptr)
             return;
 
-        App::GetGraphicsContext3D().PSSetShaderResources(slot, 1, &shaderResourceView.p);
-        App::GetGraphicsContext3D().PSSetSamplers(slot, 1, &samplerState.p);
+        Graphics::GetContext3D().PSSetShaderResources(slot, 1, &shaderResourceView.p);
+        Graphics::GetContext3D().PSSetSamplers(slot, 1, &samplerState.p);
     }
     ID3D11Texture2D& GetInterface()
     {

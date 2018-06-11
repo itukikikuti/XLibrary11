@@ -9,7 +9,7 @@ public:
 
     Mesh()
     {
-        App::Initialize();
+        InitializeApplication();
 
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -124,7 +124,7 @@ public:
         rasterizerDesc.FillMode = D3D11_FILL_SOLID;
         rasterizerDesc.CullMode = cullingMode;
         rasterizerState.Release();
-        App::GetGraphicsDevice3D().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+        Graphics::GetDevice3D().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
     }
     void Apply()
     {
@@ -137,7 +137,7 @@ public:
             vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
             D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
             vertexSubresourceData.pSysMem = vertices.data();
-            App::GetGraphicsDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+            Graphics::GetDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
         }
 
         indexBuffer.Release();
@@ -149,7 +149,7 @@ public:
             indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
             D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
             indexSubresourceData.pSysMem = indices.data();
-            App::GetGraphicsDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+            Graphics::GetDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
         }
 
         material.SetBuffer(1, &constant, sizeof(Constant));
@@ -169,20 +169,20 @@ public:
 
         material.Attach();
 
-        App::GetGraphicsContext3D().RSSetState(rasterizerState);
+        Graphics::GetContext3D().RSSetState(rasterizerState);
 
         UINT stride = sizeof(Vertex);
         UINT offset = 0;
-        App::GetGraphicsContext3D().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
+        Graphics::GetContext3D().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
 
         if (indexBuffer == nullptr)
         {
-            App::GetGraphicsContext3D().Draw((UINT)vertices.size(), 0);
+            Graphics::GetContext3D().Draw((UINT)vertices.size(), 0);
         }
         else
         {
-            App::GetGraphicsContext3D().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-            App::GetGraphicsContext3D().DrawIndexed((UINT)indices.size(), 0, 0);
+            Graphics::GetContext3D().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+            Graphics::GetContext3D().DrawIndexed((UINT)indices.size(), 0, 0);
         }
     }
 

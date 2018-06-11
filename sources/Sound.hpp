@@ -1,4 +1,4 @@
-class Sound : public App::Window::Proceedable
+class Sound : public Window::Proceedable
 {
 public:
     Sound()
@@ -12,11 +12,11 @@ public:
     }
     virtual ~Sound()
     {
-        App::RemoveWindowProcedure(this);
+        Window::RemoveProcedure(this);
     }
     void Load(const wchar_t* const filePath)
     {
-        App::GetAudioDevice();
+        Audio::GetDevice();
 
         ATL::CComPtr<IStream> stream = nullptr;
         SHCreateStreamOnFileW(filePath, STGM_READ, &stream);
@@ -59,7 +59,7 @@ public:
         bufferDesc.lpwfxFormat = format;
 
         soundBuffer.Release();
-        App::GetAudioDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
+        Audio::GetDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
     }
     void SetLoop(bool isLoop)
     {
@@ -166,9 +166,9 @@ private:
 
     void Initialize()
     {
-        App::Initialize();
+        InitializeApplication();
 
-        App::AddWindowProcedure(this);
+        Window::AddProcedure(this);
     }
     void Reset()
     {

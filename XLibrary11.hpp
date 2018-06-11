@@ -42,6 +42,18 @@ namespace XLibrary11
 
 using namespace DirectX;
 
+static void InitializeApplication()
+{
+    static bool isInitialized = false;
+
+    if (!isInitialized)
+    {
+        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+        isInitialized = true;
+    }
+}
+
 struct Float2 : public DirectX::XMFLOAT2
 {
     Float2() : DirectX::XMFLOAT2()
@@ -472,9 +484,6 @@ struct Vertex
     }
 };
 
-class App final
-{
-public:
 class Window
 {
 public:
@@ -484,65 +493,42 @@ public:
         virtual void OnProceed(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
     };
 
-    Window()
+    static HWND GetHandle()
     {
-        App::Initialize();
-
-        HINSTANCE instance = GetModuleHandleW(nullptr);
-
-        WNDCLASSW windowClass = {};
-        windowClass.lpfnWndProc = ProceedMessage;
-        windowClass.hInstance = instance;
-        windowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED));
-        windowClass.lpszClassName = className;
-        RegisterClassW(&windowClass);
-
-        handle = CreateWindowW(className, className, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, instance, nullptr);
-
-        SetSize(640, 480);
-        ShowWindow(handle, SW_SHOWNORMAL);
+        return GetInstance().handle;
     }
-    ~Window()
-    {
-        UnregisterClassW(className, GetModuleHandleW(nullptr));
-        CoUninitialize();
-    }
-    HWND GetHandle() const
-    {
-        return handle;
-    }
-    DirectX::XMINT2 GetSize() const
+    static DirectX::XMINT2 GetSize()
     {
         RECT clientRect = {};
-        GetClientRect(handle, &clientRect);
+        GetClientRect(GetInstance().handle, &clientRect);
 
         return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
     }
-    void SetSize(int width, int height)
+    static void SetSize(int width, int height)
     {
         RECT windowRect = {};
         RECT clientRect = {};
-        GetWindowRect(handle, &windowRect);
-        GetClientRect(handle, &clientRect);
+        GetWindowRect(GetInstance().handle, &windowRect);
+        GetClientRect(GetInstance().handle, &clientRect);
 
         int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + width;
         int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + height;
         int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
         int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
 
-        SetWindowPos(handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
+        SetWindowPos(GetInstance().handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
     }
-    wchar_t* const GetTitle() const
+    static wchar_t* const GetTitle()
     {
         wchar_t* title = nullptr;
-        GetWindowTextW(handle, title, GetWindowTextLengthW(handle));
+        GetWindowTextW(GetInstance().handle, title, GetWindowTextLengthW(GetInstance().handle));
         return title;
     }
-    void SetTitle(const wchar_t* const title)
+    static void SetTitle(const wchar_t* const title)
     {
-        SetWindowTextW(handle, title);
+        SetWindowTextW(GetInstance().handle, title);
     }
-    void SetFullScreen(bool isFullScreen)
+    static void SetFullScreen(bool isFullScreen)
     {
         static DirectX::XMINT2 size = GetSize();
 
@@ -551,17 +537,17 @@ public:
             size = GetSize();
             int w = GetSystemMetrics(SM_CXSCREEN);
             int h = GetSystemMetrics(SM_CYSCREEN);
-            SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | WS_POPUP);
-            SetWindowPos(handle, HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
+            SetWindowLongPtrW(GetInstance().handle, GWL_STYLE, WS_VISIBLE | WS_POPUP);
+            SetWindowPos(GetInstance().handle, HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
         }
         else
         {
-            SetWindowLongPtrW(handle, GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
-            SetWindowPos(handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+            SetWindowLongPtrW(GetInstance().handle, GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+            SetWindowPos(GetInstance().handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
             SetSize(size.x, size.y);
         }
     }
-    bool Update()
+    static bool Update()
     {
         MSG message = {};
 
@@ -574,34 +560,74 @@ public:
             DispatchMessageW(&message);
         }
 
-        PostMessageW(handle, WM_APP, 0, 0);
+        PostMessageW(GetInstance().handle, WM_APP, 0, 0);
 
         if (GetSize().x <= 0.0f || GetSize().y <= 0.0f)
             Sleep(100);
 
         return true;
     }
-    void AddProcedure(Proceedable* const procedure)
+    static void AddProcedure(Proceedable* const procedure)
     {
-        GetProcedures().push_back(procedure);
+        GetInstance().procedures.push_back(procedure);
     }
-    void RemoveProcedure(Proceedable* const procedure)
+    static void RemoveProcedure(Proceedable* const procedure)
     {
-        GetProcedures().remove(procedure);
+        GetInstance().procedures.remove(procedure);
     }
 
 private:
+    friend std::unique_ptr<Window>::deleter_type;
+
     const wchar_t* className = L"XLibrary11";
     HWND handle;
+    std::list<Proceedable*> procedures;
 
-    static std::list<Proceedable*>& GetProcedures()
+    Window(Window&) = delete;
+    Window(const Window&) = delete;
+    Window& operator=(Window&) = delete;
+    Window& operator=(const Window&) = delete;
+    Window()
     {
-        static std::list<Proceedable*> procedures;
-        return procedures;
+        InitializeApplication();
+
+        HINSTANCE instance = GetModuleHandleW(nullptr);
+
+        WNDCLASSW windowClass = {};
+        windowClass.lpfnWndProc = DefWindowProcW;
+        windowClass.hInstance = instance;
+        windowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED));
+        windowClass.lpszClassName = className;
+        RegisterClassW(&windowClass);
+
+        handle = CreateWindowW(className, className, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, instance, nullptr);
+
+        ShowWindow(handle, SW_SHOWNORMAL);
+    }
+    ~Window()
+    {
+        CoUninitialize();
+    }
+    static Window& GetInstance()
+    {
+        static std::unique_ptr<Window> instance;
+
+        if (instance == nullptr)
+        {
+            instance.reset(Instantiate());
+            SetSize(640, 480);
+            SetWindowLongPtrW(GetHandle(), GWLP_WNDPROC, (LONG_PTR)ProceedMessage);
+        }
+
+        return *instance;
+    }
+    static Window* Instantiate()
+    {
+        return new Window();
     }
     static LRESULT CALLBACK ProceedMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
     {
-        for (Proceedable* procedure : GetProcedures())
+        for (Proceedable* procedure : GetInstance().procedures)
         {
             procedure->OnProceed(window, message, wParam, lParam);
         }
@@ -612,12 +638,161 @@ private:
         return DefWindowProcW(window, message, wParam, lParam);
     }
 };
-class Graphics : public App::Window::Proceedable
+class Input
 {
 public:
+    static bool GetKey(int keyCode)
+    {
+        return GetInstance().keyState[keyCode] & 0x80;
+    }
+    static bool GetKeyUp(int keyCode)
+    {
+        return !(GetInstance().keyState[keyCode] & 0x80) && (GetInstance().preKeyState[keyCode] & 0x80);
+    }
+    static bool GetKeyDown(int keyCode)
+    {
+        return (GetInstance().keyState[keyCode] & 0x80) && !(GetInstance().preKeyState[keyCode] & 0x80);
+    }
+    static Float2 GetMousePosition()
+    {
+        return GetInstance().mousePosition;
+    }
+    static void SetMousePosition(float x, float y)
+    {
+        if (GetActiveWindow() != Window::GetHandle())
+            return;
+
+        POINT point = {};
+        point.x = static_cast<int>(x) + Window::GetSize().x / 2;
+        point.y = static_cast<int>(-y) + Window::GetSize().y / 2;
+        ClientToScreen(Window::GetHandle(), &point);
+        SetCursorPos(point.x, point.y);
+
+        GetInstance().mousePosition.x = x;
+        GetInstance().mousePosition.y = y;
+    }
+    static void SetShowCursor(bool isShowCursor)
+    {
+        if (GetInstance().isShowCursor == isShowCursor)
+            return;
+
+        GetInstance().isShowCursor = isShowCursor;
+        ShowCursor(isShowCursor);
+    }
+    static void Update()
+    {
+        POINT point = {};
+        GetCursorPos(&point);
+        ScreenToClient(Window::GetHandle(), &point);
+
+        GetInstance().mousePosition.x = static_cast<float>(point.x - Window::GetSize().x / 2);
+        GetInstance().mousePosition.y = static_cast<float>(-point.y + Window::GetSize().y / 2);
+
+        for (int i = 0; i < 256; i++)
+        {
+            GetInstance().preKeyState[i] = GetInstance().keyState[i];
+        }
+
+        GetKeyboardState(GetInstance().keyState);
+    }
+
+private:
+    friend std::unique_ptr<Input>::deleter_type;
+
+    Float2 mousePosition;
+    BYTE preKeyState[256];
+    BYTE keyState[256];
+    bool isShowCursor = true;
+
+    Input(Input&) = delete;
+    Input(const Input&) = delete;
+    Input& operator=(Input&) = delete;
+    Input& operator=(const Input&) = delete;
+    Input()
+    {
+        InitializeApplication();
+    }
+    ~Input()
+    {
+    }
+    static Input& GetInstance()
+    {
+        static std::unique_ptr<Input> instance;
+
+        if (instance == nullptr)
+        {
+            instance.reset(Instantiate());
+            Update();
+        }
+
+        return *instance;
+    }
+    static Input* Instantiate()
+    {
+        return new Input();
+    }
+};
+class Graphics : public Window::Proceedable
+{
+public:
+    static ID3D11Device& GetDevice3D()
+    {
+        return *GetInstance().device3D;
+    }
+    static ID3D11DeviceContext& GetContext3D()
+    {
+        return *GetInstance().context3D;
+    }
+    static ID2D1Device& GetDevice2D()
+    {
+        return *GetInstance().device2D;
+    }
+    static ID2D1DeviceContext& GetContext2D()
+    {
+        return *GetInstance().context2D;
+    }
+    static IDXGISwapChain& GetSwapChain()
+    {
+        return *GetInstance().swapChain;
+    }
+    static IWICImagingFactory& GetTextureFactory()
+    {
+        return *GetInstance().textureFactory;
+    }
+    static IDWriteFactory& GetTextFactory()
+    {
+        return *GetInstance().textFactory.Get();
+    }
+    static void Update()
+    {
+        if (Input::GetKey(VK_MENU) && Input::GetKeyDown(VK_RETURN))
+        {
+            GetInstance().isFullScreen = !GetInstance().isFullScreen;
+            Window::SetFullScreen(GetInstance().isFullScreen);
+        }
+
+        GetInstance().swapChain->Present(1, 0);
+    }
+
+private:
+    friend std::unique_ptr<Graphics>::deleter_type;
+
+    ATL::CComPtr<ID3D11Device> device3D = nullptr;
+    ATL::CComPtr<ID3D11DeviceContext> context3D = nullptr;
+    ATL::CComPtr<ID2D1Device> device2D = nullptr;
+    ATL::CComPtr<ID2D1DeviceContext> context2D = nullptr;
+    ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
+    ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
+    Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
+    bool isFullScreen = false;
+
+    Graphics(Graphics&) = delete;
+    Graphics(const Graphics&) = delete;
+    Graphics& operator=(Graphics&) = delete;
+    Graphics& operator=(const Graphics&) = delete;
     Graphics()
     {
-        App::Initialize();
+        InitializeApplication();
 
         UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)
@@ -685,61 +860,27 @@ public:
 
         Create();
 
-        App::AddWindowProcedure(this);
+        Window::AddProcedure(this);
     }
     virtual ~Graphics()
     {
-        App::RemoveWindowProcedure(this);
+        Window::RemoveProcedure(this);
     }
-    ID3D11Device& GetDevice3D() const
+    static Graphics& GetInstance()
     {
-        return *device3D;
-    }
-    ID3D11DeviceContext& GetContext3D() const
-    {
-        return *context3D;
-    }
-    ID2D1Device& GetDevice2D() const
-    {
-        return *device2D;
-    }
-    ID2D1DeviceContext& GetContext2D() const
-    {
-        return *context2D;
-    }
-    IDXGISwapChain& GetSwapChain() const
-    {
-        return *swapChain;
-    }
-    IWICImagingFactory& GetTextureFactory() const
-    {
-        return *textureFactory;
-    }
-    IDWriteFactory& GetTextFactory() const
-    {
-        return *textFactory.Get();
-    }
-    void Update()
-    {
-        if (App::GetKey(VK_MENU) && App::GetKeyDown(VK_RETURN))
+        static std::unique_ptr<Graphics> instance;
+
+        if (instance == nullptr)
         {
-            isFullScreen = !isFullScreen;
-            App::SetFullScreen(isFullScreen);
+            instance.reset(Instantiate());
         }
 
-        swapChain->Present(1, 0);
+        return *instance;
     }
-
-private:
-    ATL::CComPtr<ID3D11Device> device3D = nullptr;
-    ATL::CComPtr<ID3D11DeviceContext> context3D = nullptr;
-    ATL::CComPtr<ID2D1Device> device2D = nullptr;
-    ATL::CComPtr<ID2D1DeviceContext> context2D = nullptr;
-    ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
-    ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
-    Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
-    bool isFullScreen = false;
-
+    static Graphics* Instantiate()
+    {
+        return new Graphics();
+    }
     void Create()
     {
         ATL::CComPtr<IDXGIDevice> dxgi = nullptr;
@@ -752,8 +893,8 @@ private:
         adapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory));
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-        swapChainDesc.BufferDesc.Width = App::GetWindowSize().x;
-        swapChainDesc.BufferDesc.Height = App::GetWindowSize().y;
+        swapChainDesc.BufferDesc.Width = Window::GetSize().x;
+        swapChainDesc.BufferDesc.Height = Window::GetSize().y;
         swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
         swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
         swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -761,16 +902,16 @@ private:
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         swapChainDesc.BufferCount = 1;
-        swapChainDesc.OutputWindow = App::GetWindowHandle();
+        swapChainDesc.OutputWindow = Window::GetHandle();
         swapChainDesc.Windowed = true;
 
         swapChain.Release();
         factory->CreateSwapChain(device3D, &swapChainDesc, &swapChain);
-        factory->MakeWindowAssociation(App::GetWindowHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
+        factory->MakeWindowAssociation(Window::GetHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
         D3D11_VIEWPORT viewPort = {};
-        viewPort.Width = static_cast<float>(App::GetWindowSize().x);
-        viewPort.Height = static_cast<float>(App::GetWindowSize().y);
+        viewPort.Width = static_cast<float>(Window::GetSize().x);
+        viewPort.Height = static_cast<float>(Window::GetSize().y);
         viewPort.MaxDepth = 1.0f;
         context3D->RSSetViewports(1, &viewPort);
     }
@@ -779,7 +920,7 @@ private:
         if (message != WM_SIZE)
             return;
 
-        if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
+        if (Window::GetSize().x <= 0.0f || Window::GetSize().y <= 0.0f)
             return;
 
         Create();
@@ -788,13 +929,27 @@ private:
 class Audio
 {
 public:
+    static IDirectSound8& GetDevice()
+    {
+        return *GetInstance().device;
+    }
+
+private:
+    friend std::unique_ptr<Audio>::deleter_type;
+
+    ATL::CComPtr<IDirectSound8> device = nullptr;
+
+    Audio(Audio&) = delete;
+    Audio(const Audio&) = delete;
+    Audio& operator=(Audio&) = delete;
+    Audio& operator=(const Audio&) = delete;
     Audio()
     {
-        App::Initialize();
+        InitializeApplication();
 
         DirectSoundCreate8(nullptr, &device, nullptr);
 
-        device->SetCooperativeLevel(App::GetWindowHandle(), DSSCL_NORMAL);
+        device->SetCooperativeLevel(Window::GetHandle(), DSSCL_NORMAL);
 
         MFStartup(MF_VERSION);
     }
@@ -802,131 +957,58 @@ public:
     {
         MFShutdown();
     }
-    IDirectSound8& GetDevice() const
+    static Audio& GetInstance()
     {
-        return *device;
-    }
+        static std::unique_ptr<Audio> instance;
 
-private:
-    ATL::CComPtr<IDirectSound8> device = nullptr;
-};
-class Input
-{
-public:
-    Input()
-    {
-        App::Initialize();
-
-        Update();
-    }
-    ~Input()
-    {
-    }
-    bool GetKey(int keyCode) const
-    {
-        return keyState[keyCode] & 0x80;
-    }
-    bool GetKeyUp(int keyCode) const
-    {
-        return !(keyState[keyCode] & 0x80) && (preKeyState[keyCode] & 0x80);
-    }
-    bool GetKeyDown(int keyCode) const
-    {
-        return (keyState[keyCode] & 0x80) && !(preKeyState[keyCode] & 0x80);
-    }
-    Float2 GetMousePosition() const
-    {
-        return mousePosition;
-    }
-    void SetMousePosition(float x, float y)
-    {
-        if (GetActiveWindow() != App::GetWindowHandle())
-            return;
-
-        POINT point = {};
-        point.x = static_cast<int>(x) + App::GetWindowSize().x / 2;
-        point.y = static_cast<int>(-y) + App::GetWindowSize().y / 2;
-        ClientToScreen(App::GetWindowHandle(), &point);
-        SetCursorPos(point.x, point.y);
-
-        mousePosition.x = x;
-        mousePosition.y = y;
-    }
-    void SetShowCursor(bool isShowCursor)
-    {
-        if (this->isShowCursor == isShowCursor)
-            return;
-
-        this->isShowCursor = isShowCursor;
-        ShowCursor(isShowCursor);
-    }
-    void Update()
-    {
-        POINT point = {};
-        GetCursorPos(&point);
-        ScreenToClient(App::GetWindowHandle(), &point);
-
-        mousePosition.x = static_cast<float>(point.x - App::GetWindowSize().x / 2);
-        mousePosition.y = static_cast<float>(-point.y + App::GetWindowSize().y / 2);
-
-        for (int i = 0; i < 256; i++)
+        if (instance == nullptr)
         {
-            preKeyState[i] = keyState[i];
+            instance.reset(Instantiate());
         }
 
-        GetKeyboardState(keyState);
+        return *instance;
     }
-
-private:
-    Float2 mousePosition;
-    BYTE preKeyState[256];
-    BYTE keyState[256];
-    bool isShowCursor = true;
+    static Audio* Instantiate()
+    {
+        return new Audio();
+    }
 };
 class Timer
 {
 public:
-    Timer()
+    static float GetTime()
     {
-        App::Initialize();
+        return GetInstance().time;
+    }
+    static float GetDeltaTime()
+    {
+        return GetInstance().deltaTime;
+    }
+    static int GetFrameRate()
+    {
+        return GetInstance().frameRate;
+    }
+    static void Update()
+    {
+        LARGE_INTEGER count = GetInstance().GetCounter();
+        GetInstance().deltaTime = static_cast<float>(count.QuadPart - GetInstance().preCount.QuadPart) / GetInstance().frequency.QuadPart;
+        GetInstance().preCount = GetInstance().GetCounter();
 
-        preCount = GetCounter();
-        frequency = GetCountFrequency();
-    }
-    ~Timer()
-    {
-    }
-    float GetTime() const
-    {
-        return time;
-    }
-    float GetDeltaTime() const
-    {
-        return deltaTime;
-    }
-    int GetFrameRate() const
-    {
-        return frameRate;
-    }
-    void Update()
-    {
-        LARGE_INTEGER count = GetCounter();
-        deltaTime = static_cast<float>(count.QuadPart - preCount.QuadPart) / frequency.QuadPart;
-        preCount = GetCounter();
+        GetInstance().time += GetInstance().deltaTime;
 
-        time += deltaTime;
-
-        frameCount++;
-        second += deltaTime;
-        if (second >= 1.0f)
+        GetInstance().frameCount++;
+        GetInstance().second += GetInstance().deltaTime;
+        if (GetInstance().second >= 1.0f)
         {
-            frameRate = frameCount;
-            frameCount = 0;
-            second -= 1.0f;
+            GetInstance().frameRate = GetInstance().frameCount;
+            GetInstance().frameCount = 0;
+            GetInstance().second -= 1.0f;
         }
     }
 
 private:
+    friend std::unique_ptr<Timer>::deleter_type;
+
     float time = 0.0f;
     float deltaTime = 0.0f;
     int frameRate = 0;
@@ -935,6 +1017,35 @@ private:
     LARGE_INTEGER preCount;
     LARGE_INTEGER frequency;
 
+    Timer(Timer&) = delete;
+    Timer(const Timer&) = delete;
+    Timer& operator=(Timer&) = delete;
+    Timer& operator=(const Timer&) = delete;
+    Timer()
+    {
+        InitializeApplication();
+
+        preCount = GetCounter();
+        frequency = GetCountFrequency();
+    }
+    ~Timer()
+    {
+    }
+    static Timer& GetInstance()
+    {
+        static std::unique_ptr<Timer> instance;
+
+        if (instance == nullptr)
+        {
+            instance.reset(Instantiate());
+        }
+
+        return *instance;
+    }
+    static Timer* Instantiate()
+    {
+        return new Timer();
+    }
     LARGE_INTEGER GetCounter() const
     {
         LARGE_INTEGER counter;
@@ -951,9 +1062,29 @@ private:
 class Random
 {
 public:
+    static void SetSeed(int seed)
+    {
+        GetInstance().mt.seed(seed);
+    }
+    static float Get()
+    {
+        std::uniform_real_distribution<float> range(0.0f, 1.0f);
+
+        return range(GetInstance().mt);
+    }
+
+private:
+    friend std::unique_ptr<Random>::deleter_type;
+
+    std::mt19937 mt;
+
+    Random(Random&) = delete;
+    Random(const Random&) = delete;
+    Random& operator=(Random&) = delete;
+    Random& operator=(const Random&) = delete;
     Random()
     {
-        App::Initialize();
+        InitializeApplication();
 
         std::random_device device;
         mt.seed(device());
@@ -961,202 +1092,39 @@ public:
     ~Random()
     {
     }
-    void SetSeed(int seed)
+    static Random& GetInstance()
     {
-        mt.seed(seed);
-    }
-    float Get()
-    {
-        std::uniform_real_distribution<float> range(0.0f, 1.0f);
+        static std::unique_ptr<Random> instance;
 
-        return range(mt);
-    }
-
-private:
-    std::mt19937 mt;
-};
-
-
-    App() = delete;
-    static bool Refresh()
-    {
-        GetGraphicsInstance().Update();
-        GetInputInstance().Update();
-        GetTimerInstance().Update();
-        return GetWindowInstance().Update();
-    }
-    static void Initialize()
-    {
-        static bool isInitialized = false;
-
-        if (!isInitialized)
+        if (instance == nullptr)
         {
-            CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-            _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-            isInitialized = true;
+            instance.reset(Instantiate());
         }
-    }
-    static HWND GetWindowHandle()
-    {
-        return GetWindowInstance().GetHandle();
-    }
-    static DirectX::XMINT2 GetWindowSize()
-    {
-        return GetWindowInstance().GetSize();
-    }
-    static void SetWindowSize(int width, int height)
-    {
-        GetWindowInstance().SetSize(width, height);
-    }
-    static wchar_t* const GetTitle()
-    {
-        return GetWindowInstance().GetTitle();
-    }
-    static void SetTitle(const wchar_t* const title)
-    {
-        GetWindowInstance().SetTitle(title);
-    }
-    static void SetFullScreen(bool isFullScreen)
-    {
-        GetWindowInstance().SetFullScreen(isFullScreen);
-    }
-    static void AddWindowProcedure(Window::Proceedable* const procedure)
-    {
-        GetWindowInstance().AddProcedure(procedure);
-    }
-    static void RemoveWindowProcedure(Window::Proceedable* const procedure)
-    {
-        GetWindowInstance().RemoveProcedure(procedure);
-    }
-    static ID3D11Device& GetGraphicsDevice3D()
-    {
-        return GetGraphicsInstance().GetDevice3D();
-    }
-    static ID3D11DeviceContext& GetGraphicsContext3D()
-    {
-        return GetGraphicsInstance().GetContext3D();
-    }
-    static ID2D1Device& GetGraphicsDevice2D()
-    {
-        return GetGraphicsInstance().GetDevice2D();
-    }
-    static ID2D1DeviceContext& GetGraphicsContext2D()
-    {
-        return GetGraphicsInstance().GetContext2D();
-    }
-    static IDXGISwapChain& GetGraphicsSwapChain()
-    {
-        return GetGraphicsInstance().GetSwapChain();
-    }
-    static IWICImagingFactory& GetTextureFactory()
-    {
-        return GetGraphicsInstance().GetTextureFactory();
-    }
-    static IDWriteFactory& GetTextFactory()
-    {
-        return GetGraphicsInstance().GetTextFactory();
-    }
-    static IDirectSound8& GetAudioDevice()
-    {
-        return GetAudioInstance().GetDevice();
-    }
-    static bool GetKey(int VK_CODE)
-    {
-        return GetInputInstance().GetKey(VK_CODE);
-    }
-    static bool GetKeyUp(int VK_CODE)
-    {
-        return GetInputInstance().GetKeyUp(VK_CODE);
-    }
-    static bool GetKeyDown(int VK_CODE)
-    {
-        return GetInputInstance().GetKeyDown(VK_CODE);
-    }
-    static Float2 GetMousePosition()
-    {
-        return GetInputInstance().GetMousePosition();
-    }
-    static void SetMousePosition(float x, float y)
-    {
-        GetInputInstance().SetMousePosition(x, y);
-    }
-    static void SetShowCursor(bool isShowCursor)
-    {
-        GetInputInstance().SetShowCursor(isShowCursor);
-    }
-    static float GetTime()
-    {
-        return GetTimerInstance().GetTime();
-    }
-    static float GetDeltaTime()
-    {
-        return GetTimerInstance().GetDeltaTime();
-    }
-    static int GetFrameRate()
-    {
-        return GetTimerInstance().GetFrameRate();
-    }
-    static void SetRandomSeed(int seed)
-    {
-        return GetRandomInstance().SetSeed(seed);
-    }
-    static float GetRandom()
-    {
-        return GetRandomInstance().Get();
-    }
-    static void AddFont(const wchar_t* filePath)
-    {
-        AddFontResourceExW(filePath, FR_PRIVATE, nullptr);
-    }
 
-private:
-    static Window& GetWindowInstance()
-    {
-        static std::unique_ptr<Window> window(new Window());
-        return *window.get();
+        return *instance;
     }
-    static Graphics& GetGraphicsInstance()
+    static Random* Instantiate()
     {
-        static std::unique_ptr<Graphics> graphics(new Graphics());
-        return *graphics.get();
-    }
-    static Audio& GetAudioInstance()
-    {
-        static std::unique_ptr<Audio> audio(new Audio());
-        return *audio.get();
-    }
-    static Input& GetInputInstance()
-    {
-        static std::unique_ptr<Input> input(new Input());
-        return *input.get();
-    }
-    static Timer& GetTimerInstance()
-    {
-        static std::unique_ptr<Timer> timer(new Timer());
-        return *timer.get();
-    }
-    static Random& GetRandomInstance()
-    {
-        static std::unique_ptr<Random> random(new Random());
-        return *random.get();
+        return new Random();
     }
 };
+
 
 class Texture
 {
 public:
     Texture()
     {
-        App::Initialize();
+        InitializeApplication();
     }
     Texture(const wchar_t* const filePath)
     {
-        App::Initialize();
+        InitializeApplication();
         Load(filePath);
     }
     Texture(const BYTE* const buffer, int width, int height)
     {
-        App::Initialize();
+        InitializeApplication();
         Create(buffer, width, height);
     }
     ~Texture()
@@ -1166,7 +1134,7 @@ public:
     {
         ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
 
-        App::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+        Graphics::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
         ATL::CComPtr<IWICBitmapFrameDecode> frame = nullptr;
         decoder->GetFrame(0, &frame);
         UINT width, height;
@@ -1179,7 +1147,7 @@ public:
         if (pixelFormat != GUID_WICPixelFormat32bppBGRA)
         {
             ATL::CComPtr<IWICFormatConverter> formatConverter = nullptr;
-            App::GetTextureFactory().CreateFormatConverter(&formatConverter);
+            Graphics::GetTextureFactory().CreateFormatConverter(&formatConverter);
 
             formatConverter->Initialize(frame, GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
 
@@ -1214,14 +1182,14 @@ public:
         textureSubresourceData.pSysMem = buffer;
         textureSubresourceData.SysMemPitch = width * 4;
         textureSubresourceData.SysMemSlicePitch = width * height * 4;
-        App::GetGraphicsDevice3D().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
 
         shaderResourceView.Release();
         D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
         shaderResourceViewDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
         shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         shaderResourceViewDesc.Texture2D.MipLevels = 1;
-        App::GetGraphicsDevice3D().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+        Graphics::GetDevice3D().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
 
         samplerState.Release();
         D3D11_SAMPLER_DESC samplerDesc = {};
@@ -1238,7 +1206,7 @@ public:
         samplerDesc.BorderColor[3] = 0.0f;
         samplerDesc.MinLOD = 0.0f;
         samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-        App::GetGraphicsDevice3D().CreateSamplerState(&samplerDesc, &samplerState);
+        Graphics::GetDevice3D().CreateSamplerState(&samplerDesc, &samplerState);
     }
     DirectX::XMINT2 GetSize() const
     {
@@ -1249,8 +1217,8 @@ public:
         if (texture == nullptr)
             return;
 
-        App::GetGraphicsContext3D().PSSetShaderResources(slot, 1, &shaderResourceView.p);
-        App::GetGraphicsContext3D().PSSetSamplers(slot, 1, &samplerState.p);
+        Graphics::GetContext3D().PSSetShaderResources(slot, 1, &shaderResourceView.p);
+        Graphics::GetContext3D().PSSetSamplers(slot, 1, &samplerState.p);
     }
     ID3D11Texture2D& GetInterface()
     {
@@ -1298,12 +1266,12 @@ public:
         vertexShader.Release();
         ATL::CComPtr<ID3DBlob> vertexShaderBlob = nullptr;
         CompileShader(source, "VS", "vs_5_0", &vertexShaderBlob);
-        App::GetGraphicsDevice3D().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
+        Graphics::GetDevice3D().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
 
         pixelShader.Release();
         ATL::CComPtr<ID3DBlob> pixelShaderBlob = nullptr;
         CompileShader(source, "PS", "ps_5_0", &pixelShaderBlob);
-        App::GetGraphicsDevice3D().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
+        Graphics::GetDevice3D().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
 
         inputLayout.Release();
         std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc;
@@ -1315,7 +1283,7 @@ public:
         inputElementDesc.push_back({ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64, D3D11_INPUT_PER_VERTEX_DATA, 0 });
         inputElementDesc.push_back({ "BLENDWEIGHT", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 80, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
-        App::GetGraphicsDevice3D().CreateInputLayout(inputElementDesc.data(), (UINT)inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
+        Graphics::GetDevice3D().CreateInputLayout(inputElementDesc.data(), (UINT)inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
     }
     void SetBuffer(int slot, void* cbuffer, size_t size)
     {
@@ -1326,7 +1294,7 @@ public:
         constantBufferDesc.ByteWidth = (UINT)size;
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        App::GetGraphicsDevice3D().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer[slot].buffer);
+        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer[slot].buffer);
     }
     void SetTexture(int slot, Texture* texture)
     {
@@ -1335,24 +1303,24 @@ public:
     void Attach()
     {
         if (vertexShader != nullptr)
-            App::GetGraphicsContext3D().VSSetShader(vertexShader, nullptr, 0);
+            Graphics::GetContext3D().VSSetShader(vertexShader, nullptr, 0);
 
         if (pixelShader != nullptr)
-            App::GetGraphicsContext3D().PSSetShader(pixelShader, nullptr, 0);
+            Graphics::GetContext3D().PSSetShader(pixelShader, nullptr, 0);
 
         if (inputLayout != nullptr)
-            App::GetGraphicsContext3D().IASetInputLayout(inputLayout);
+            Graphics::GetContext3D().IASetInputLayout(inputLayout);
 
         for (int i = 0; i < 10; i++)
         {
             if (constantBuffer[i].ptr != nullptr)
             {
-                App::GetGraphicsContext3D().UpdateSubresource(constantBuffer[i].buffer, 0, nullptr, constantBuffer[i].ptr, 0, 0);
-                App::GetGraphicsContext3D().VSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
-                App::GetGraphicsContext3D().HSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
-                App::GetGraphicsContext3D().DSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
-                App::GetGraphicsContext3D().GSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
-                App::GetGraphicsContext3D().PSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                Graphics::GetContext3D().UpdateSubresource(constantBuffer[i].buffer, 0, nullptr, constantBuffer[i].ptr, 0, 0);
+                Graphics::GetContext3D().VSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                Graphics::GetContext3D().HSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                Graphics::GetContext3D().DSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                Graphics::GetContext3D().GSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                Graphics::GetContext3D().PSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
             }
         }
 
@@ -1380,7 +1348,7 @@ private:
 
     void Initialize()
     {
-        App::Initialize();
+        InitializeApplication();
 
         for (int i = 0; i < 10; i++)
         {
@@ -1400,11 +1368,11 @@ private:
         if (errorBlob != nullptr)
         {
             OutputDebugStringA(static_cast<char*>(errorBlob->GetBufferPointer()));
-            MessageBoxA(App::GetWindowHandle(), static_cast<char*>(errorBlob->GetBufferPointer()), "Shader Error", MB_OK);
+            MessageBoxA(Window::GetHandle(), static_cast<char*>(errorBlob->GetBufferPointer()), "Shader Error", MB_OK);
         }
     }
 };
-class Camera : public App::Window::Proceedable
+class Camera : public Window::Proceedable
 {
 public:
     Float3 position;
@@ -1413,7 +1381,7 @@ public:
 
     Camera()
     {
-        App::Initialize();
+        InitializeApplication();
 
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1424,11 +1392,11 @@ public:
 
         Create();
 
-        App::AddWindowProcedure(this);
+        Window::AddProcedure(this);
     }
     ~Camera()
     {
-        App::RemoveWindowProcedure(this);
+        Window::RemoveProcedure(this);
     }
     void SetPerspective(float fieldOfView, float nearClip, float farClip)
     {
@@ -1436,7 +1404,7 @@ public:
         this->fieldOfView = fieldOfView;
         this->nearClip = nearClip;
         this->farClip = farClip;
-        float aspectRatio = App::GetWindowSize().x / (float)App::GetWindowSize().y;
+        float aspectRatio = Window::GetSize().x / (float)Window::GetSize().y;
         constant.projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
@@ -1448,14 +1416,14 @@ public:
         this->nearClip = nearClip;
         this->farClip = farClip;
         constant.projection = DirectX::XMMatrixTranspose(
-            DirectX::XMMatrixOrthographicLH(App::GetWindowSize().x * size, App::GetWindowSize().y * size, nearClip, farClip)
+            DirectX::XMMatrixOrthographicLH(Window::GetSize().x * size, Window::GetSize().y * size, nearClip, farClip)
         );
     }
     void SetDepthTest(bool isDepthTest)
     {
         this->isDepthTest = isDepthTest;
     }
-    void Update()
+    void Update(bool shouldClear = true)
     {
         constant.view = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixInverse(
@@ -1467,28 +1435,28 @@ public:
             )
         );
 
-        App::GetGraphicsContext3D().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-        App::GetGraphicsContext3D().VSSetConstantBuffers(0, 1, &constantBuffer.p);
-        App::GetGraphicsContext3D().HSSetConstantBuffers(0, 1, &constantBuffer.p);
-        App::GetGraphicsContext3D().DSSetConstantBuffers(0, 1, &constantBuffer.p);
-        App::GetGraphicsContext3D().GSSetConstantBuffers(0, 1, &constantBuffer.p);
-        App::GetGraphicsContext3D().PSSetConstantBuffers(0, 1, &constantBuffer.p);
+        Graphics::GetContext3D().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
+        Graphics::GetContext3D().VSSetConstantBuffers(0, 1, &constantBuffer.p);
+        Graphics::GetContext3D().HSSetConstantBuffers(0, 1, &constantBuffer.p);
+        Graphics::GetContext3D().DSSetConstantBuffers(0, 1, &constantBuffer.p);
+        Graphics::GetContext3D().GSSetConstantBuffers(0, 1, &constantBuffer.p);
+        Graphics::GetContext3D().PSSetConstantBuffers(0, 1, &constantBuffer.p);
 
-        float clearColor[4] = { color.x, color.y, color.z, color.w };
-        App::GetGraphicsContext3D().ClearRenderTargetView(renderTargetView, clearColor);
+        if (shouldClear)
+        {
+            float clearColor[4] = { color.x, color.y, color.z, color.w };
+            Graphics::GetContext3D().ClearRenderTargetView(renderTargetView, clearColor);
+        }
 
         if (isDepthTest)
         {
-            App::GetGraphicsContext3D().ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-            App::GetGraphicsContext3D().OMSetRenderTargets(1, &renderTargetView.p, depthStencilView);
+            Graphics::GetContext3D().ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+            Graphics::GetContext3D().OMSetRenderTargets(1, &renderTargetView.p, depthStencilView);
         }
         else
         {
-            App::GetGraphicsContext3D().OMSetRenderTargets(1, &renderTargetView.p, nullptr);
-
+            Graphics::GetContext3D().OMSetRenderTargets(1, &renderTargetView.p, nullptr);
         }
-
     }
 
 private:
@@ -1514,17 +1482,17 @@ private:
     void Create()
     {
         renderTexture.Release();
-        App::GetGraphicsSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
+        Graphics::GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
         renderTargetView.Release();
-        App::GetGraphicsDevice3D().CreateRenderTargetView(renderTexture, nullptr, &renderTargetView);
+        Graphics::GetDevice3D().CreateRenderTargetView(renderTexture, nullptr, &renderTargetView);
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-        App::GetGraphicsSwapChain().GetDesc(&swapChainDesc);
+        Graphics::GetSwapChain().GetDesc(&swapChainDesc);
 
         depthTexture.Release();
         D3D11_TEXTURE2D_DESC textureDesc = {};
-        textureDesc.Width = static_cast<UINT>(App::GetWindowSize().x);
-        textureDesc.Height = static_cast<UINT>(App::GetWindowSize().y);
+        textureDesc.Width = static_cast<UINT>(Window::GetSize().x);
+        textureDesc.Height = static_cast<UINT>(Window::GetSize().y);
         textureDesc.MipLevels = 1;
         textureDesc.ArraySize = 1;
         textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -1534,7 +1502,7 @@ private:
         textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
         textureDesc.CPUAccessFlags = 0;
         textureDesc.MiscFlags = 0;
-        App::GetGraphicsDevice3D().CreateTexture2D(&textureDesc, nullptr, &depthTexture);
+        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, nullptr, &depthTexture);
 
         depthStencilView.Release();
         D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
@@ -1548,7 +1516,7 @@ private:
         {
             depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
         }
-        App::GetGraphicsDevice3D().CreateDepthStencilView(depthTexture, &depthStencilViewDesc, &depthStencilView);
+        Graphics::GetDevice3D().CreateDepthStencilView(depthTexture, &depthStencilViewDesc, &depthStencilView);
 
         constantBuffer.Release();
         D3D11_BUFFER_DESC constantBufferDesc = {};
@@ -1556,14 +1524,14 @@ private:
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         constantBufferDesc.CPUAccessFlags = 0;
-        App::GetGraphicsDevice3D().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
     }
     void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
     {
         if (message != WM_SIZE)
             return;
 
-        if (App::GetWindowSize().x <= 0.0f || App::GetWindowSize().y <= 0.0f)
+        if (Window::GetSize().x <= 0.0f || Window::GetSize().y <= 0.0f)
             return;
 
         if (isPerspective)
@@ -1585,7 +1553,7 @@ public:
 
     Mesh()
     {
-        App::Initialize();
+        InitializeApplication();
 
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1700,7 +1668,7 @@ public:
         rasterizerDesc.FillMode = D3D11_FILL_SOLID;
         rasterizerDesc.CullMode = cullingMode;
         rasterizerState.Release();
-        App::GetGraphicsDevice3D().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+        Graphics::GetDevice3D().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
     }
     void Apply()
     {
@@ -1713,7 +1681,7 @@ public:
             vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
             D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
             vertexSubresourceData.pSysMem = vertices.data();
-            App::GetGraphicsDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+            Graphics::GetDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
         }
 
         indexBuffer.Release();
@@ -1725,7 +1693,7 @@ public:
             indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
             D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
             indexSubresourceData.pSysMem = indices.data();
-            App::GetGraphicsDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+            Graphics::GetDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
         }
 
         material.SetBuffer(1, &constant, sizeof(Constant));
@@ -1745,20 +1713,20 @@ public:
 
         material.Attach();
 
-        App::GetGraphicsContext3D().RSSetState(rasterizerState);
+        Graphics::GetContext3D().RSSetState(rasterizerState);
 
         UINT stride = sizeof(Vertex);
         UINT offset = 0;
-        App::GetGraphicsContext3D().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
+        Graphics::GetContext3D().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
 
         if (indexBuffer == nullptr)
         {
-            App::GetGraphicsContext3D().Draw((UINT)vertices.size(), 0);
+            Graphics::GetContext3D().Draw((UINT)vertices.size(), 0);
         }
         else
         {
-            App::GetGraphicsContext3D().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-            App::GetGraphicsContext3D().DrawIndexed((UINT)indices.size(), 0, 0);
+            Graphics::GetContext3D().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+            Graphics::GetContext3D().DrawIndexed((UINT)indices.size(), 0, 0);
         }
     }
 
@@ -1844,7 +1812,7 @@ protected:
 
     void Initialize()
     {
-        App::Initialize();
+        InitializeApplication();
 
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
@@ -1914,23 +1882,23 @@ public:
             return;
 
         brush.Reset();
-        App::GetGraphicsContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), brush.GetAddressOf());
-        App::GetGraphicsContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+        Graphics::GetContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), brush.GetAddressOf());
+        Graphics::GetContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
         Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat = nullptr;
-        App::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
+        Graphics::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
 
         textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
         textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
         textLayout.Reset();
-        App::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), FLT_MAX, FLT_MAX, textLayout.GetAddressOf());
+        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), FLT_MAX, FLT_MAX, textLayout.GetAddressOf());
         
         DWRITE_TEXT_METRICS textMetrics;
         textLayout->GetMetrics(&textMetrics);
 
         textLayout.Reset();
-        App::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, textLayout.GetAddressOf());
+        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, textLayout.GetAddressOf());
 
         std::unique_ptr<BYTE[]> buffer(new BYTE[(int)textMetrics.width * (int)textMetrics.height * 4]);
         texture.Create(buffer.get(), (int)textMetrics.width, (int)textMetrics.height);
@@ -1944,7 +1912,7 @@ public:
         bitmapProperties.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET;
 
         bitmap.Release();
-        App::GetGraphicsContext2D().CreateBitmapFromDxgiSurface(surface, bitmapProperties, &bitmap);
+        Graphics::GetContext2D().CreateBitmapFromDxgiSurface(surface, bitmapProperties, &bitmap);
 
         mesh.GetMaterial().SetTexture(0, &texture);
 
@@ -1952,14 +1920,14 @@ public:
     }
     void Draw()
     {
-        App::GetGraphicsContext2D().SetTarget(bitmap);
+        Graphics::GetContext2D().SetTarget(bitmap);
 
-        App::GetGraphicsContext2D().BeginDraw();
+        Graphics::GetContext2D().BeginDraw();
 
-        App::GetGraphicsContext2D().Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
-        App::GetGraphicsContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), textLayout.Get(), brush.Get());
+        Graphics::GetContext2D().Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
+        Graphics::GetContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), textLayout.Get(), brush.Get());
 
-        App::GetGraphicsContext2D().EndDraw();
+        Graphics::GetContext2D().EndDraw();
 
         Sprite::Draw();
     }
@@ -1971,7 +1939,7 @@ private:
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush = nullptr;
     Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayout = nullptr;
 };
-class Sound : public App::Window::Proceedable
+class Sound : public Window::Proceedable
 {
 public:
     Sound()
@@ -1985,11 +1953,11 @@ public:
     }
     virtual ~Sound()
     {
-        App::RemoveWindowProcedure(this);
+        Window::RemoveProcedure(this);
     }
     void Load(const wchar_t* const filePath)
     {
-        App::GetAudioDevice();
+        Audio::GetDevice();
 
         ATL::CComPtr<IStream> stream = nullptr;
         SHCreateStreamOnFileW(filePath, STGM_READ, &stream);
@@ -2032,7 +2000,7 @@ public:
         bufferDesc.lpwfxFormat = format;
 
         soundBuffer.Release();
-        App::GetAudioDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
+        Audio::GetDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
     }
     void SetLoop(bool isLoop)
     {
@@ -2139,9 +2107,9 @@ private:
 
     void Initialize()
     {
-        App::Initialize();
+        InitializeApplication();
 
-        App::AddWindowProcedure(this);
+        Window::AddProcedure(this);
     }
     void Reset()
     {
@@ -2225,5 +2193,13 @@ private:
     }
 };
 
+
+static bool Refresh()
+{
+    Graphics::Update();
+    Input::Update();
+    Timer::Update();
+    return Window::Update();
+}
 
 }
