@@ -117,7 +117,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="sources\App.hpp" />
+    <ClInclude Include="sources\Library.hpp" />
     <ClInclude Include="sources\Audio.hpp" />
     <ClInclude Include="sources\Camera.hpp" />
     <ClInclude Include="sources\Graphics.hpp" />

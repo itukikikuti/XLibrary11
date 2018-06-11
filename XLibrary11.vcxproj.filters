@@ -36,9 +36,6 @@
     <ClInclude Include="sources\Window.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\App.hpp">
-      <Filter>sources</Filter>
-    </ClInclude>
     <ClInclude Include="sources\Utility.hpp">
       <Filter>sources</Filter>
     </ClInclude>
@@ -49,6 +46,9 @@
       <Filter>sources</Filter>
     </ClInclude>
     <ClInclude Include="sources\Random.hpp">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Library.hpp">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>
