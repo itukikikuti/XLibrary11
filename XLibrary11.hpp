@@ -1408,7 +1408,7 @@ public:
     {
         this->isDepthTest = isDepthTest;
     }
-    void Update()
+    void Update(bool shouldClear = true)
     {
         constant.view = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixInverse(
@@ -1427,21 +1427,21 @@ public:
         Graphics::GetContext3D().GSSetConstantBuffers(0, 1, &constantBuffer.p);
         Graphics::GetContext3D().PSSetConstantBuffers(0, 1, &constantBuffer.p);
 
-        float clearColor[4] = { color.x, color.y, color.z, color.w };
-        Graphics::GetContext3D().ClearRenderTargetView(renderTargetView, clearColor);
+        if (shouldClear)
+        {
+            float clearColor[4] = { color.x, color.y, color.z, color.w };
+            Graphics::GetContext3D().ClearRenderTargetView(renderTargetView, clearColor);
+        }
 
         if (isDepthTest)
         {
             Graphics::GetContext3D().ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
             Graphics::GetContext3D().OMSetRenderTargets(1, &renderTargetView.p, depthStencilView);
         }
         else
         {
             Graphics::GetContext3D().OMSetRenderTargets(1, &renderTargetView.p, nullptr);
-
         }
-
     }
 
 private:
