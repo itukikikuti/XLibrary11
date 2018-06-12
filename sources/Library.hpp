@@ -1,6 +1,4 @@
-﻿// © 2017 itukikikuti
-// https://github.com/itukikikuti/XLibrary11
-// MIT License
+﻿/*! © 2017 itukikikuti | MIT License | gitlab.com/itukikikuti/XLibrary11 */
 #pragma once
 
 #define OEMRESOURCE
