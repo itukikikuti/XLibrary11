@@ -35,7 +35,7 @@
 
 #define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
-namespace XLibrary11
+namespace XLibrary
 {
 
 using namespace DirectX;
