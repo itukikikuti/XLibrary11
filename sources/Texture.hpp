@@ -20,10 +20,10 @@ public:
     }
     void Load(const wchar_t* const filePath)
     {
-        ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
+        ComPtr<IWICBitmapDecoder> decoder = nullptr;
 
         Graphics::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
-        ATL::CComPtr<IWICBitmapFrameDecode> frame = nullptr;
+        ComPtr<IWICBitmapFrameDecode> frame = nullptr;
         decoder->GetFrame(0, &frame);
         UINT width, height;
         frame->GetSize(&width, &height);
@@ -34,10 +34,10 @@ public:
 
         if (pixelFormat != GUID_WICPixelFormat32bppBGRA)
         {
-            ATL::CComPtr<IWICFormatConverter> formatConverter = nullptr;
+            ComPtr<IWICFormatConverter> formatConverter = nullptr;
             Graphics::GetTextureFactory().CreateFormatConverter(&formatConverter);
 
-            formatConverter->Initialize(frame, GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
+            formatConverter->Initialize(frame.Get(), GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
 
             formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
         }
@@ -52,7 +52,7 @@ public:
     {
         size = DirectX::XMINT2(width, height);
 
-        texture.Release();
+        texture.Reset();
         D3D11_TEXTURE2D_DESC textureDesc = {};
         textureDesc.Width = width;
         textureDesc.Height = height;
@@ -70,16 +70,16 @@ public:
         textureSubresourceData.pSysMem = buffer;
         textureSubresourceData.SysMemPitch = width * 4;
         textureSubresourceData.SysMemSlicePitch = width * height * 4;
-        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, &textureSubresourceData, texture.GetAddressOf());
 
-        shaderResourceView.Release();
+        shaderResourceView.Reset();
         D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
         shaderResourceViewDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
         shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         shaderResourceViewDesc.Texture2D.MipLevels = 1;
-        Graphics::GetDevice3D().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+        Graphics::GetDevice3D().CreateShaderResourceView(texture.Get(), &shaderResourceViewDesc, shaderResourceView.GetAddressOf());
 
-        samplerState.Release();
+        samplerState.Reset();
         D3D11_SAMPLER_DESC samplerDesc = {};
         samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
         samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -94,7 +94,7 @@ public:
         samplerDesc.BorderColor[3] = 0.0f;
         samplerDesc.MinLOD = 0.0f;
         samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-        Graphics::GetDevice3D().CreateSamplerState(&samplerDesc, &samplerState);
+        Graphics::GetDevice3D().CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
     }
     DirectX::XMINT2 GetSize() const
     {
@@ -105,17 +105,17 @@ public:
         if (texture == nullptr)
             return;
 
-        Graphics::GetContext3D().PSSetShaderResources(slot, 1, &shaderResourceView.p);
-        Graphics::GetContext3D().PSSetSamplers(slot, 1, &samplerState.p);
+        Graphics::GetContext3D().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
+        Graphics::GetContext3D().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
     }
     ID3D11Texture2D& GetInterface()
     {
-        return *texture;
+        return *texture.Get();
     }
 
 private:
     DirectX::XMINT2 size;
-    ATL::CComPtr<ID3D11Texture2D> texture = nullptr;
-    ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView = nullptr;
-    ATL::CComPtr<ID3D11SamplerState> samplerState = nullptr;
+    ComPtr<ID3D11Texture2D> texture = nullptr;
+    ComPtr<ID3D11ShaderResourceView> shaderResourceView = nullptr;
+    ComPtr<ID3D11SamplerState> samplerState = nullptr;
 };

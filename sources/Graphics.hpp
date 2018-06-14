@@ -3,27 +3,27 @@
 public:
     static ID3D11Device& GetDevice3D()
     {
-        return *GetInstance().device3D;
+        return *GetInstance().device3D.Get();
     }
     static ID3D11DeviceContext& GetContext3D()
     {
-        return *GetInstance().context3D;
+        return *GetInstance().context3D.Get();
     }
     static ID2D1Device& GetDevice2D()
     {
-        return *GetInstance().device2D;
+        return *GetInstance().device2D.Get();
     }
     static ID2D1DeviceContext& GetContext2D()
     {
-        return *GetInstance().context2D;
+        return *GetInstance().context2D.Get();
     }
     static IDXGISwapChain& GetSwapChain()
     {
-        return *GetInstance().swapChain;
+        return *GetInstance().swapChain.Get();
     }
     static IWICImagingFactory& GetTextureFactory()
     {
-        return *GetInstance().textureFactory;
+        return *GetInstance().textureFactory.Get();
     }
     static IDWriteFactory& GetTextFactory()
     {
@@ -43,13 +43,13 @@ public:
 private:
     friend std::unique_ptr<Graphics>::deleter_type;
 
-    ATL::CComPtr<ID3D11Device> device3D = nullptr;
-    ATL::CComPtr<ID3D11DeviceContext> context3D = nullptr;
-    ATL::CComPtr<ID2D1Device> device2D = nullptr;
-    ATL::CComPtr<ID2D1DeviceContext> context2D = nullptr;
-    ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
-    ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
-    Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
+    ComPtr<ID3D11Device> device3D = nullptr;
+    ComPtr<ID3D11DeviceContext> context3D = nullptr;
+    ComPtr<ID2D1Device> device2D = nullptr;
+    ComPtr<ID2D1DeviceContext> context2D = nullptr;
+    ComPtr<IDXGISwapChain> swapChain = nullptr;
+    ComPtr<IWICImagingFactory> textureFactory = nullptr;
+    ComPtr<IDWriteFactory> textFactory = nullptr;
     bool isFullScreen = false;
 
     Graphics(Graphics&) = delete;
@@ -82,7 +82,7 @@ private:
 
         for (size_t i = 0; i < driverTypes.size(); i++)
         {
-            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), (UINT)featureLevels.size(), D3D11_SDK_VERSION, &device3D, nullptr, &context3D);
+            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), (UINT)featureLevels.size(), D3D11_SDK_VERSION, device3D.GetAddressOf(), nullptr, context3D.GetAddressOf());
 
             if (SUCCEEDED(r))
                 break;
@@ -90,7 +90,7 @@ private:
 
         context3D->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        ATL::CComPtr<ID3D11BlendState> blendState = nullptr;
+        ComPtr<ID3D11BlendState> blendState = nullptr;
         D3D11_BLEND_DESC blendDesc = {};
         blendDesc.RenderTarget[0].BlendEnable = true;
         blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
@@ -103,26 +103,26 @@ private:
 
         float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         device3D->CreateBlendState(&blendDesc, &blendState);
-        context3D->OMSetBlendState(blendState, blendFactor, 0xffffffff);
+        context3D->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
 
         D2D1_FACTORY_OPTIONS options = {};
 #if defined(_DEBUG)
         options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 #endif
 
-        ATL::CComPtr<ID2D1Factory1> factory = nullptr;
-        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, &factory);
+        ComPtr<ID2D1Factory1> factory = nullptr;
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, factory.GetAddressOf());
 
-        ATL::CComPtr<IDXGIDevice> device = nullptr;
-        device3D.QueryInterface(&device);
+        ComPtr<IDXGIDevice> device = nullptr;
+        device3D->QueryInterface(device.GetAddressOf());
 
-        factory->CreateDevice(device, &device2D);
+        factory->CreateDevice(device.Get(), device2D.GetAddressOf());
 
-        device2D->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &context2D);
+        device2D->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, context2D.GetAddressOf());
 
-        textureFactory.CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER);
+        CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, reinterpret_cast<void**>(textureFactory.GetAddressOf()));
 
-        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &textFactory);
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(textFactory.GetAddressOf()));
 
         Create();
 
@@ -149,14 +149,14 @@ private:
     }
     void Create()
     {
-        ATL::CComPtr<IDXGIDevice> dxgi = nullptr;
-        device3D.QueryInterface(&dxgi);
+        ComPtr<IDXGIDevice> dxgi = nullptr;
+        device3D->QueryInterface(dxgi.GetAddressOf());
 
-        ATL::CComPtr<IDXGIAdapter> adapter = nullptr;
+        ComPtr<IDXGIAdapter> adapter = nullptr;
         dxgi->GetAdapter(&adapter);
 
-        ATL::CComPtr<IDXGIFactory> factory = nullptr;
-        adapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory));
+        ComPtr<IDXGIFactory> factory = nullptr;
+        adapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void**>(factory.GetAddressOf()));
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
         swapChainDesc.BufferDesc.Width = Window::GetSize().x;
@@ -171,8 +171,8 @@ private:
         swapChainDesc.OutputWindow = Window::GetHandle();
         swapChainDesc.Windowed = true;
 
-        swapChain.Release();
-        factory->CreateSwapChain(device3D, &swapChainDesc, &swapChain);
+        swapChain.Reset();
+        factory->CreateSwapChain(device3D.Get(), &swapChainDesc, swapChain.GetAddressOf());
         factory->MakeWindowAssociation(Window::GetHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
         D3D11_VIEWPORT viewPort = {};

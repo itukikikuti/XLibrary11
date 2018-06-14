@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 #include <Windows.h>
-#include <atlbase.h>
 #include <d2d1_1.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
@@ -21,6 +20,7 @@
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
+#include <Shlwapi.h>
 #include <wincodec.h>
 #include <wrl.h>
 
@@ -32,6 +32,8 @@
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mfuuid.lib")
+#pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "windowscodecs.lib")
 
 #define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
@@ -39,6 +41,7 @@ namespace XLibrary
 {
 
 using namespace DirectX;
+using Microsoft::WRL::ComPtr;
 
 static void InitializeApplication()
 {
@@ -735,27 +738,27 @@ class Graphics : public Window::Proceedable
 public:
     static ID3D11Device& GetDevice3D()
     {
-        return *GetInstance().device3D;
+        return *GetInstance().device3D.Get();
     }
     static ID3D11DeviceContext& GetContext3D()
     {
-        return *GetInstance().context3D;
+        return *GetInstance().context3D.Get();
     }
     static ID2D1Device& GetDevice2D()
     {
-        return *GetInstance().device2D;
+        return *GetInstance().device2D.Get();
     }
     static ID2D1DeviceContext& GetContext2D()
     {
-        return *GetInstance().context2D;
+        return *GetInstance().context2D.Get();
     }
     static IDXGISwapChain& GetSwapChain()
     {
-        return *GetInstance().swapChain;
+        return *GetInstance().swapChain.Get();
     }
     static IWICImagingFactory& GetTextureFactory()
     {
-        return *GetInstance().textureFactory;
+        return *GetInstance().textureFactory.Get();
     }
     static IDWriteFactory& GetTextFactory()
     {
@@ -775,13 +778,13 @@ public:
 private:
     friend std::unique_ptr<Graphics>::deleter_type;
 
-    ATL::CComPtr<ID3D11Device> device3D = nullptr;
-    ATL::CComPtr<ID3D11DeviceContext> context3D = nullptr;
-    ATL::CComPtr<ID2D1Device> device2D = nullptr;
-    ATL::CComPtr<ID2D1DeviceContext> context2D = nullptr;
-    ATL::CComPtr<IDXGISwapChain> swapChain = nullptr;
-    ATL::CComPtr<IWICImagingFactory> textureFactory = nullptr;
-    Microsoft::WRL::ComPtr<IDWriteFactory> textFactory = nullptr;
+    ComPtr<ID3D11Device> device3D = nullptr;
+    ComPtr<ID3D11DeviceContext> context3D = nullptr;
+    ComPtr<ID2D1Device> device2D = nullptr;
+    ComPtr<ID2D1DeviceContext> context2D = nullptr;
+    ComPtr<IDXGISwapChain> swapChain = nullptr;
+    ComPtr<IWICImagingFactory> textureFactory = nullptr;
+    ComPtr<IDWriteFactory> textFactory = nullptr;
     bool isFullScreen = false;
 
     Graphics(Graphics&) = delete;
@@ -814,7 +817,7 @@ private:
 
         for (size_t i = 0; i < driverTypes.size(); i++)
         {
-            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), (UINT)featureLevels.size(), D3D11_SDK_VERSION, &device3D, nullptr, &context3D);
+            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), (UINT)featureLevels.size(), D3D11_SDK_VERSION, device3D.GetAddressOf(), nullptr, context3D.GetAddressOf());
 
             if (SUCCEEDED(r))
                 break;
@@ -822,7 +825,7 @@ private:
 
         context3D->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        ATL::CComPtr<ID3D11BlendState> blendState = nullptr;
+        ComPtr<ID3D11BlendState> blendState = nullptr;
         D3D11_BLEND_DESC blendDesc = {};
         blendDesc.RenderTarget[0].BlendEnable = true;
         blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
@@ -835,26 +838,26 @@ private:
 
         float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         device3D->CreateBlendState(&blendDesc, &blendState);
-        context3D->OMSetBlendState(blendState, blendFactor, 0xffffffff);
+        context3D->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
 
         D2D1_FACTORY_OPTIONS options = {};
 #if defined(_DEBUG)
         options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 #endif
 
-        ATL::CComPtr<ID2D1Factory1> factory = nullptr;
-        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, &factory);
+        ComPtr<ID2D1Factory1> factory = nullptr;
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, factory.GetAddressOf());
 
-        ATL::CComPtr<IDXGIDevice> device = nullptr;
-        device3D.QueryInterface(&device);
+        ComPtr<IDXGIDevice> device = nullptr;
+        device3D->QueryInterface(device.GetAddressOf());
 
-        factory->CreateDevice(device, &device2D);
+        factory->CreateDevice(device.Get(), device2D.GetAddressOf());
 
-        device2D->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &context2D);
+        device2D->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, context2D.GetAddressOf());
 
-        textureFactory.CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER);
+        CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, reinterpret_cast<void**>(textureFactory.GetAddressOf()));
 
-        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &textFactory);
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(textFactory.GetAddressOf()));
 
         Create();
 
@@ -881,14 +884,14 @@ private:
     }
     void Create()
     {
-        ATL::CComPtr<IDXGIDevice> dxgi = nullptr;
-        device3D.QueryInterface(&dxgi);
+        ComPtr<IDXGIDevice> dxgi = nullptr;
+        device3D->QueryInterface(dxgi.GetAddressOf());
 
-        ATL::CComPtr<IDXGIAdapter> adapter = nullptr;
+        ComPtr<IDXGIAdapter> adapter = nullptr;
         dxgi->GetAdapter(&adapter);
 
-        ATL::CComPtr<IDXGIFactory> factory = nullptr;
-        adapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory));
+        ComPtr<IDXGIFactory> factory = nullptr;
+        adapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void**>(factory.GetAddressOf()));
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
         swapChainDesc.BufferDesc.Width = Window::GetSize().x;
@@ -903,8 +906,8 @@ private:
         swapChainDesc.OutputWindow = Window::GetHandle();
         swapChainDesc.Windowed = true;
 
-        swapChain.Release();
-        factory->CreateSwapChain(device3D, &swapChainDesc, &swapChain);
+        swapChain.Reset();
+        factory->CreateSwapChain(device3D.Get(), &swapChainDesc, swapChain.GetAddressOf());
         factory->MakeWindowAssociation(Window::GetHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
         D3D11_VIEWPORT viewPort = {};
@@ -929,13 +932,13 @@ class Audio
 public:
     static IDirectSound8& GetDevice()
     {
-        return *GetInstance().device;
+        return *GetInstance().device.Get();
     }
 
 private:
     friend std::unique_ptr<Audio>::deleter_type;
 
-    ATL::CComPtr<IDirectSound8> device = nullptr;
+    ComPtr<IDirectSound8> device = nullptr;
 
     Audio(Audio&) = delete;
     Audio(const Audio&) = delete;
@@ -1130,10 +1133,10 @@ public:
     }
     void Load(const wchar_t* const filePath)
     {
-        ATL::CComPtr<IWICBitmapDecoder> decoder = nullptr;
+        ComPtr<IWICBitmapDecoder> decoder = nullptr;
 
         Graphics::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
-        ATL::CComPtr<IWICBitmapFrameDecode> frame = nullptr;
+        ComPtr<IWICBitmapFrameDecode> frame = nullptr;
         decoder->GetFrame(0, &frame);
         UINT width, height;
         frame->GetSize(&width, &height);
@@ -1144,10 +1147,10 @@ public:
 
         if (pixelFormat != GUID_WICPixelFormat32bppBGRA)
         {
-            ATL::CComPtr<IWICFormatConverter> formatConverter = nullptr;
+            ComPtr<IWICFormatConverter> formatConverter = nullptr;
             Graphics::GetTextureFactory().CreateFormatConverter(&formatConverter);
 
-            formatConverter->Initialize(frame, GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
+            formatConverter->Initialize(frame.Get(), GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeErrorDiffusion, 0, 0, WICBitmapPaletteTypeCustom);
 
             formatConverter->CopyPixels(0, width * 4, width * height * 4, buffer.get());
         }
@@ -1162,7 +1165,7 @@ public:
     {
         size = DirectX::XMINT2(width, height);
 
-        texture.Release();
+        texture.Reset();
         D3D11_TEXTURE2D_DESC textureDesc = {};
         textureDesc.Width = width;
         textureDesc.Height = height;
@@ -1180,16 +1183,16 @@ public:
         textureSubresourceData.pSysMem = buffer;
         textureSubresourceData.SysMemPitch = width * 4;
         textureSubresourceData.SysMemSlicePitch = width * height * 4;
-        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, &textureSubresourceData, texture.GetAddressOf());
 
-        shaderResourceView.Release();
+        shaderResourceView.Reset();
         D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
         shaderResourceViewDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
         shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         shaderResourceViewDesc.Texture2D.MipLevels = 1;
-        Graphics::GetDevice3D().CreateShaderResourceView(texture, &shaderResourceViewDesc, &shaderResourceView);
+        Graphics::GetDevice3D().CreateShaderResourceView(texture.Get(), &shaderResourceViewDesc, shaderResourceView.GetAddressOf());
 
-        samplerState.Release();
+        samplerState.Reset();
         D3D11_SAMPLER_DESC samplerDesc = {};
         samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
         samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -1204,7 +1207,7 @@ public:
         samplerDesc.BorderColor[3] = 0.0f;
         samplerDesc.MinLOD = 0.0f;
         samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-        Graphics::GetDevice3D().CreateSamplerState(&samplerDesc, &samplerState);
+        Graphics::GetDevice3D().CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
     }
     DirectX::XMINT2 GetSize() const
     {
@@ -1215,19 +1218,19 @@ public:
         if (texture == nullptr)
             return;
 
-        Graphics::GetContext3D().PSSetShaderResources(slot, 1, &shaderResourceView.p);
-        Graphics::GetContext3D().PSSetSamplers(slot, 1, &samplerState.p);
+        Graphics::GetContext3D().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
+        Graphics::GetContext3D().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
     }
     ID3D11Texture2D& GetInterface()
     {
-        return *texture;
+        return *texture.Get();
     }
 
 private:
     DirectX::XMINT2 size;
-    ATL::CComPtr<ID3D11Texture2D> texture = nullptr;
-    ATL::CComPtr<ID3D11ShaderResourceView> shaderResourceView = nullptr;
-    ATL::CComPtr<ID3D11SamplerState> samplerState = nullptr;
+    ComPtr<ID3D11Texture2D> texture = nullptr;
+    ComPtr<ID3D11ShaderResourceView> shaderResourceView = nullptr;
+    ComPtr<ID3D11SamplerState> samplerState = nullptr;
 };
 class Material
 {
@@ -1261,17 +1264,17 @@ public:
     }
     void Create(const std::string& source)
     {
-        vertexShader.Release();
-        ATL::CComPtr<ID3DBlob> vertexShaderBlob = nullptr;
-        CompileShader(source, "VS", "vs_5_0", &vertexShaderBlob);
-        Graphics::GetDevice3D().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, &vertexShader);
+        vertexShader.Reset();
+        ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
+        CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
+        Graphics::GetDevice3D().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
 
-        pixelShader.Release();
-        ATL::CComPtr<ID3DBlob> pixelShaderBlob = nullptr;
-        CompileShader(source, "PS", "ps_5_0", &pixelShaderBlob);
-        Graphics::GetDevice3D().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, &pixelShader);
+        pixelShader.Reset();
+        ComPtr<ID3DBlob> pixelShaderBlob = nullptr;
+        CompileShader(source, "PS", "ps_5_0", pixelShaderBlob.GetAddressOf());
+        Graphics::GetDevice3D().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, pixelShader.GetAddressOf());
 
-        inputLayout.Release();
+        inputLayout.Reset();
         std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc;
         inputElementDesc.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
         inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
@@ -1281,18 +1284,18 @@ public:
         inputElementDesc.push_back({ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64, D3D11_INPUT_PER_VERTEX_DATA, 0 });
         inputElementDesc.push_back({ "BLENDWEIGHT", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 80, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
-        Graphics::GetDevice3D().CreateInputLayout(inputElementDesc.data(), (UINT)inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &inputLayout);
+        Graphics::GetDevice3D().CreateInputLayout(inputElementDesc.data(), (UINT)inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
     }
     void SetBuffer(int slot, void* cbuffer, size_t size)
     {
         constantBuffer[slot].ptr = cbuffer;
 
-        constantBuffer[slot].buffer.Release();
+        constantBuffer[slot].buffer.Reset();
         D3D11_BUFFER_DESC constantBufferDesc = {};
         constantBufferDesc.ByteWidth = (UINT)size;
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer[slot].buffer);
+        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer[slot].buffer.GetAddressOf());
     }
     void SetTexture(int slot, Texture* texture)
     {
@@ -1301,24 +1304,24 @@ public:
     void Attach()
     {
         if (vertexShader != nullptr)
-            Graphics::GetContext3D().VSSetShader(vertexShader, nullptr, 0);
+            Graphics::GetContext3D().VSSetShader(vertexShader.Get(), nullptr, 0);
 
         if (pixelShader != nullptr)
-            Graphics::GetContext3D().PSSetShader(pixelShader, nullptr, 0);
+            Graphics::GetContext3D().PSSetShader(pixelShader.Get(), nullptr, 0);
 
         if (inputLayout != nullptr)
-            Graphics::GetContext3D().IASetInputLayout(inputLayout);
+            Graphics::GetContext3D().IASetInputLayout(inputLayout.Get());
 
         for (int i = 0; i < 10; i++)
         {
             if (constantBuffer[i].ptr != nullptr)
             {
-                Graphics::GetContext3D().UpdateSubresource(constantBuffer[i].buffer, 0, nullptr, constantBuffer[i].ptr, 0, 0);
-                Graphics::GetContext3D().VSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
-                Graphics::GetContext3D().HSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
-                Graphics::GetContext3D().DSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
-                Graphics::GetContext3D().GSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
-                Graphics::GetContext3D().PSSetConstantBuffers(i, 1, &constantBuffer[i].buffer.p);
+                Graphics::GetContext3D().UpdateSubresource(constantBuffer[i].buffer.Get(), 0, nullptr, constantBuffer[i].ptr, 0, 0);
+                Graphics::GetContext3D().VSSetConstantBuffers(i, 1, constantBuffer[i].buffer.GetAddressOf());
+                Graphics::GetContext3D().HSSetConstantBuffers(i, 1, constantBuffer[i].buffer.GetAddressOf());
+                Graphics::GetContext3D().DSSetConstantBuffers(i, 1, constantBuffer[i].buffer.GetAddressOf());
+                Graphics::GetContext3D().GSSetConstantBuffers(i, 1, constantBuffer[i].buffer.GetAddressOf());
+                Graphics::GetContext3D().PSSetConstantBuffers(i, 1, constantBuffer[i].buffer.GetAddressOf());
             }
         }
 
@@ -1335,14 +1338,14 @@ private:
     struct ConstantBuffer
     {
         void* ptr = nullptr;
-        ATL::CComPtr<ID3D11Buffer> buffer = nullptr;
+        ComPtr<ID3D11Buffer> buffer = nullptr;
     };
 
     ConstantBuffer constantBuffer[10];
     Texture* textures[10];
-    ATL::CComPtr<ID3D11VertexShader> vertexShader = nullptr;
-    ATL::CComPtr<ID3D11PixelShader> pixelShader = nullptr;
-    ATL::CComPtr<ID3D11InputLayout> inputLayout = nullptr;
+    ComPtr<ID3D11VertexShader> vertexShader = nullptr;
+    ComPtr<ID3D11PixelShader> pixelShader = nullptr;
+    ComPtr<ID3D11InputLayout> inputLayout = nullptr;
 
     void Initialize()
     {
@@ -1360,8 +1363,8 @@ private:
         shaderFlags |= D3DCOMPILE_DEBUG;
 #endif
 
-        ATL::CComPtr<ID3DBlob> errorBlob = nullptr;
-        D3DCompile(source.c_str(), source.length(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, &errorBlob);
+        ComPtr<ID3DBlob> errorBlob = nullptr;
+        D3DCompile(source.c_str(), source.length(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, errorBlob.GetAddressOf());
 
         if (errorBlob != nullptr)
         {
@@ -1433,27 +1436,27 @@ public:
             )
         );
 
-        Graphics::GetContext3D().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-        Graphics::GetContext3D().VSSetConstantBuffers(0, 1, &constantBuffer.p);
-        Graphics::GetContext3D().HSSetConstantBuffers(0, 1, &constantBuffer.p);
-        Graphics::GetContext3D().DSSetConstantBuffers(0, 1, &constantBuffer.p);
-        Graphics::GetContext3D().GSSetConstantBuffers(0, 1, &constantBuffer.p);
-        Graphics::GetContext3D().PSSetConstantBuffers(0, 1, &constantBuffer.p);
+        Graphics::GetContext3D().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
+        Graphics::GetContext3D().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().HSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().DSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().GSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
         if (shouldClear)
         {
             float clearColor[4] = { color.x, color.y, color.z, color.w };
-            Graphics::GetContext3D().ClearRenderTargetView(renderTargetView, clearColor);
+            Graphics::GetContext3D().ClearRenderTargetView(renderTargetView.Get(), clearColor);
         }
 
         if (isDepthTest)
         {
-            Graphics::GetContext3D().ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-            Graphics::GetContext3D().OMSetRenderTargets(1, &renderTargetView.p, depthStencilView);
+            Graphics::GetContext3D().ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+            Graphics::GetContext3D().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
         }
         else
         {
-            Graphics::GetContext3D().OMSetRenderTargets(1, &renderTargetView.p, nullptr);
+            Graphics::GetContext3D().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
         }
     }
 
@@ -1471,23 +1474,23 @@ private:
     float farClip;
     bool isDepthTest;
     Constant constant;
-    ATL::CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-    ATL::CComPtr<ID3D11DepthStencilView> depthStencilView = nullptr;
-    ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
-    ATL::CComPtr<ID3D11Texture2D> depthTexture = nullptr;
-    ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
+    ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+    ComPtr<ID3D11DepthStencilView> depthStencilView = nullptr;
+    ComPtr<ID3D11Texture2D> renderTexture = nullptr;
+    ComPtr<ID3D11Texture2D> depthTexture = nullptr;
+    ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
     void Create()
     {
-        renderTexture.Release();
-        Graphics::GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
-        renderTargetView.Release();
-        Graphics::GetDevice3D().CreateRenderTargetView(renderTexture, nullptr, &renderTargetView);
+        renderTexture.Reset();
+        Graphics::GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
+        renderTargetView.Reset();
+        Graphics::GetDevice3D().CreateRenderTargetView(renderTexture.Get(), nullptr, renderTargetView.GetAddressOf());
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
         Graphics::GetSwapChain().GetDesc(&swapChainDesc);
 
-        depthTexture.Release();
+        depthTexture.Reset();
         D3D11_TEXTURE2D_DESC textureDesc = {};
         textureDesc.Width = static_cast<UINT>(Window::GetSize().x);
         textureDesc.Height = static_cast<UINT>(Window::GetSize().y);
@@ -1500,9 +1503,9 @@ private:
         textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
         textureDesc.CPUAccessFlags = 0;
         textureDesc.MiscFlags = 0;
-        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, nullptr, &depthTexture);
+        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, nullptr, depthTexture.GetAddressOf());
 
-        depthStencilView.Release();
+        depthStencilView.Reset();
         D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
         depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
         if (swapChainDesc.SampleDesc.Count == 0)
@@ -1514,15 +1517,15 @@ private:
         {
             depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
         }
-        Graphics::GetDevice3D().CreateDepthStencilView(depthTexture, &depthStencilViewDesc, &depthStencilView);
+        Graphics::GetDevice3D().CreateDepthStencilView(depthTexture.Get(), &depthStencilViewDesc, depthStencilView.GetAddressOf());
 
-        constantBuffer.Release();
+        constantBuffer.Reset();
         D3D11_BUFFER_DESC constantBufferDesc = {};
         constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         constantBufferDesc.CPUAccessFlags = 0;
-        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
     }
     void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
     {
@@ -1665,12 +1668,12 @@ public:
         D3D11_RASTERIZER_DESC rasterizerDesc = {};
         rasterizerDesc.FillMode = D3D11_FILL_SOLID;
         rasterizerDesc.CullMode = cullingMode;
-        rasterizerState.Release();
-        Graphics::GetDevice3D().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+        rasterizerState.Reset();
+        Graphics::GetDevice3D().CreateRasterizerState(&rasterizerDesc, rasterizerState.GetAddressOf());
     }
     void Apply()
     {
-        vertexBuffer.Release();
+        vertexBuffer.Reset();
         if (vertices.size() > 0)
         {
             D3D11_BUFFER_DESC vertexBufferDesc = {};
@@ -1679,10 +1682,10 @@ public:
             vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
             D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
             vertexSubresourceData.pSysMem = vertices.data();
-            Graphics::GetDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+            Graphics::GetDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
         }
 
-        indexBuffer.Release();
+        indexBuffer.Reset();
         if (indices.size() > 0)
         {
             D3D11_BUFFER_DESC indexBufferDesc = {};
@@ -1691,7 +1694,7 @@ public:
             indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
             D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
             indexSubresourceData.pSysMem = indices.data();
-            Graphics::GetDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+            Graphics::GetDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
         }
 
         material.SetBuffer(1, &constant, sizeof(Constant));
@@ -1711,11 +1714,11 @@ public:
 
         material.Attach();
 
-        Graphics::GetContext3D().RSSetState(rasterizerState);
+        Graphics::GetContext3D().RSSetState(rasterizerState.Get());
 
         UINT stride = sizeof(Vertex);
         UINT offset = 0;
-        Graphics::GetContext3D().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
+        Graphics::GetContext3D().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 
         if (indexBuffer == nullptr)
         {
@@ -1723,7 +1726,7 @@ public:
         }
         else
         {
-            Graphics::GetContext3D().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+            Graphics::GetContext3D().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
             Graphics::GetContext3D().DrawIndexed((UINT)indices.size(), 0, 0);
         }
     }
@@ -1736,9 +1739,9 @@ private:
 
     Material material;
     Constant constant;
-    ATL::CComPtr<ID3D11Buffer> vertexBuffer = nullptr;
-    ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;
-    ATL::CComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
+    ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
+    ComPtr<ID3D11Buffer> indexBuffer = nullptr;
+    ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
 };
 class Sprite
 {
@@ -1883,7 +1886,7 @@ public:
         Graphics::GetContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), brush.GetAddressOf());
         Graphics::GetContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
-        Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat = nullptr;
+        ComPtr<IDWriteTextFormat> textFormat = nullptr;
         Graphics::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
 
         textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
@@ -1901,16 +1904,16 @@ public:
         std::unique_ptr<BYTE[]> buffer(new BYTE[(int)textMetrics.width * (int)textMetrics.height * 4]);
         texture.Create(buffer.get(), (int)textMetrics.width, (int)textMetrics.height);
 
-        ATL::CComPtr<IDXGISurface> surface = nullptr;
-        texture.GetInterface().QueryInterface(&surface);
+        ComPtr<IDXGISurface> surface = nullptr;
+        texture.GetInterface().QueryInterface(surface.GetAddressOf());
 
         D2D1_BITMAP_PROPERTIES1 bitmapProperties = {};
         bitmapProperties.pixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
         bitmapProperties.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
         bitmapProperties.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET;
 
-        bitmap.Release();
-        Graphics::GetContext2D().CreateBitmapFromDxgiSurface(surface, bitmapProperties, &bitmap);
+        bitmap.Reset();
+        Graphics::GetContext2D().CreateBitmapFromDxgiSurface(surface.Get(), bitmapProperties, bitmap.GetAddressOf());
 
         mesh.GetMaterial().SetTexture(0, &texture);
 
@@ -1918,7 +1921,7 @@ public:
     }
     void Draw()
     {
-        Graphics::GetContext2D().SetTarget(bitmap);
+        Graphics::GetContext2D().SetTarget(bitmap.Get());
 
         Graphics::GetContext2D().BeginDraw();
 
@@ -1933,9 +1936,9 @@ public:
     void Create(const BYTE* const buffer, int width, int height) = delete;
 
 private:
-    ATL::CComPtr<ID2D1Bitmap1> bitmap = nullptr;
-    Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush = nullptr;
-    Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayout = nullptr;
+    ComPtr<ID2D1Bitmap1> bitmap = nullptr;
+    ComPtr<ID2D1SolidColorBrush> brush = nullptr;
+    ComPtr<IDWriteTextLayout> textLayout = nullptr;
 };
 class Sound : public Window::Proceedable
 {
@@ -1957,36 +1960,36 @@ public:
     {
         Audio::GetDevice();
 
-        ATL::CComPtr<IStream> stream = nullptr;
-        SHCreateStreamOnFileW(filePath, STGM_READ, &stream);
+        ComPtr<IStream> stream = nullptr;
+        SHCreateStreamOnFileW(filePath, STGM_READ, stream.GetAddressOf());
 
-        ATL::CComPtr<IMFByteStream> byteStream = nullptr;
-        MFCreateMFByteStreamOnStream(stream, &byteStream);
+        ComPtr<IMFByteStream> byteStream = nullptr;
+        MFCreateMFByteStreamOnStream(stream.Get(), byteStream.GetAddressOf());
 
-        ATL::CComPtr<IMFAttributes> attributes = nullptr;
-        MFCreateAttributes(&attributes, 1);
+        ComPtr<IMFAttributes> attributes = nullptr;
+        MFCreateAttributes(attributes.GetAddressOf(), 1);
 
-        sourceReader.Release();
-        MFCreateSourceReaderFromByteStream(byteStream, attributes, &sourceReader);
+        sourceReader.Reset();
+        MFCreateSourceReaderFromByteStream(byteStream.Get(), attributes.Get(), sourceReader.GetAddressOf());
 
-        ATL::CComPtr<IMFMediaType> mediaType = nullptr;
-        MFCreateMediaType(&mediaType);
+        ComPtr<IMFMediaType> mediaType = nullptr;
+        MFCreateMediaType(mediaType.GetAddressOf());
         mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
         mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
 
-        sourceReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType);
-        mediaType.Release();
-        sourceReader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, &mediaType);
+        sourceReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType.Get());
+        mediaType.Reset();
+        sourceReader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, mediaType.GetAddressOf());
 
         UINT32 waveFormatSize = sizeof(WAVEFORMATEX);
-        MFCreateWaveFormatExFromMFMediaType(mediaType, &format, &waveFormatSize);
+        MFCreateWaveFormatExFromMFMediaType(mediaType.Get(), &format, &waveFormatSize);
 
-        ATL::CComPtr<IMFSample> sample = nullptr;
+        ComPtr<IMFSample> sample = nullptr;
         DWORD flags = 0;
-        sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+        sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
 
-        ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
-        sample->ConvertToContiguousBuffer(&mediaBuffer);
+        ComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
+        sample->ConvertToContiguousBuffer(mediaBuffer.GetAddressOf());
 
         mediaBuffer->GetMaxLength(&bufferSize);
         bufferSize -= format->nBlockAlign;
@@ -1997,8 +2000,8 @@ public:
         bufferDesc.dwBufferBytes = bufferSize * 2;
         bufferDesc.lpwfxFormat = format;
 
-        soundBuffer.Release();
-        Audio::GetDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
+        soundBuffer.Reset();
+        Audio::GetDevice().CreateSoundBuffer(&bufferDesc, soundBuffer.GetAddressOf(), nullptr);
     }
     void SetLoop(bool isLoop)
     {
@@ -2096,8 +2099,8 @@ private:
     }
     properties;
 
-    ATL::CComPtr<IMFSourceReader> sourceReader = nullptr;
-    ATL::CComPtr<IDirectSoundBuffer> soundBuffer = nullptr;
+    ComPtr<IMFSourceReader> sourceReader = nullptr;
+    ComPtr<IDirectSoundBuffer> soundBuffer = nullptr;
     DWORD bufferSize;
     int bufferIndex = 0;
     WAVEFORMATEX* format;
@@ -2123,9 +2126,9 @@ private:
 
         memset(buffer, 256, size);
 
-        ATL::CComPtr<IMFSample> sample = nullptr;
+        ComPtr<IMFSample> sample = nullptr;
         DWORD flags = 0;
-        sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+        sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
 
         if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
         {
@@ -2137,12 +2140,12 @@ private:
 
             Reset();
 
-            sample.Release();
-            sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+            sample.Reset();
+            sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
         }
 
-        ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
-        sample->ConvertToContiguousBuffer(&mediaBuffer);
+        ComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
+        sample->ConvertToContiguousBuffer(mediaBuffer.GetAddressOf());
         mediaBuffer->SetCurrentLength(size);
 
         BYTE* temp = nullptr;

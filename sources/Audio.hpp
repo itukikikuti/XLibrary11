@@ -3,13 +3,13 @@ class Audio
 public:
     static IDirectSound8& GetDevice()
     {
-        return *GetInstance().device;
+        return *GetInstance().device.Get();
     }
 
 private:
     friend std::unique_ptr<Audio>::deleter_type;
 
-    ATL::CComPtr<IDirectSound8> device = nullptr;
+    ComPtr<IDirectSound8> device = nullptr;
 
     Audio(Audio&) = delete;
     Audio(const Audio&) = delete;

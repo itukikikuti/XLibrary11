@@ -18,36 +18,36 @@ public:
     {
         Audio::GetDevice();
 
-        ATL::CComPtr<IStream> stream = nullptr;
-        SHCreateStreamOnFileW(filePath, STGM_READ, &stream);
+        ComPtr<IStream> stream = nullptr;
+        SHCreateStreamOnFileW(filePath, STGM_READ, stream.GetAddressOf());
 
-        ATL::CComPtr<IMFByteStream> byteStream = nullptr;
-        MFCreateMFByteStreamOnStream(stream, &byteStream);
+        ComPtr<IMFByteStream> byteStream = nullptr;
+        MFCreateMFByteStreamOnStream(stream.Get(), byteStream.GetAddressOf());
 
-        ATL::CComPtr<IMFAttributes> attributes = nullptr;
-        MFCreateAttributes(&attributes, 1);
+        ComPtr<IMFAttributes> attributes = nullptr;
+        MFCreateAttributes(attributes.GetAddressOf(), 1);
 
-        sourceReader.Release();
-        MFCreateSourceReaderFromByteStream(byteStream, attributes, &sourceReader);
+        sourceReader.Reset();
+        MFCreateSourceReaderFromByteStream(byteStream.Get(), attributes.Get(), sourceReader.GetAddressOf());
 
-        ATL::CComPtr<IMFMediaType> mediaType = nullptr;
-        MFCreateMediaType(&mediaType);
+        ComPtr<IMFMediaType> mediaType = nullptr;
+        MFCreateMediaType(mediaType.GetAddressOf());
         mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
         mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
 
-        sourceReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType);
-        mediaType.Release();
-        sourceReader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, &mediaType);
+        sourceReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType.Get());
+        mediaType.Reset();
+        sourceReader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, mediaType.GetAddressOf());
 
         UINT32 waveFormatSize = sizeof(WAVEFORMATEX);
-        MFCreateWaveFormatExFromMFMediaType(mediaType, &format, &waveFormatSize);
+        MFCreateWaveFormatExFromMFMediaType(mediaType.Get(), &format, &waveFormatSize);
 
-        ATL::CComPtr<IMFSample> sample = nullptr;
+        ComPtr<IMFSample> sample = nullptr;
         DWORD flags = 0;
-        sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+        sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
 
-        ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
-        sample->ConvertToContiguousBuffer(&mediaBuffer);
+        ComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
+        sample->ConvertToContiguousBuffer(mediaBuffer.GetAddressOf());
 
         mediaBuffer->GetMaxLength(&bufferSize);
         bufferSize -= format->nBlockAlign;
@@ -58,8 +58,8 @@ public:
         bufferDesc.dwBufferBytes = bufferSize * 2;
         bufferDesc.lpwfxFormat = format;
 
-        soundBuffer.Release();
-        Audio::GetDevice().CreateSoundBuffer(&bufferDesc, &soundBuffer, nullptr);
+        soundBuffer.Reset();
+        Audio::GetDevice().CreateSoundBuffer(&bufferDesc, soundBuffer.GetAddressOf(), nullptr);
     }
     void SetLoop(bool isLoop)
     {
@@ -157,8 +157,8 @@ private:
     }
     properties;
 
-    ATL::CComPtr<IMFSourceReader> sourceReader = nullptr;
-    ATL::CComPtr<IDirectSoundBuffer> soundBuffer = nullptr;
+    ComPtr<IMFSourceReader> sourceReader = nullptr;
+    ComPtr<IDirectSoundBuffer> soundBuffer = nullptr;
     DWORD bufferSize;
     int bufferIndex = 0;
     WAVEFORMATEX* format;
@@ -184,9 +184,9 @@ private:
 
         memset(buffer, 256, size);
 
-        ATL::CComPtr<IMFSample> sample = nullptr;
+        ComPtr<IMFSample> sample = nullptr;
         DWORD flags = 0;
-        sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+        sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
 
         if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
         {
@@ -198,12 +198,12 @@ private:
 
             Reset();
 
-            sample.Release();
-            sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, &sample);
+            sample.Reset();
+            sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
         }
 
-        ATL::CComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
-        sample->ConvertToContiguousBuffer(&mediaBuffer);
+        ComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
+        sample->ConvertToContiguousBuffer(mediaBuffer.GetAddressOf());
         mediaBuffer->SetCurrentLength(size);
 
         BYTE* temp = nullptr;

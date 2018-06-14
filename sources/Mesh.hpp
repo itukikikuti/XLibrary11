@@ -123,12 +123,12 @@ public:
         D3D11_RASTERIZER_DESC rasterizerDesc = {};
         rasterizerDesc.FillMode = D3D11_FILL_SOLID;
         rasterizerDesc.CullMode = cullingMode;
-        rasterizerState.Release();
-        Graphics::GetDevice3D().CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+        rasterizerState.Reset();
+        Graphics::GetDevice3D().CreateRasterizerState(&rasterizerDesc, rasterizerState.GetAddressOf());
     }
     void Apply()
     {
-        vertexBuffer.Release();
+        vertexBuffer.Reset();
         if (vertices.size() > 0)
         {
             D3D11_BUFFER_DESC vertexBufferDesc = {};
@@ -137,10 +137,10 @@ public:
             vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
             D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
             vertexSubresourceData.pSysMem = vertices.data();
-            Graphics::GetDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, &vertexBuffer);
+            Graphics::GetDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
         }
 
-        indexBuffer.Release();
+        indexBuffer.Reset();
         if (indices.size() > 0)
         {
             D3D11_BUFFER_DESC indexBufferDesc = {};
@@ -149,7 +149,7 @@ public:
             indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
             D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
             indexSubresourceData.pSysMem = indices.data();
-            Graphics::GetDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, &indexBuffer);
+            Graphics::GetDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
         }
 
         material.SetBuffer(1, &constant, sizeof(Constant));
@@ -169,11 +169,11 @@ public:
 
         material.Attach();
 
-        Graphics::GetContext3D().RSSetState(rasterizerState);
+        Graphics::GetContext3D().RSSetState(rasterizerState.Get());
 
         UINT stride = sizeof(Vertex);
         UINT offset = 0;
-        Graphics::GetContext3D().IASetVertexBuffers(0, 1, &vertexBuffer.p, &stride, &offset);
+        Graphics::GetContext3D().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 
         if (indexBuffer == nullptr)
         {
@@ -181,7 +181,7 @@ public:
         }
         else
         {
-            Graphics::GetContext3D().IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+            Graphics::GetContext3D().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
             Graphics::GetContext3D().DrawIndexed((UINT)indices.size(), 0, 0);
         }
     }
@@ -194,7 +194,7 @@ private:
 
     Material material;
     Constant constant;
-    ATL::CComPtr<ID3D11Buffer> vertexBuffer = nullptr;
-    ATL::CComPtr<ID3D11Buffer> indexBuffer = nullptr;
-    ATL::CComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
+    ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
+    ComPtr<ID3D11Buffer> indexBuffer = nullptr;
+    ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
 };

@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 #include <Windows.h>
-#include <atlbase.h>
 #include <d2d1_1.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
@@ -21,6 +20,7 @@
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
+#include <Shlwapi.h>
 #include <wincodec.h>
 #include <wrl.h>
 
@@ -32,12 +32,15 @@
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mfuuid.lib")
+#pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "windowscodecs.lib")
 
 #define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 XLIBRARY_NAMESPACE_BEGIN
 
 using namespace DirectX;
+using Microsoft::WRL::ComPtr;
 
 static void InitializeApplication()
 {

@@ -61,27 +61,27 @@ public:
             )
         );
 
-        Graphics::GetContext3D().UpdateSubresource(constantBuffer, 0, nullptr, &constant, 0, 0);
-        Graphics::GetContext3D().VSSetConstantBuffers(0, 1, &constantBuffer.p);
-        Graphics::GetContext3D().HSSetConstantBuffers(0, 1, &constantBuffer.p);
-        Graphics::GetContext3D().DSSetConstantBuffers(0, 1, &constantBuffer.p);
-        Graphics::GetContext3D().GSSetConstantBuffers(0, 1, &constantBuffer.p);
-        Graphics::GetContext3D().PSSetConstantBuffers(0, 1, &constantBuffer.p);
+        Graphics::GetContext3D().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
+        Graphics::GetContext3D().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().HSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().DSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().GSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
         if (shouldClear)
         {
             float clearColor[4] = { color.x, color.y, color.z, color.w };
-            Graphics::GetContext3D().ClearRenderTargetView(renderTargetView, clearColor);
+            Graphics::GetContext3D().ClearRenderTargetView(renderTargetView.Get(), clearColor);
         }
 
         if (isDepthTest)
         {
-            Graphics::GetContext3D().ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-            Graphics::GetContext3D().OMSetRenderTargets(1, &renderTargetView.p, depthStencilView);
+            Graphics::GetContext3D().ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+            Graphics::GetContext3D().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
         }
         else
         {
-            Graphics::GetContext3D().OMSetRenderTargets(1, &renderTargetView.p, nullptr);
+            Graphics::GetContext3D().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
         }
     }
 
@@ -99,23 +99,23 @@ private:
     float farClip;
     bool isDepthTest;
     Constant constant;
-    ATL::CComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-    ATL::CComPtr<ID3D11DepthStencilView> depthStencilView = nullptr;
-    ATL::CComPtr<ID3D11Texture2D> renderTexture = nullptr;
-    ATL::CComPtr<ID3D11Texture2D> depthTexture = nullptr;
-    ATL::CComPtr<ID3D11Buffer> constantBuffer = nullptr;
+    ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+    ComPtr<ID3D11DepthStencilView> depthStencilView = nullptr;
+    ComPtr<ID3D11Texture2D> renderTexture = nullptr;
+    ComPtr<ID3D11Texture2D> depthTexture = nullptr;
+    ComPtr<ID3D11Buffer> constantBuffer = nullptr;
 
     void Create()
     {
-        renderTexture.Release();
-        Graphics::GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&renderTexture));
-        renderTargetView.Release();
-        Graphics::GetDevice3D().CreateRenderTargetView(renderTexture, nullptr, &renderTargetView);
+        renderTexture.Reset();
+        Graphics::GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
+        renderTargetView.Reset();
+        Graphics::GetDevice3D().CreateRenderTargetView(renderTexture.Get(), nullptr, renderTargetView.GetAddressOf());
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
         Graphics::GetSwapChain().GetDesc(&swapChainDesc);
 
-        depthTexture.Release();
+        depthTexture.Reset();
         D3D11_TEXTURE2D_DESC textureDesc = {};
         textureDesc.Width = static_cast<UINT>(Window::GetSize().x);
         textureDesc.Height = static_cast<UINT>(Window::GetSize().y);
@@ -128,9 +128,9 @@ private:
         textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
         textureDesc.CPUAccessFlags = 0;
         textureDesc.MiscFlags = 0;
-        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, nullptr, &depthTexture);
+        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, nullptr, depthTexture.GetAddressOf());
 
-        depthStencilView.Release();
+        depthStencilView.Reset();
         D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
         depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
         if (swapChainDesc.SampleDesc.Count == 0)
@@ -142,15 +142,15 @@ private:
         {
             depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
         }
-        Graphics::GetDevice3D().CreateDepthStencilView(depthTexture, &depthStencilViewDesc, &depthStencilView);
+        Graphics::GetDevice3D().CreateDepthStencilView(depthTexture.Get(), &depthStencilViewDesc, depthStencilView.GetAddressOf());
 
-        constantBuffer.Release();
+        constantBuffer.Reset();
         D3D11_BUFFER_DESC constantBufferDesc = {};
         constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         constantBufferDesc.CPUAccessFlags = 0;
-        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
     }
     void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
     {
