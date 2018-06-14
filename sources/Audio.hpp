@@ -11,9 +11,7 @@ private:
 
     ComPtr<IDirectSound8> device = nullptr;
 
-    Audio(Audio&) = delete;
     Audio(const Audio&) = delete;
-    Audio& operator=(Audio&) = delete;
     Audio& operator=(const Audio&) = delete;
     Audio()
     {

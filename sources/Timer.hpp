@@ -42,9 +42,7 @@ private:
     LARGE_INTEGER preCount;
     LARGE_INTEGER frequency;
 
-    Timer(Timer&) = delete;
     Timer(const Timer&) = delete;
-    Timer& operator=(Timer&) = delete;
     Timer& operator=(const Timer&) = delete;
     Timer()
     {

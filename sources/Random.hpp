@@ -17,9 +17,7 @@ private:
 
     std::mt19937 mt;
 
-    Random(Random&) = delete;
     Random(const Random&) = delete;
-    Random& operator=(Random&) = delete;
     Random& operator=(const Random&) = delete;
     Random()
     {

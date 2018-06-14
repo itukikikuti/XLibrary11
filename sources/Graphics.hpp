@@ -52,9 +52,7 @@ private:
     ComPtr<IDWriteFactory> textFactory = nullptr;
     bool isFullScreen = false;
 
-    Graphics(Graphics&) = delete;
     Graphics(const Graphics&) = delete;
-    Graphics& operator=(Graphics&) = delete;
     Graphics& operator=(const Graphics&) = delete;
     Graphics()
     {
