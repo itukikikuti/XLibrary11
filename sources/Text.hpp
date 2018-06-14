@@ -12,8 +12,8 @@ public:
         if (text == L"")
             return;
 
-        brush.Reset();
-        Graphics::GetContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), brush.GetAddressOf());
+        _brush.Reset();
+        Graphics::GetContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), _brush.GetAddressOf());
         Graphics::GetContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
         ComPtr<IDWriteTextFormat> textFormat = nullptr;
@@ -22,41 +22,41 @@ public:
         textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
         textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
-        textLayout.Reset();
-        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), FLT_MAX, FLT_MAX, textLayout.GetAddressOf());
+        _textLayout.Reset();
+        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), FLT_MAX, FLT_MAX, _textLayout.GetAddressOf());
         
         DWRITE_TEXT_METRICS textMetrics;
-        textLayout->GetMetrics(&textMetrics);
+        _textLayout->GetMetrics(&textMetrics);
 
-        textLayout.Reset();
-        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, textLayout.GetAddressOf());
+        _textLayout.Reset();
+        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, _textLayout.GetAddressOf());
 
         std::unique_ptr<BYTE[]> buffer(new BYTE[(int)textMetrics.width * (int)textMetrics.height * 4]);
-        texture.Create(buffer.get(), (int)textMetrics.width, (int)textMetrics.height);
+        _texture.Create(buffer.get(), (int)textMetrics.width, (int)textMetrics.height);
 
         ComPtr<IDXGISurface> surface = nullptr;
-        texture.GetInterface().QueryInterface(surface.GetAddressOf());
+        _texture.GetInterface().QueryInterface(surface.GetAddressOf());
 
         D2D1_BITMAP_PROPERTIES1 bitmapProperties = {};
         bitmapProperties.pixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
         bitmapProperties.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
         bitmapProperties.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET;
 
-        bitmap.Reset();
-        Graphics::GetContext2D().CreateBitmapFromDxgiSurface(surface.Get(), bitmapProperties, bitmap.GetAddressOf());
+        _bitmap.Reset();
+        Graphics::GetContext2D().CreateBitmapFromDxgiSurface(surface.Get(), bitmapProperties, _bitmap.GetAddressOf());
 
-        mesh.GetMaterial().SetTexture(0, &texture);
+        _mesh.GetMaterial().SetTexture(0, &_texture);
 
         SetPivot(0.0f);
     }
     void Draw()
     {
-        Graphics::GetContext2D().SetTarget(bitmap.Get());
+        Graphics::GetContext2D().SetTarget(_bitmap.Get());
 
         Graphics::GetContext2D().BeginDraw();
 
         Graphics::GetContext2D().Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
-        Graphics::GetContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), textLayout.Get(), brush.Get());
+        Graphics::GetContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), _textLayout.Get(), _brush.Get());
 
         Graphics::GetContext2D().EndDraw();
 
@@ -66,7 +66,7 @@ public:
     void Create(const BYTE* const buffer, int width, int height) = delete;
 
 private:
-    ComPtr<ID2D1Bitmap1> bitmap = nullptr;
-    ComPtr<ID2D1SolidColorBrush> brush = nullptr;
-    ComPtr<IDWriteTextLayout> textLayout = nullptr;
+    ComPtr<ID2D1Bitmap1> _bitmap = nullptr;
+    ComPtr<ID2D1SolidColorBrush> _brush = nullptr;
+    ComPtr<IDWriteTextLayout> _textLayout = nullptr;
 };

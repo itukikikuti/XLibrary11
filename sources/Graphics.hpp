@@ -3,54 +3,54 @@
 public:
     static ID3D11Device& GetDevice3D()
     {
-        return *GetInstance().device3D.Get();
+        return *GetInstance()._device3D.Get();
     }
     static ID3D11DeviceContext& GetContext3D()
     {
-        return *GetInstance().context3D.Get();
+        return *GetInstance()._context3D.Get();
     }
     static ID2D1Device& GetDevice2D()
     {
-        return *GetInstance().device2D.Get();
+        return *GetInstance()._device2D.Get();
     }
     static ID2D1DeviceContext& GetContext2D()
     {
-        return *GetInstance().context2D.Get();
+        return *GetInstance()._context2D.Get();
     }
     static IDXGISwapChain& GetSwapChain()
     {
-        return *GetInstance().swapChain.Get();
+        return *GetInstance()._swapChain.Get();
     }
     static IWICImagingFactory& GetTextureFactory()
     {
-        return *GetInstance().textureFactory.Get();
+        return *GetInstance()._textureFactory.Get();
     }
     static IDWriteFactory& GetTextFactory()
     {
-        return *GetInstance().textFactory.Get();
+        return *GetInstance()._textFactory.Get();
     }
     static void Update()
     {
         if (Input::GetKey(VK_MENU) && Input::GetKeyDown(VK_RETURN))
         {
-            GetInstance().isFullScreen = !GetInstance().isFullScreen;
-            Window::SetFullScreen(GetInstance().isFullScreen);
+            GetInstance()._isFullScreen = !GetInstance()._isFullScreen;
+            Window::SetFullScreen(GetInstance()._isFullScreen);
         }
 
-        GetInstance().swapChain->Present(1, 0);
+        GetInstance()._swapChain->Present(1, 0);
     }
 
 private:
     friend std::unique_ptr<Graphics>::deleter_type;
 
-    ComPtr<ID3D11Device> device3D = nullptr;
-    ComPtr<ID3D11DeviceContext> context3D = nullptr;
-    ComPtr<ID2D1Device> device2D = nullptr;
-    ComPtr<ID2D1DeviceContext> context2D = nullptr;
-    ComPtr<IDXGISwapChain> swapChain = nullptr;
-    ComPtr<IWICImagingFactory> textureFactory = nullptr;
-    ComPtr<IDWriteFactory> textFactory = nullptr;
-    bool isFullScreen = false;
+    ComPtr<ID3D11Device> _device3D = nullptr;
+    ComPtr<ID3D11DeviceContext> _context3D = nullptr;
+    ComPtr<ID2D1Device> _device2D = nullptr;
+    ComPtr<ID2D1DeviceContext> _context2D = nullptr;
+    ComPtr<IDXGISwapChain> _swapChain = nullptr;
+    ComPtr<IWICImagingFactory> _textureFactory = nullptr;
+    ComPtr<IDWriteFactory> _textFactory = nullptr;
+    bool _isFullScreen = false;
 
     Graphics(const Graphics&) = delete;
     Graphics& operator=(const Graphics&) = delete;
@@ -80,13 +80,13 @@ private:
 
         for (size_t i = 0; i < driverTypes.size(); i++)
         {
-            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), (UINT)featureLevels.size(), D3D11_SDK_VERSION, device3D.GetAddressOf(), nullptr, context3D.GetAddressOf());
+            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), (UINT)featureLevels.size(), D3D11_SDK_VERSION, _device3D.GetAddressOf(), nullptr, _context3D.GetAddressOf());
 
             if (SUCCEEDED(r))
                 break;
         }
 
-        context3D->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        _context3D->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
         ComPtr<ID3D11BlendState> blendState = nullptr;
         D3D11_BLEND_DESC blendDesc = {};
@@ -100,8 +100,8 @@ private:
         blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
         float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-        device3D->CreateBlendState(&blendDesc, &blendState);
-        context3D->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
+        _device3D->CreateBlendState(&blendDesc, &blendState);
+        _context3D->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
 
         D2D1_FACTORY_OPTIONS options = {};
 #if defined(_DEBUG)
@@ -112,15 +112,15 @@ private:
         D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, factory.GetAddressOf());
 
         ComPtr<IDXGIDevice> device = nullptr;
-        device3D->QueryInterface(device.GetAddressOf());
+        _device3D->QueryInterface(device.GetAddressOf());
 
-        factory->CreateDevice(device.Get(), device2D.GetAddressOf());
+        factory->CreateDevice(device.Get(), _device2D.GetAddressOf());
 
-        device2D->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, context2D.GetAddressOf());
+        _device2D->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, _context2D.GetAddressOf());
 
-        CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, reinterpret_cast<void**>(textureFactory.GetAddressOf()));
+        CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, reinterpret_cast<void**>(_textureFactory.GetAddressOf()));
 
-        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(textFactory.GetAddressOf()));
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(_textFactory.GetAddressOf()));
 
         Create();
 
@@ -148,7 +148,7 @@ private:
     void Create()
     {
         ComPtr<IDXGIDevice> dxgi = nullptr;
-        device3D->QueryInterface(dxgi.GetAddressOf());
+        _device3D->QueryInterface(dxgi.GetAddressOf());
 
         ComPtr<IDXGIAdapter> adapter = nullptr;
         dxgi->GetAdapter(&adapter);
@@ -169,15 +169,15 @@ private:
         swapChainDesc.OutputWindow = Window::GetHandle();
         swapChainDesc.Windowed = true;
 
-        swapChain.Reset();
-        factory->CreateSwapChain(device3D.Get(), &swapChainDesc, swapChain.GetAddressOf());
+        _swapChain.Reset();
+        factory->CreateSwapChain(_device3D.Get(), &swapChainDesc, _swapChain.GetAddressOf());
         factory->MakeWindowAssociation(Window::GetHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
         D3D11_VIEWPORT viewPort = {};
         viewPort.Width = static_cast<float>(Window::GetSize().x);
         viewPort.Height = static_cast<float>(Window::GetSize().y);
         viewPort.MaxDepth = 1.0f;
-        context3D->RSSetViewports(1, &viewPort);
+        _context3D->RSSetViewports(1, &viewPort);
     }
     void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
     {

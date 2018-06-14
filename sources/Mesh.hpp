@@ -15,7 +15,7 @@ public:
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
 
-        material.Create(
+        _material.Create(
             "cbuffer Camera : register(b0)"
             "{"
             "    matrix view;"
@@ -116,19 +116,19 @@ public:
     }
     Material& GetMaterial()
     {
-        return material;
+        return _material;
     }
     void SetCullingMode(D3D11_CULL_MODE cullingMode)
     {
         D3D11_RASTERIZER_DESC rasterizerDesc = {};
         rasterizerDesc.FillMode = D3D11_FILL_SOLID;
         rasterizerDesc.CullMode = cullingMode;
-        rasterizerState.Reset();
-        Graphics::GetDevice3D().CreateRasterizerState(&rasterizerDesc, rasterizerState.GetAddressOf());
+        _rasterizerState.Reset();
+        Graphics::GetDevice3D().CreateRasterizerState(&rasterizerDesc, _rasterizerState.GetAddressOf());
     }
     void Apply()
     {
-        vertexBuffer.Reset();
+        _vertexBuffer.Reset();
         if (vertices.size() > 0)
         {
             D3D11_BUFFER_DESC vertexBufferDesc = {};
@@ -137,10 +137,10 @@ public:
             vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
             D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
             vertexSubresourceData.pSysMem = vertices.data();
-            Graphics::GetDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
+            Graphics::GetDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, _vertexBuffer.GetAddressOf());
         }
 
-        indexBuffer.Reset();
+        _indexBuffer.Reset();
         if (indices.size() > 0)
         {
             D3D11_BUFFER_DESC indexBufferDesc = {};
@@ -149,17 +149,17 @@ public:
             indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
             D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
             indexSubresourceData.pSysMem = indices.data();
-            Graphics::GetDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
+            Graphics::GetDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, _indexBuffer.GetAddressOf());
         }
 
-        material.SetBuffer(1, &constant, sizeof(Constant));
+        _material.SetBuffer(1, &_constant, sizeof(Constant));
     }
     void Draw()
     {
-        if (vertexBuffer == nullptr)
+        if (_vertexBuffer == nullptr)
             return;
 
-        constant.world = DirectX::XMMatrixTranspose(
+        _constant.world = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
             DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
             DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
@@ -167,21 +167,21 @@ public:
             DirectX::XMMatrixTranslation(position.x, position.y, position.z)
         );
 
-        material.Attach();
+        _material.Attach();
 
-        Graphics::GetContext3D().RSSetState(rasterizerState.Get());
+        Graphics::GetContext3D().RSSetState(_rasterizerState.Get());
 
         UINT stride = sizeof(Vertex);
         UINT offset = 0;
-        Graphics::GetContext3D().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+        Graphics::GetContext3D().IASetVertexBuffers(0, 1, _vertexBuffer.GetAddressOf(), &stride, &offset);
 
-        if (indexBuffer == nullptr)
+        if (_indexBuffer == nullptr)
         {
             Graphics::GetContext3D().Draw((UINT)vertices.size(), 0);
         }
         else
         {
-            Graphics::GetContext3D().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+            Graphics::GetContext3D().IASetIndexBuffer(_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
             Graphics::GetContext3D().DrawIndexed((UINT)indices.size(), 0, 0);
         }
     }
@@ -192,9 +192,9 @@ private:
         DirectX::XMMATRIX world;
     };
 
-    Material material;
-    Constant constant;
-    ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
-    ComPtr<ID3D11Buffer> indexBuffer = nullptr;
-    ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
+    Material _material;
+    Constant _constant;
+    ComPtr<ID3D11Buffer> _vertexBuffer = nullptr;
+    ComPtr<ID3D11Buffer> _indexBuffer = nullptr;
+    ComPtr<ID3D11RasterizerState> _rasterizerState = nullptr;
 };

@@ -24,11 +24,11 @@ struct Float2 : public DirectX::XMFLOAT2
     }
     Float2 operator+() const
     {
-        return Float2(this->x, this->y);
+        return Float2(x, y);
     }
     Float2 operator-() const
     {
-        return Float2(-this->x, -this->y);
+        return Float2(-x, -y);
     }
     Float2& operator=(const Float2& value)
     {
@@ -151,11 +151,11 @@ struct Float3 : public DirectX::XMFLOAT3
     }
     Float3 operator+() const
     {
-        return Float3(this->x, this->y, this->z);
+        return Float3(x, y, z);
     }
     Float3 operator-() const
     {
-        return Float3(-this->x, -this->y, -this->z);
+        return Float3(-x, -y, -z);
     }
     Float3& operator=(const Float3& value)
     {
@@ -288,11 +288,11 @@ struct Float4 : public DirectX::XMFLOAT4
     }
     Float4 operator+() const
     {
-        return Float4(this->x, this->y, this->z, this->w);
+        return Float4(x, y, z, w);
     }
     Float4 operator-() const
     {
-        return Float4(-this->x, -this->y, -this->z, -this->w);
+        return Float4(-x, -y, -z, -w);
     }
     Float4& operator=(const Float4& value)
     {

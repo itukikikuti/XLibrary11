@@ -3,44 +3,44 @@ class Timer
 public:
     static float GetTime()
     {
-        return GetInstance().time;
+        return GetInstance()._time;
     }
     static float GetDeltaTime()
     {
-        return GetInstance().deltaTime;
+        return GetInstance()._deltaTime;
     }
     static int GetFrameRate()
     {
-        return GetInstance().frameRate;
+        return GetInstance()._frameRate;
     }
     static void Update()
     {
         LARGE_INTEGER count = GetInstance().GetCounter();
-        GetInstance().deltaTime = static_cast<float>(count.QuadPart - GetInstance().preCount.QuadPart) / GetInstance().frequency.QuadPart;
-        GetInstance().preCount = GetInstance().GetCounter();
+        GetInstance()._deltaTime = static_cast<float>(count.QuadPart - GetInstance()._preCount.QuadPart) / GetInstance()._frequency.QuadPart;
+        GetInstance()._preCount = GetInstance().GetCounter();
 
-        GetInstance().time += GetInstance().deltaTime;
+        GetInstance()._time += GetInstance()._deltaTime;
 
-        GetInstance().frameCount++;
-        GetInstance().second += GetInstance().deltaTime;
-        if (GetInstance().second >= 1.0f)
+        GetInstance()._frameCount++;
+        GetInstance()._second += GetInstance()._deltaTime;
+        if (GetInstance()._second >= 1.0f)
         {
-            GetInstance().frameRate = GetInstance().frameCount;
-            GetInstance().frameCount = 0;
-            GetInstance().second -= 1.0f;
+            GetInstance()._frameRate = GetInstance()._frameCount;
+            GetInstance()._frameCount = 0;
+            GetInstance()._second -= 1.0f;
         }
     }
 
 private:
     friend std::unique_ptr<Timer>::deleter_type;
 
-    float time = 0.0f;
-    float deltaTime = 0.0f;
-    int frameRate = 0;
-    float second = 0.0f;
-    int frameCount = 0;
-    LARGE_INTEGER preCount;
-    LARGE_INTEGER frequency;
+    float _time = 0.0f;
+    float _deltaTime = 0.0f;
+    int _frameRate = 0;
+    float _second = 0.0f;
+    int _frameCount = 0;
+    LARGE_INTEGER _preCount;
+    LARGE_INTEGER _frequency;
 
     Timer(const Timer&) = delete;
     Timer& operator=(const Timer&) = delete;
@@ -48,8 +48,8 @@ private:
     {
         InitializeApplication();
 
-        preCount = GetCounter();
-        frequency = GetCountFrequency();
+        _preCount = GetCounter();
+        _frequency = GetCountFrequency();
     }
     ~Timer()
     {
@@ -77,8 +77,8 @@ private:
     }
     LARGE_INTEGER GetCountFrequency()
     {
-        LARGE_INTEGER _frequency;
-        QueryPerformanceFrequency(&_frequency);
-        return _frequency;
+        LARGE_INTEGER frequency;
+        QueryPerformanceFrequency(&frequency);
+        return frequency;
     }
 };

@@ -81,11 +81,11 @@ struct Float2 : public DirectX::XMFLOAT2
     }
     Float2 operator+() const
     {
-        return Float2(this->x, this->y);
+        return Float2(x, y);
     }
     Float2 operator-() const
     {
-        return Float2(-this->x, -this->y);
+        return Float2(-x, -y);
     }
     Float2& operator=(const Float2& value)
     {
@@ -208,11 +208,11 @@ struct Float3 : public DirectX::XMFLOAT3
     }
     Float3 operator+() const
     {
-        return Float3(this->x, this->y, this->z);
+        return Float3(x, y, z);
     }
     Float3 operator-() const
     {
-        return Float3(-this->x, -this->y, -this->z);
+        return Float3(-x, -y, -z);
     }
     Float3& operator=(const Float3& value)
     {
@@ -345,11 +345,11 @@ struct Float4 : public DirectX::XMFLOAT4
     }
     Float4 operator+() const
     {
-        return Float4(this->x, this->y, this->z, this->w);
+        return Float4(x, y, z, w);
     }
     Float4 operator-() const
     {
-        return Float4(-this->x, -this->y, -this->z, -this->w);
+        return Float4(-x, -y, -z, -w);
     }
     Float4& operator=(const Float4& value)
     {
@@ -496,12 +496,12 @@ public:
 
     static HWND GetHandle()
     {
-        return GetInstance().handle;
+        return GetInstance()._handle;
     }
     static DirectX::XMINT2 GetSize()
     {
         RECT clientRect = {};
-        GetClientRect(GetInstance().handle, &clientRect);
+        GetClientRect(GetInstance()._handle, &clientRect);
 
         return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
     }
@@ -509,25 +509,25 @@ public:
     {
         RECT windowRect = {};
         RECT clientRect = {};
-        GetWindowRect(GetInstance().handle, &windowRect);
-        GetClientRect(GetInstance().handle, &clientRect);
+        GetWindowRect(GetInstance()._handle, &windowRect);
+        GetClientRect(GetInstance()._handle, &clientRect);
 
         int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + width;
         int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + height;
         int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
         int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
 
-        SetWindowPos(GetInstance().handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
+        SetWindowPos(GetInstance()._handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
     }
     static wchar_t* const GetTitle()
     {
         wchar_t* title = nullptr;
-        GetWindowTextW(GetInstance().handle, title, GetWindowTextLengthW(GetInstance().handle));
+        GetWindowTextW(GetInstance()._handle, title, GetWindowTextLengthW(GetInstance()._handle));
         return title;
     }
     static void SetTitle(const wchar_t* const title)
     {
-        SetWindowTextW(GetInstance().handle, title);
+        SetWindowTextW(GetInstance()._handle, title);
     }
     static void SetFullScreen(bool isFullScreen)
     {
@@ -538,13 +538,13 @@ public:
             size = GetSize();
             int w = GetSystemMetrics(SM_CXSCREEN);
             int h = GetSystemMetrics(SM_CYSCREEN);
-            SetWindowLongPtrW(GetInstance().handle, GWL_STYLE, WS_VISIBLE | WS_POPUP);
-            SetWindowPos(GetInstance().handle, HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
+            SetWindowLongPtrW(GetInstance()._handle, GWL_STYLE, WS_VISIBLE | WS_POPUP);
+            SetWindowPos(GetInstance()._handle, HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
         }
         else
         {
-            SetWindowLongPtrW(GetInstance().handle, GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
-            SetWindowPos(GetInstance().handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+            SetWindowLongPtrW(GetInstance()._handle, GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+            SetWindowPos(GetInstance()._handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
             SetSize(size.x, size.y);
         }
     }
@@ -561,7 +561,7 @@ public:
             DispatchMessageW(&message);
         }
 
-        PostMessageW(GetInstance().handle, WM_APP, 0, 0);
+        PostMessageW(GetInstance()._handle, WM_APP, 0, 0);
 
         if (GetSize().x <= 0.0f || GetSize().y <= 0.0f)
             Sleep(100);
@@ -570,19 +570,19 @@ public:
     }
     static void AddProcedure(Proceedable* const procedure)
     {
-        GetInstance().procedures.push_back(procedure);
+        GetInstance()._procedures.push_back(procedure);
     }
     static void RemoveProcedure(Proceedable* const procedure)
     {
-        GetInstance().procedures.remove(procedure);
+        GetInstance()._procedures.remove(procedure);
     }
 
 private:
     friend std::unique_ptr<Window>::deleter_type;
 
-    const wchar_t* className = L"XLibrary11";
-    HWND handle;
-    std::list<Proceedable*> procedures;
+    const wchar_t* _className = L"XLibrary11";
+    HWND _handle;
+    std::list<Proceedable*> _procedures;
 
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
@@ -596,12 +596,12 @@ private:
         windowClass.lpfnWndProc = DefWindowProcW;
         windowClass.hInstance = instance;
         windowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED));
-        windowClass.lpszClassName = className;
+        windowClass.lpszClassName = _className;
         RegisterClassW(&windowClass);
 
-        handle = CreateWindowW(className, className, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, instance, nullptr);
+        _handle = CreateWindowW(_className, _className, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, instance, nullptr);
 
-        ShowWindow(handle, SW_SHOWNORMAL);
+        ShowWindow(_handle, SW_SHOWNORMAL);
     }
     ~Window()
     {
@@ -626,7 +626,7 @@ private:
     }
     static LRESULT CALLBACK ProceedMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
     {
-        for (Proceedable* procedure : GetInstance().procedures)
+        for (Proceedable* procedure : GetInstance()._procedures)
         {
             procedure->OnProceed(window, message, wParam, lParam);
         }
@@ -642,19 +642,19 @@ class Input
 public:
     static bool GetKey(int VK_CODE)
     {
-        return GetInstance().keyState[VK_CODE] & 0x80;
+        return GetInstance()._keyState[VK_CODE] & 0x80;
     }
     static bool GetKeyUp(int VK_CODE)
     {
-        return !(GetInstance().keyState[VK_CODE] & 0x80) && (GetInstance().preKeyState[VK_CODE] & 0x80);
+        return !(GetInstance()._keyState[VK_CODE] & 0x80) && (GetInstance()._preKeyState[VK_CODE] & 0x80);
     }
     static bool GetKeyDown(int VK_CODE)
     {
-        return (GetInstance().keyState[VK_CODE] & 0x80) && !(GetInstance().preKeyState[VK_CODE] & 0x80);
+        return (GetInstance()._keyState[VK_CODE] & 0x80) && !(GetInstance()._preKeyState[VK_CODE] & 0x80);
     }
     static Float2 GetMousePosition()
     {
-        return GetInstance().mousePosition;
+        return GetInstance()._mousePosition;
     }
     static void SetMousePosition(float x, float y)
     {
@@ -667,15 +667,15 @@ public:
         ClientToScreen(Window::GetHandle(), &point);
         SetCursorPos(point.x, point.y);
 
-        GetInstance().mousePosition.x = x;
-        GetInstance().mousePosition.y = y;
+        GetInstance()._mousePosition.x = x;
+        GetInstance()._mousePosition.y = y;
     }
     static void SetShowCursor(bool isShowCursor)
     {
-        if (GetInstance().isShowCursor == isShowCursor)
+        if (GetInstance()._isShowCursor == isShowCursor)
             return;
 
-        GetInstance().isShowCursor = isShowCursor;
+        GetInstance()._isShowCursor = isShowCursor;
         ShowCursor(isShowCursor);
     }
     static void Update()
@@ -684,24 +684,24 @@ public:
         GetCursorPos(&point);
         ScreenToClient(Window::GetHandle(), &point);
 
-        GetInstance().mousePosition.x = static_cast<float>(point.x - Window::GetSize().x / 2);
-        GetInstance().mousePosition.y = static_cast<float>(-point.y + Window::GetSize().y / 2);
+        GetInstance()._mousePosition.x = static_cast<float>(point.x - Window::GetSize().x / 2);
+        GetInstance()._mousePosition.y = static_cast<float>(-point.y + Window::GetSize().y / 2);
 
         for (int i = 0; i < 256; i++)
         {
-            GetInstance().preKeyState[i] = GetInstance().keyState[i];
+            GetInstance()._preKeyState[i] = GetInstance()._keyState[i];
         }
 
-        GetKeyboardState(GetInstance().keyState);
+        GetKeyboardState(GetInstance()._keyState);
     }
 
 private:
     friend std::unique_ptr<Input>::deleter_type;
 
-    Float2 mousePosition;
-    BYTE preKeyState[256];
-    BYTE keyState[256];
-    bool isShowCursor = true;
+    Float2 _mousePosition;
+    BYTE _preKeyState[256];
+    BYTE _keyState[256];
+    bool _isShowCursor = true;
 
     Input(const Input&) = delete;
     Input& operator=(const Input&) = delete;
@@ -734,54 +734,54 @@ class Graphics : public Window::Proceedable
 public:
     static ID3D11Device& GetDevice3D()
     {
-        return *GetInstance().device3D.Get();
+        return *GetInstance()._device3D.Get();
     }
     static ID3D11DeviceContext& GetContext3D()
     {
-        return *GetInstance().context3D.Get();
+        return *GetInstance()._context3D.Get();
     }
     static ID2D1Device& GetDevice2D()
     {
-        return *GetInstance().device2D.Get();
+        return *GetInstance()._device2D.Get();
     }
     static ID2D1DeviceContext& GetContext2D()
     {
-        return *GetInstance().context2D.Get();
+        return *GetInstance()._context2D.Get();
     }
     static IDXGISwapChain& GetSwapChain()
     {
-        return *GetInstance().swapChain.Get();
+        return *GetInstance()._swapChain.Get();
     }
     static IWICImagingFactory& GetTextureFactory()
     {
-        return *GetInstance().textureFactory.Get();
+        return *GetInstance()._textureFactory.Get();
     }
     static IDWriteFactory& GetTextFactory()
     {
-        return *GetInstance().textFactory.Get();
+        return *GetInstance()._textFactory.Get();
     }
     static void Update()
     {
         if (Input::GetKey(VK_MENU) && Input::GetKeyDown(VK_RETURN))
         {
-            GetInstance().isFullScreen = !GetInstance().isFullScreen;
-            Window::SetFullScreen(GetInstance().isFullScreen);
+            GetInstance()._isFullScreen = !GetInstance()._isFullScreen;
+            Window::SetFullScreen(GetInstance()._isFullScreen);
         }
 
-        GetInstance().swapChain->Present(1, 0);
+        GetInstance()._swapChain->Present(1, 0);
     }
 
 private:
     friend std::unique_ptr<Graphics>::deleter_type;
 
-    ComPtr<ID3D11Device> device3D = nullptr;
-    ComPtr<ID3D11DeviceContext> context3D = nullptr;
-    ComPtr<ID2D1Device> device2D = nullptr;
-    ComPtr<ID2D1DeviceContext> context2D = nullptr;
-    ComPtr<IDXGISwapChain> swapChain = nullptr;
-    ComPtr<IWICImagingFactory> textureFactory = nullptr;
-    ComPtr<IDWriteFactory> textFactory = nullptr;
-    bool isFullScreen = false;
+    ComPtr<ID3D11Device> _device3D = nullptr;
+    ComPtr<ID3D11DeviceContext> _context3D = nullptr;
+    ComPtr<ID2D1Device> _device2D = nullptr;
+    ComPtr<ID2D1DeviceContext> _context2D = nullptr;
+    ComPtr<IDXGISwapChain> _swapChain = nullptr;
+    ComPtr<IWICImagingFactory> _textureFactory = nullptr;
+    ComPtr<IDWriteFactory> _textFactory = nullptr;
+    bool _isFullScreen = false;
 
     Graphics(const Graphics&) = delete;
     Graphics& operator=(const Graphics&) = delete;
@@ -811,13 +811,13 @@ private:
 
         for (size_t i = 0; i < driverTypes.size(); i++)
         {
-            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), (UINT)featureLevels.size(), D3D11_SDK_VERSION, device3D.GetAddressOf(), nullptr, context3D.GetAddressOf());
+            HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), (UINT)featureLevels.size(), D3D11_SDK_VERSION, _device3D.GetAddressOf(), nullptr, _context3D.GetAddressOf());
 
             if (SUCCEEDED(r))
                 break;
         }
 
-        context3D->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        _context3D->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
         ComPtr<ID3D11BlendState> blendState = nullptr;
         D3D11_BLEND_DESC blendDesc = {};
@@ -831,8 +831,8 @@ private:
         blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
         float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-        device3D->CreateBlendState(&blendDesc, &blendState);
-        context3D->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
+        _device3D->CreateBlendState(&blendDesc, &blendState);
+        _context3D->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
 
         D2D1_FACTORY_OPTIONS options = {};
 #if defined(_DEBUG)
@@ -843,15 +843,15 @@ private:
         D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, factory.GetAddressOf());
 
         ComPtr<IDXGIDevice> device = nullptr;
-        device3D->QueryInterface(device.GetAddressOf());
+        _device3D->QueryInterface(device.GetAddressOf());
 
-        factory->CreateDevice(device.Get(), device2D.GetAddressOf());
+        factory->CreateDevice(device.Get(), _device2D.GetAddressOf());
 
-        device2D->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, context2D.GetAddressOf());
+        _device2D->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, _context2D.GetAddressOf());
 
-        CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, reinterpret_cast<void**>(textureFactory.GetAddressOf()));
+        CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, reinterpret_cast<void**>(_textureFactory.GetAddressOf()));
 
-        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(textFactory.GetAddressOf()));
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(_textFactory.GetAddressOf()));
 
         Create();
 
@@ -879,7 +879,7 @@ private:
     void Create()
     {
         ComPtr<IDXGIDevice> dxgi = nullptr;
-        device3D->QueryInterface(dxgi.GetAddressOf());
+        _device3D->QueryInterface(dxgi.GetAddressOf());
 
         ComPtr<IDXGIAdapter> adapter = nullptr;
         dxgi->GetAdapter(&adapter);
@@ -900,15 +900,15 @@ private:
         swapChainDesc.OutputWindow = Window::GetHandle();
         swapChainDesc.Windowed = true;
 
-        swapChain.Reset();
-        factory->CreateSwapChain(device3D.Get(), &swapChainDesc, swapChain.GetAddressOf());
+        _swapChain.Reset();
+        factory->CreateSwapChain(_device3D.Get(), &swapChainDesc, _swapChain.GetAddressOf());
         factory->MakeWindowAssociation(Window::GetHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
         D3D11_VIEWPORT viewPort = {};
         viewPort.Width = static_cast<float>(Window::GetSize().x);
         viewPort.Height = static_cast<float>(Window::GetSize().y);
         viewPort.MaxDepth = 1.0f;
-        context3D->RSSetViewports(1, &viewPort);
+        _context3D->RSSetViewports(1, &viewPort);
     }
     void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
     {
@@ -926,13 +926,13 @@ class Audio
 public:
     static IDirectSound8& GetDevice()
     {
-        return *GetInstance().device.Get();
+        return *GetInstance()._device.Get();
     }
 
 private:
     friend std::unique_ptr<Audio>::deleter_type;
 
-    ComPtr<IDirectSound8> device = nullptr;
+    ComPtr<IDirectSound8> _device = nullptr;
 
     Audio(const Audio&) = delete;
     Audio& operator=(const Audio&) = delete;
@@ -940,9 +940,9 @@ private:
     {
         InitializeApplication();
 
-        DirectSoundCreate8(nullptr, &device, nullptr);
+        DirectSoundCreate8(nullptr, &_device, nullptr);
 
-        device->SetCooperativeLevel(Window::GetHandle(), DSSCL_NORMAL);
+        _device->SetCooperativeLevel(Window::GetHandle(), DSSCL_NORMAL);
 
         MFStartup(MF_VERSION);
     }
@@ -971,44 +971,44 @@ class Timer
 public:
     static float GetTime()
     {
-        return GetInstance().time;
+        return GetInstance()._time;
     }
     static float GetDeltaTime()
     {
-        return GetInstance().deltaTime;
+        return GetInstance()._deltaTime;
     }
     static int GetFrameRate()
     {
-        return GetInstance().frameRate;
+        return GetInstance()._frameRate;
     }
     static void Update()
     {
         LARGE_INTEGER count = GetInstance().GetCounter();
-        GetInstance().deltaTime = static_cast<float>(count.QuadPart - GetInstance().preCount.QuadPart) / GetInstance().frequency.QuadPart;
-        GetInstance().preCount = GetInstance().GetCounter();
+        GetInstance()._deltaTime = static_cast<float>(count.QuadPart - GetInstance()._preCount.QuadPart) / GetInstance()._frequency.QuadPart;
+        GetInstance()._preCount = GetInstance().GetCounter();
 
-        GetInstance().time += GetInstance().deltaTime;
+        GetInstance()._time += GetInstance()._deltaTime;
 
-        GetInstance().frameCount++;
-        GetInstance().second += GetInstance().deltaTime;
-        if (GetInstance().second >= 1.0f)
+        GetInstance()._frameCount++;
+        GetInstance()._second += GetInstance()._deltaTime;
+        if (GetInstance()._second >= 1.0f)
         {
-            GetInstance().frameRate = GetInstance().frameCount;
-            GetInstance().frameCount = 0;
-            GetInstance().second -= 1.0f;
+            GetInstance()._frameRate = GetInstance()._frameCount;
+            GetInstance()._frameCount = 0;
+            GetInstance()._second -= 1.0f;
         }
     }
 
 private:
     friend std::unique_ptr<Timer>::deleter_type;
 
-    float time = 0.0f;
-    float deltaTime = 0.0f;
-    int frameRate = 0;
-    float second = 0.0f;
-    int frameCount = 0;
-    LARGE_INTEGER preCount;
-    LARGE_INTEGER frequency;
+    float _time = 0.0f;
+    float _deltaTime = 0.0f;
+    int _frameRate = 0;
+    float _second = 0.0f;
+    int _frameCount = 0;
+    LARGE_INTEGER _preCount;
+    LARGE_INTEGER _frequency;
 
     Timer(const Timer&) = delete;
     Timer& operator=(const Timer&) = delete;
@@ -1016,8 +1016,8 @@ private:
     {
         InitializeApplication();
 
-        preCount = GetCounter();
-        frequency = GetCountFrequency();
+        _preCount = GetCounter();
+        _frequency = GetCountFrequency();
     }
     ~Timer()
     {
@@ -1045,9 +1045,9 @@ private:
     }
     LARGE_INTEGER GetCountFrequency()
     {
-        LARGE_INTEGER _frequency;
-        QueryPerformanceFrequency(&_frequency);
-        return _frequency;
+        LARGE_INTEGER frequency;
+        QueryPerformanceFrequency(&frequency);
+        return frequency;
     }
 };
 class Random
@@ -1055,19 +1055,19 @@ class Random
 public:
     static void SetSeed(int seed)
     {
-        GetInstance().mt.seed(seed);
+        GetInstance()._mt.seed(seed);
     }
     static float Get()
     {
         std::uniform_real_distribution<float> range(0.0f, 1.0f);
 
-        return range(GetInstance().mt);
+        return range(GetInstance()._mt);
     }
 
 private:
     friend std::unique_ptr<Random>::deleter_type;
 
-    std::mt19937 mt;
+    std::mt19937 _mt;
 
     Random(const Random&) = delete;
     Random& operator=(const Random&) = delete;
@@ -1076,7 +1076,7 @@ private:
         InitializeApplication();
 
         std::random_device device;
-        mt.seed(device());
+        _mt.seed(device());
     }
     ~Random()
     {
@@ -1151,9 +1151,9 @@ public:
     }
     void Create(const BYTE* const buffer, int width, int height)
     {
-        size = DirectX::XMINT2(width, height);
+        _size = DirectX::XMINT2(width, height);
 
-        texture.Reset();
+        _texture.Reset();
         D3D11_TEXTURE2D_DESC textureDesc = {};
         textureDesc.Width = width;
         textureDesc.Height = height;
@@ -1171,16 +1171,16 @@ public:
         textureSubresourceData.pSysMem = buffer;
         textureSubresourceData.SysMemPitch = width * 4;
         textureSubresourceData.SysMemSlicePitch = width * height * 4;
-        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, &textureSubresourceData, texture.GetAddressOf());
+        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, &textureSubresourceData, _texture.GetAddressOf());
 
-        shaderResourceView.Reset();
+        _shaderResourceView.Reset();
         D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
         shaderResourceViewDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
         shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         shaderResourceViewDesc.Texture2D.MipLevels = 1;
-        Graphics::GetDevice3D().CreateShaderResourceView(texture.Get(), &shaderResourceViewDesc, shaderResourceView.GetAddressOf());
+        Graphics::GetDevice3D().CreateShaderResourceView(_texture.Get(), &shaderResourceViewDesc, _shaderResourceView.GetAddressOf());
 
-        samplerState.Reset();
+        _samplerState.Reset();
         D3D11_SAMPLER_DESC samplerDesc = {};
         samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
         samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -1195,30 +1195,30 @@ public:
         samplerDesc.BorderColor[3] = 0.0f;
         samplerDesc.MinLOD = 0.0f;
         samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-        Graphics::GetDevice3D().CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
+        Graphics::GetDevice3D().CreateSamplerState(&samplerDesc, _samplerState.GetAddressOf());
     }
     DirectX::XMINT2 GetSize() const
     {
-        return size;
+        return _size;
     }
     void Attach(int slot)
     {
-        if (texture == nullptr)
+        if (_texture == nullptr)
             return;
 
-        Graphics::GetContext3D().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
-        Graphics::GetContext3D().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
+        Graphics::GetContext3D().PSSetShaderResources(slot, 1, _shaderResourceView.GetAddressOf());
+        Graphics::GetContext3D().PSSetSamplers(slot, 1, _samplerState.GetAddressOf());
     }
     ID3D11Texture2D& GetInterface()
     {
-        return *texture.Get();
+        return *_texture.Get();
     }
 
 private:
-    DirectX::XMINT2 size;
-    ComPtr<ID3D11Texture2D> texture = nullptr;
-    ComPtr<ID3D11ShaderResourceView> shaderResourceView = nullptr;
-    ComPtr<ID3D11SamplerState> samplerState = nullptr;
+    DirectX::XMINT2 _size;
+    ComPtr<ID3D11Texture2D> _texture = nullptr;
+    ComPtr<ID3D11ShaderResourceView> _shaderResourceView = nullptr;
+    ComPtr<ID3D11SamplerState> _samplerState = nullptr;
 };
 class Material
 {
@@ -1252,17 +1252,17 @@ public:
     }
     void Create(const std::string& source)
     {
-        vertexShader.Reset();
+        _vertexShader.Reset();
         ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
         CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
-        Graphics::GetDevice3D().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, vertexShader.GetAddressOf());
+        Graphics::GetDevice3D().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, _vertexShader.GetAddressOf());
 
-        pixelShader.Reset();
+        _pixelShader.Reset();
         ComPtr<ID3DBlob> pixelShaderBlob = nullptr;
         CompileShader(source, "PS", "ps_5_0", pixelShaderBlob.GetAddressOf());
-        Graphics::GetDevice3D().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, pixelShader.GetAddressOf());
+        Graphics::GetDevice3D().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, _pixelShader.GetAddressOf());
 
-        inputLayout.Reset();
+        _inputLayout.Reset();
         std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc;
         inputElementDesc.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
         inputElementDesc.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
@@ -1272,52 +1272,52 @@ public:
         inputElementDesc.push_back({ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64, D3D11_INPUT_PER_VERTEX_DATA, 0 });
         inputElementDesc.push_back({ "BLENDWEIGHT", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 80, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 
-        Graphics::GetDevice3D().CreateInputLayout(inputElementDesc.data(), (UINT)inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), inputLayout.GetAddressOf());
+        Graphics::GetDevice3D().CreateInputLayout(inputElementDesc.data(), (UINT)inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), _inputLayout.GetAddressOf());
     }
     void SetBuffer(int slot, void* cbuffer, size_t size)
     {
-        constantBuffer[slot].ptr = cbuffer;
+        _constantBuffer[slot].ptr = cbuffer;
 
-        constantBuffer[slot].buffer.Reset();
+        _constantBuffer[slot].buffer.Reset();
         D3D11_BUFFER_DESC constantBufferDesc = {};
         constantBufferDesc.ByteWidth = (UINT)size;
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer[slot].buffer.GetAddressOf());
+        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, _constantBuffer[slot].buffer.GetAddressOf());
     }
     void SetTexture(int slot, Texture* texture)
     {
-        textures[slot] = texture;
+        _textures[slot] = texture;
     }
     void Attach()
     {
-        if (vertexShader != nullptr)
-            Graphics::GetContext3D().VSSetShader(vertexShader.Get(), nullptr, 0);
+        if (_vertexShader != nullptr)
+            Graphics::GetContext3D().VSSetShader(_vertexShader.Get(), nullptr, 0);
 
-        if (pixelShader != nullptr)
-            Graphics::GetContext3D().PSSetShader(pixelShader.Get(), nullptr, 0);
+        if (_pixelShader != nullptr)
+            Graphics::GetContext3D().PSSetShader(_pixelShader.Get(), nullptr, 0);
 
-        if (inputLayout != nullptr)
-            Graphics::GetContext3D().IASetInputLayout(inputLayout.Get());
+        if (_inputLayout != nullptr)
+            Graphics::GetContext3D().IASetInputLayout(_inputLayout.Get());
 
         for (int i = 0; i < 10; i++)
         {
-            if (constantBuffer[i].ptr != nullptr)
+            if (_constantBuffer[i].ptr != nullptr)
             {
-                Graphics::GetContext3D().UpdateSubresource(constantBuffer[i].buffer.Get(), 0, nullptr, constantBuffer[i].ptr, 0, 0);
-                Graphics::GetContext3D().VSSetConstantBuffers(i, 1, constantBuffer[i].buffer.GetAddressOf());
-                Graphics::GetContext3D().HSSetConstantBuffers(i, 1, constantBuffer[i].buffer.GetAddressOf());
-                Graphics::GetContext3D().DSSetConstantBuffers(i, 1, constantBuffer[i].buffer.GetAddressOf());
-                Graphics::GetContext3D().GSSetConstantBuffers(i, 1, constantBuffer[i].buffer.GetAddressOf());
-                Graphics::GetContext3D().PSSetConstantBuffers(i, 1, constantBuffer[i].buffer.GetAddressOf());
+                Graphics::GetContext3D().UpdateSubresource(_constantBuffer[i].buffer.Get(), 0, nullptr, _constantBuffer[i].ptr, 0, 0);
+                Graphics::GetContext3D().VSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
+                Graphics::GetContext3D().HSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
+                Graphics::GetContext3D().DSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
+                Graphics::GetContext3D().GSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
+                Graphics::GetContext3D().PSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
             }
         }
 
         for (int i = 0; i < 10; i++)
         {
-            if (textures[i] != nullptr)
+            if (_textures[i] != nullptr)
             {
-                textures[i]->Attach(i);
+                _textures[i]->Attach(i);
             }
         }
     }
@@ -1329,11 +1329,11 @@ private:
         ComPtr<ID3D11Buffer> buffer = nullptr;
     };
 
-    ConstantBuffer constantBuffer[10];
-    Texture* textures[10];
-    ComPtr<ID3D11VertexShader> vertexShader = nullptr;
-    ComPtr<ID3D11PixelShader> pixelShader = nullptr;
-    ComPtr<ID3D11InputLayout> inputLayout = nullptr;
+    ConstantBuffer _constantBuffer[10];
+    Texture* _textures[10];
+    ComPtr<ID3D11VertexShader> _vertexShader = nullptr;
+    ComPtr<ID3D11PixelShader> _pixelShader = nullptr;
+    ComPtr<ID3D11InputLayout> _inputLayout = nullptr;
 
     void Initialize()
     {
@@ -1341,7 +1341,7 @@ private:
 
         for (int i = 0; i < 10; i++)
         {
-            textures[i] = nullptr;
+            _textures[i] = nullptr;
         }
     }
     static void CompileShader(const std::string& source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
@@ -1376,7 +1376,7 @@ public:
         angles = Float3(0.0f, 0.0f, 0.0f);
         color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        isDepthTest = false;
+        _isDepthTest = false;
         SetOrthographic(1.0f, -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
 
         Create();
@@ -1389,32 +1389,32 @@ public:
     }
     void SetPerspective(float fieldOfView, float nearClip, float farClip)
     {
-        isPerspective = true;
-        this->fieldOfView = fieldOfView;
-        this->nearClip = nearClip;
-        this->farClip = farClip;
+        _isPerspective = true;
+        _fieldOfView = fieldOfView;
+        _nearClip = nearClip;
+        _farClip = farClip;
         float aspectRatio = Window::GetSize().x / (float)Window::GetSize().y;
-        constant.projection = DirectX::XMMatrixTranspose(
+        _constant.projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
     void SetOrthographic(float size, float nearClip, float farClip)
     {
-        isPerspective = false;
-        this->size = size;
-        this->nearClip = nearClip;
-        this->farClip = farClip;
-        constant.projection = DirectX::XMMatrixTranspose(
+        _isPerspective = false;
+        _size = size;
+        _nearClip = nearClip;
+        _farClip = farClip;
+        _constant.projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixOrthographicLH(Window::GetSize().x * size, Window::GetSize().y * size, nearClip, farClip)
         );
     }
     void SetDepthTest(bool isDepthTest)
     {
-        this->isDepthTest = isDepthTest;
+        _isDepthTest = isDepthTest;
     }
     void Update(bool shouldClear = true)
     {
-        constant.view = DirectX::XMMatrixTranspose(
+        _constant.view = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixInverse(
                 nullptr,
                 DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
@@ -1424,27 +1424,27 @@ public:
             )
         );
 
-        Graphics::GetContext3D().UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constant, 0, 0);
-        Graphics::GetContext3D().VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().HSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().DSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().GSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().UpdateSubresource(_constantBuffer.Get(), 0, nullptr, &_constant, 0, 0);
+        Graphics::GetContext3D().VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().HSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().DSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().GSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().PSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
 
         if (shouldClear)
         {
             float clearColor[4] = { color.x, color.y, color.z, color.w };
-            Graphics::GetContext3D().ClearRenderTargetView(renderTargetView.Get(), clearColor);
+            Graphics::GetContext3D().ClearRenderTargetView(_renderTargetView.Get(), clearColor);
         }
 
-        if (isDepthTest)
+        if (_isDepthTest)
         {
-            Graphics::GetContext3D().ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-            Graphics::GetContext3D().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+            Graphics::GetContext3D().ClearDepthStencilView(_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+            Graphics::GetContext3D().OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), _depthStencilView.Get());
         }
         else
         {
-            Graphics::GetContext3D().OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
+            Graphics::GetContext3D().OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), nullptr);
         }
     }
 
@@ -1455,30 +1455,30 @@ private:
         DirectX::XMMATRIX projection;
     };
 
-    bool isPerspective;
-    float fieldOfView;
-    float size;
-    float nearClip;
-    float farClip;
-    bool isDepthTest;
-    Constant constant;
-    ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
-    ComPtr<ID3D11DepthStencilView> depthStencilView = nullptr;
-    ComPtr<ID3D11Texture2D> renderTexture = nullptr;
-    ComPtr<ID3D11Texture2D> depthTexture = nullptr;
-    ComPtr<ID3D11Buffer> constantBuffer = nullptr;
+    bool _isPerspective;
+    float _fieldOfView;
+    float _size;
+    float _nearClip;
+    float _farClip;
+    bool _isDepthTest;
+    Constant _constant;
+    ComPtr<ID3D11RenderTargetView> _renderTargetView = nullptr;
+    ComPtr<ID3D11DepthStencilView> _depthStencilView = nullptr;
+    ComPtr<ID3D11Texture2D> _renderTexture = nullptr;
+    ComPtr<ID3D11Texture2D> _depthTexture = nullptr;
+    ComPtr<ID3D11Buffer> _constantBuffer = nullptr;
 
     void Create()
     {
-        renderTexture.Reset();
-        Graphics::GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTexture.GetAddressOf()));
-        renderTargetView.Reset();
-        Graphics::GetDevice3D().CreateRenderTargetView(renderTexture.Get(), nullptr, renderTargetView.GetAddressOf());
+        _renderTexture.Reset();
+        Graphics::GetSwapChain().GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(_renderTexture.GetAddressOf()));
+        _renderTargetView.Reset();
+        Graphics::GetDevice3D().CreateRenderTargetView(_renderTexture.Get(), nullptr, _renderTargetView.GetAddressOf());
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
         Graphics::GetSwapChain().GetDesc(&swapChainDesc);
 
-        depthTexture.Reset();
+        _depthTexture.Reset();
         D3D11_TEXTURE2D_DESC textureDesc = {};
         textureDesc.Width = static_cast<UINT>(Window::GetSize().x);
         textureDesc.Height = static_cast<UINT>(Window::GetSize().y);
@@ -1491,9 +1491,9 @@ private:
         textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
         textureDesc.CPUAccessFlags = 0;
         textureDesc.MiscFlags = 0;
-        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, nullptr, depthTexture.GetAddressOf());
+        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, nullptr, _depthTexture.GetAddressOf());
 
-        depthStencilView.Reset();
+        _depthStencilView.Reset();
         D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
         depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
         if (swapChainDesc.SampleDesc.Count == 0)
@@ -1505,15 +1505,15 @@ private:
         {
             depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
         }
-        Graphics::GetDevice3D().CreateDepthStencilView(depthTexture.Get(), &depthStencilViewDesc, depthStencilView.GetAddressOf());
+        Graphics::GetDevice3D().CreateDepthStencilView(_depthTexture.Get(), &depthStencilViewDesc, _depthStencilView.GetAddressOf());
 
-        constantBuffer.Reset();
+        _constantBuffer.Reset();
         D3D11_BUFFER_DESC constantBufferDesc = {};
         constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         constantBufferDesc.CPUAccessFlags = 0;
-        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, constantBuffer.GetAddressOf());
+        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, _constantBuffer.GetAddressOf());
     }
     void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
     {
@@ -1523,10 +1523,10 @@ private:
         if (Window::GetSize().x <= 0.0f || Window::GetSize().y <= 0.0f)
             return;
 
-        if (isPerspective)
-            SetPerspective(fieldOfView, nearClip, farClip);
+        if (_isPerspective)
+            SetPerspective(_fieldOfView, _nearClip, _farClip);
         else
-            SetOrthographic(size, nearClip, farClip);
+            SetOrthographic(_size, _nearClip, _farClip);
 
         Create();
     }
@@ -1548,7 +1548,7 @@ public:
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
 
-        material.Create(
+        _material.Create(
             "cbuffer Camera : register(b0)"
             "{"
             "    matrix view;"
@@ -1649,19 +1649,19 @@ public:
     }
     Material& GetMaterial()
     {
-        return material;
+        return _material;
     }
     void SetCullingMode(D3D11_CULL_MODE cullingMode)
     {
         D3D11_RASTERIZER_DESC rasterizerDesc = {};
         rasterizerDesc.FillMode = D3D11_FILL_SOLID;
         rasterizerDesc.CullMode = cullingMode;
-        rasterizerState.Reset();
-        Graphics::GetDevice3D().CreateRasterizerState(&rasterizerDesc, rasterizerState.GetAddressOf());
+        _rasterizerState.Reset();
+        Graphics::GetDevice3D().CreateRasterizerState(&rasterizerDesc, _rasterizerState.GetAddressOf());
     }
     void Apply()
     {
-        vertexBuffer.Reset();
+        _vertexBuffer.Reset();
         if (vertices.size() > 0)
         {
             D3D11_BUFFER_DESC vertexBufferDesc = {};
@@ -1670,10 +1670,10 @@ public:
             vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
             D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
             vertexSubresourceData.pSysMem = vertices.data();
-            Graphics::GetDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, vertexBuffer.GetAddressOf());
+            Graphics::GetDevice3D().CreateBuffer(&vertexBufferDesc, &vertexSubresourceData, _vertexBuffer.GetAddressOf());
         }
 
-        indexBuffer.Reset();
+        _indexBuffer.Reset();
         if (indices.size() > 0)
         {
             D3D11_BUFFER_DESC indexBufferDesc = {};
@@ -1682,17 +1682,17 @@ public:
             indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
             D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
             indexSubresourceData.pSysMem = indices.data();
-            Graphics::GetDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, indexBuffer.GetAddressOf());
+            Graphics::GetDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, _indexBuffer.GetAddressOf());
         }
 
-        material.SetBuffer(1, &constant, sizeof(Constant));
+        _material.SetBuffer(1, &_constant, sizeof(Constant));
     }
     void Draw()
     {
-        if (vertexBuffer == nullptr)
+        if (_vertexBuffer == nullptr)
             return;
 
-        constant.world = DirectX::XMMatrixTranspose(
+        _constant.world = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
             DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
             DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
@@ -1700,21 +1700,21 @@ public:
             DirectX::XMMatrixTranslation(position.x, position.y, position.z)
         );
 
-        material.Attach();
+        _material.Attach();
 
-        Graphics::GetContext3D().RSSetState(rasterizerState.Get());
+        Graphics::GetContext3D().RSSetState(_rasterizerState.Get());
 
         UINT stride = sizeof(Vertex);
         UINT offset = 0;
-        Graphics::GetContext3D().IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+        Graphics::GetContext3D().IASetVertexBuffers(0, 1, _vertexBuffer.GetAddressOf(), &stride, &offset);
 
-        if (indexBuffer == nullptr)
+        if (_indexBuffer == nullptr)
         {
             Graphics::GetContext3D().Draw((UINT)vertices.size(), 0);
         }
         else
         {
-            Graphics::GetContext3D().IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+            Graphics::GetContext3D().IASetIndexBuffer(_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
             Graphics::GetContext3D().DrawIndexed((UINT)indices.size(), 0, 0);
         }
     }
@@ -1725,11 +1725,11 @@ private:
         DirectX::XMMATRIX world;
     };
 
-    Material material;
-    Constant constant;
-    ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
-    ComPtr<ID3D11Buffer> indexBuffer = nullptr;
-    ComPtr<ID3D11RasterizerState> rasterizerState = nullptr;
+    Material _material;
+    Constant _constant;
+    ComPtr<ID3D11Buffer> _vertexBuffer = nullptr;
+    ComPtr<ID3D11Buffer> _indexBuffer = nullptr;
+    ComPtr<ID3D11RasterizerState> _rasterizerState = nullptr;
 };
 class Sprite
 {
@@ -1758,46 +1758,46 @@ public:
     }
     void Load(const wchar_t* const filePath)
     {
-        texture.Load(filePath);
+        _texture.Load(filePath);
 
-        mesh.GetMaterial().SetTexture(0, &texture);
+        _mesh.GetMaterial().SetTexture(0, &_texture);
 
         SetPivot(0.0f);
     }
     void Create(const BYTE* const buffer, int width, int height)
     {
-        texture.Create(buffer, width, height);
+        _texture.Create(buffer, width, height);
 
-        mesh.GetMaterial().SetTexture(0, &texture);
+        _mesh.GetMaterial().SetTexture(0, &_texture);
 
         SetPivot(0.0f);
     }
     DirectX::XMINT2 GetSize() const
     {
-        return texture.GetSize();
+        return _texture.GetSize();
     }
     void SetPivot(Float2 pivot)
     {
-        Float2 textureSize(static_cast<float>(texture.GetSize().x), static_cast<float>(texture.GetSize().y));
+        Float2 textureSize(static_cast<float>(_texture.GetSize().x), static_cast<float>(_texture.GetSize().y));
         Float2 offset = textureSize / 2.0f * -pivot;
 
-        mesh.CreatePlane(textureSize / 2.0f, Float3(offset.x, offset.y, 0.0f));
+        _mesh.CreatePlane(textureSize / 2.0f, Float3(offset.x, offset.y, 0.0f));
     }
     Material& GetMaterial()
     {
-        return mesh.GetMaterial();
+        return _mesh.GetMaterial();
     }
     void Draw()
     {
-        mesh.position = position;
-        mesh.angles = angles;
-        mesh.scale = scale;
-        mesh.Draw();
+        _mesh.position = position;
+        _mesh.angles = angles;
+        _mesh.scale = scale;
+        _mesh.Draw();
     }
 
 protected:
-    Mesh mesh;
-    Texture texture;
+    Mesh _mesh;
+    Texture _texture;
 
     void Initialize()
     {
@@ -1808,7 +1808,7 @@ protected:
         scale = Float3(1.0f, 1.0f, 1.0f);
         color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        mesh.GetMaterial().Create(
+        _mesh.GetMaterial().Create(
             "cbuffer Camera : register(b0)"
             "{"
             "    matrix view;"
@@ -1852,8 +1852,8 @@ protected:
             "}"
         );
 
-        mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
-        mesh.SetCullingMode(D3D11_CULL_NONE);
+        _mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
+        _mesh.SetCullingMode(D3D11_CULL_NONE);
     }
 };
 class Text : public Sprite
@@ -1870,8 +1870,8 @@ public:
         if (text == L"")
             return;
 
-        brush.Reset();
-        Graphics::GetContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), brush.GetAddressOf());
+        _brush.Reset();
+        Graphics::GetContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), _brush.GetAddressOf());
         Graphics::GetContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
         ComPtr<IDWriteTextFormat> textFormat = nullptr;
@@ -1880,41 +1880,41 @@ public:
         textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
         textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
-        textLayout.Reset();
-        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), FLT_MAX, FLT_MAX, textLayout.GetAddressOf());
+        _textLayout.Reset();
+        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), FLT_MAX, FLT_MAX, _textLayout.GetAddressOf());
         
         DWRITE_TEXT_METRICS textMetrics;
-        textLayout->GetMetrics(&textMetrics);
+        _textLayout->GetMetrics(&textMetrics);
 
-        textLayout.Reset();
-        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, textLayout.GetAddressOf());
+        _textLayout.Reset();
+        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, _textLayout.GetAddressOf());
 
         std::unique_ptr<BYTE[]> buffer(new BYTE[(int)textMetrics.width * (int)textMetrics.height * 4]);
-        texture.Create(buffer.get(), (int)textMetrics.width, (int)textMetrics.height);
+        _texture.Create(buffer.get(), (int)textMetrics.width, (int)textMetrics.height);
 
         ComPtr<IDXGISurface> surface = nullptr;
-        texture.GetInterface().QueryInterface(surface.GetAddressOf());
+        _texture.GetInterface().QueryInterface(surface.GetAddressOf());
 
         D2D1_BITMAP_PROPERTIES1 bitmapProperties = {};
         bitmapProperties.pixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
         bitmapProperties.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
         bitmapProperties.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET;
 
-        bitmap.Reset();
-        Graphics::GetContext2D().CreateBitmapFromDxgiSurface(surface.Get(), bitmapProperties, bitmap.GetAddressOf());
+        _bitmap.Reset();
+        Graphics::GetContext2D().CreateBitmapFromDxgiSurface(surface.Get(), bitmapProperties, _bitmap.GetAddressOf());
 
-        mesh.GetMaterial().SetTexture(0, &texture);
+        _mesh.GetMaterial().SetTexture(0, &_texture);
 
         SetPivot(0.0f);
     }
     void Draw()
     {
-        Graphics::GetContext2D().SetTarget(bitmap.Get());
+        Graphics::GetContext2D().SetTarget(_bitmap.Get());
 
         Graphics::GetContext2D().BeginDraw();
 
         Graphics::GetContext2D().Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
-        Graphics::GetContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), textLayout.Get(), brush.Get());
+        Graphics::GetContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), _textLayout.Get(), _brush.Get());
 
         Graphics::GetContext2D().EndDraw();
 
@@ -1924,9 +1924,9 @@ public:
     void Create(const BYTE* const buffer, int width, int height) = delete;
 
 private:
-    ComPtr<ID2D1Bitmap1> bitmap = nullptr;
-    ComPtr<ID2D1SolidColorBrush> brush = nullptr;
-    ComPtr<IDWriteTextLayout> textLayout = nullptr;
+    ComPtr<ID2D1Bitmap1> _bitmap = nullptr;
+    ComPtr<ID2D1SolidColorBrush> _brush = nullptr;
+    ComPtr<IDWriteTextLayout> _textLayout = nullptr;
 };
 class Sound : public Window::Proceedable
 {
@@ -1957,43 +1957,43 @@ public:
         ComPtr<IMFAttributes> attributes = nullptr;
         MFCreateAttributes(attributes.GetAddressOf(), 1);
 
-        sourceReader.Reset();
-        MFCreateSourceReaderFromByteStream(byteStream.Get(), attributes.Get(), sourceReader.GetAddressOf());
+        _sourceReader.Reset();
+        MFCreateSourceReaderFromByteStream(byteStream.Get(), attributes.Get(), _sourceReader.GetAddressOf());
 
         ComPtr<IMFMediaType> mediaType = nullptr;
         MFCreateMediaType(mediaType.GetAddressOf());
         mediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
         mediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
 
-        sourceReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType.Get());
+        _sourceReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, mediaType.Get());
         mediaType.Reset();
-        sourceReader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, mediaType.GetAddressOf());
+        _sourceReader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, mediaType.GetAddressOf());
 
         UINT32 waveFormatSize = sizeof(WAVEFORMATEX);
-        MFCreateWaveFormatExFromMFMediaType(mediaType.Get(), &format, &waveFormatSize);
+        MFCreateWaveFormatExFromMFMediaType(mediaType.Get(), &_format, &waveFormatSize);
 
         ComPtr<IMFSample> sample = nullptr;
         DWORD flags = 0;
-        sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
+        _sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
 
         ComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
         sample->ConvertToContiguousBuffer(mediaBuffer.GetAddressOf());
 
-        mediaBuffer->GetMaxLength(&bufferSize);
-        bufferSize -= format->nBlockAlign;
+        mediaBuffer->GetMaxLength(&_bufferSize);
+        _bufferSize -= _format->nBlockAlign;
 
         DSBUFFERDESC bufferDesc = {};
         bufferDesc.dwSize = sizeof(DSBUFFERDESC);
         bufferDesc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY | DSBCAPS_GETCURRENTPOSITION2;
-        bufferDesc.dwBufferBytes = bufferSize * 2;
-        bufferDesc.lpwfxFormat = format;
+        bufferDesc.dwBufferBytes = _bufferSize * 2;
+        bufferDesc.lpwfxFormat = _format;
 
-        soundBuffer.Reset();
-        Audio::GetDevice().CreateSoundBuffer(&bufferDesc, soundBuffer.GetAddressOf(), nullptr);
+        _soundBuffer.Reset();
+        Audio::GetDevice().CreateSoundBuffer(&bufferDesc, _soundBuffer.GetAddressOf(), nullptr);
     }
     void SetLoop(bool isLoop)
     {
-        properties.isLoop = isLoop;
+        _isLoop = isLoop;
     }
     void SetVolume(float volume)
     {
@@ -2008,7 +2008,7 @@ public:
         if (decibel > DSBVOLUME_MAX)
             decibel = DSBVOLUME_MAX;
 
-        soundBuffer->SetVolume(decibel);
+        _soundBuffer->SetVolume(decibel);
     }
     void SetPan(float pan)
     {
@@ -2026,14 +2026,14 @@ public:
         if (decibel > DSBPAN_RIGHT)
             decibel = DSBPAN_RIGHT;
 
-        soundBuffer->SetPan(decibel);
+        _soundBuffer->SetPan(decibel);
     }
     void SetPitch(float pitch)
     {
         if (pitch < 0.0f)
             pitch = 0.0f;
 
-        DWORD frequency = (DWORD)(format->nSamplesPerSec * pitch);
+        DWORD frequency = (DWORD)(_format->nSamplesPerSec * pitch);
 
         if (frequency < DSBFREQUENCY_MIN)
             frequency = DSBFREQUENCY_MIN;
@@ -2041,36 +2041,36 @@ public:
         if (frequency > DSBFREQUENCY_MAX)
             frequency = DSBFREQUENCY_MAX;
 
-        soundBuffer->SetFrequency(frequency);
+        _soundBuffer->SetFrequency(frequency);
     }
     void Play()
     {
-        if (!properties.isLoop)
+        if (!_isLoop)
         {
             Stop();
         }
 
-        state = play;
-        soundBuffer->Play(0, 0, DSBPLAY_LOOPING);
+        _state = play;
+        _soundBuffer->Play(0, 0, DSBPLAY_LOOPING);
     }
     void Pause()
     {
-        state = pause;
-        soundBuffer->Stop();
+        _state = pause;
+        _soundBuffer->Stop();
     }
     void Stop()
     {
-        state = stop;
+        _state = stop;
         Reset();
 
-        bufferIndex = 0;
-        soundBuffer->SetCurrentPosition(0);
+        _bufferIndex = 0;
+        _soundBuffer->SetCurrentPosition(0);
 
         void* buffer = nullptr;
         DWORD bufferSize = 0;
-        soundBuffer->Lock(0, 0, &buffer, &bufferSize, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
+        _soundBuffer->Lock(0, 0, &buffer, &bufferSize, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
         memset(buffer, 256, bufferSize);
-        soundBuffer->Unlock(buffer, bufferSize, nullptr, 0);
+        _soundBuffer->Unlock(buffer, bufferSize, nullptr, 0);
     }
 
 private:
@@ -2081,18 +2081,13 @@ private:
         stop,
     };
 
-    struct Properties
-    {
-        bool isLoop = false;
-    }
-    properties;
-
-    ComPtr<IMFSourceReader> sourceReader = nullptr;
-    ComPtr<IDirectSoundBuffer> soundBuffer = nullptr;
-    DWORD bufferSize;
-    int bufferIndex = 0;
-    WAVEFORMATEX* format;
-    State state = stop;
+    ComPtr<IMFSourceReader> _sourceReader = nullptr;
+    ComPtr<IDirectSoundBuffer> _soundBuffer = nullptr;
+    DWORD _bufferSize;
+    int _bufferIndex = 0;
+    WAVEFORMATEX* _format;
+    State _state = stop;
+    bool _isLoop = false;
 
     void Initialize()
     {
@@ -2105,7 +2100,7 @@ private:
         PROPVARIANT position = {};
         position.vt = VT_I8;
         position.hVal.QuadPart = 0;
-        sourceReader->SetCurrentPosition(GUID_NULL, position);
+        _sourceReader->SetCurrentPosition(GUID_NULL, position);
     }
     void Push(void* buffer, DWORD size)
     {
@@ -2116,11 +2111,11 @@ private:
 
         ComPtr<IMFSample> sample = nullptr;
         DWORD flags = 0;
-        sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
+        _sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
 
         if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
         {
-            if (!properties.isLoop)
+            if (!_isLoop)
             {
                 Stop();
                 return;
@@ -2129,7 +2124,7 @@ private:
             Reset();
 
             sample.Reset();
-            sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
+            _sourceReader->ReadSample((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, nullptr, &flags, nullptr, sample.GetAddressOf());
         }
 
         ComPtr<IMFMediaBuffer> mediaBuffer = nullptr;
@@ -2147,15 +2142,15 @@ private:
             return;
 
         DWORD position;
-        soundBuffer->GetCurrentPosition(&position, 0);
+        _soundBuffer->GetCurrentPosition(&position, 0);
 
-        if (state == stop)
+        if (_state == stop)
         {
             void* buffer = nullptr;
             DWORD bufferSize = 0;
-            soundBuffer->Lock(0, 0, &buffer, &bufferSize, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
+            _soundBuffer->Lock(0, 0, &buffer, &bufferSize, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
             memset(buffer, 256, bufferSize);
-            soundBuffer->Unlock(buffer, bufferSize, nullptr, 0);
+            _soundBuffer->Unlock(buffer, bufferSize, nullptr, 0);
         }
         else
         {
@@ -2164,19 +2159,19 @@ private:
             void* buffer2 = nullptr;
             DWORD bufferSize2 = 0;
 
-            if (bufferIndex == 0 && position < bufferSize)
+            if (_bufferIndex == 0 && position < _bufferSize)
             {
-                soundBuffer->Lock(bufferSize, bufferSize * 2, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
+                _soundBuffer->Lock(_bufferSize, _bufferSize * 2, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
                 Push(buffer1, bufferSize1);
-                soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
-                bufferIndex = 1;
+                _soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
+                _bufferIndex = 1;
             }
-            if (bufferIndex == 1 && position >= bufferSize)
+            if (_bufferIndex == 1 && position >= _bufferSize)
             {
-                soundBuffer->Lock(0, bufferSize, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
+                _soundBuffer->Lock(0, _bufferSize, &buffer1, &bufferSize1, &buffer2, &bufferSize2, 0);
                 Push(buffer1, bufferSize1);
-                soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
-                bufferIndex = 0;
+                _soundBuffer->Unlock(buffer1, bufferSize1, buffer2, bufferSize2);
+                _bufferIndex = 0;
             }
         }
     }

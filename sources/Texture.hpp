@@ -50,9 +50,9 @@ public:
     }
     void Create(const BYTE* const buffer, int width, int height)
     {
-        size = DirectX::XMINT2(width, height);
+        _size = DirectX::XMINT2(width, height);
 
-        texture.Reset();
+        _texture.Reset();
         D3D11_TEXTURE2D_DESC textureDesc = {};
         textureDesc.Width = width;
         textureDesc.Height = height;
@@ -70,16 +70,16 @@ public:
         textureSubresourceData.pSysMem = buffer;
         textureSubresourceData.SysMemPitch = width * 4;
         textureSubresourceData.SysMemSlicePitch = width * height * 4;
-        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, &textureSubresourceData, texture.GetAddressOf());
+        Graphics::GetDevice3D().CreateTexture2D(&textureDesc, &textureSubresourceData, _texture.GetAddressOf());
 
-        shaderResourceView.Reset();
+        _shaderResourceView.Reset();
         D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
         shaderResourceViewDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
         shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         shaderResourceViewDesc.Texture2D.MipLevels = 1;
-        Graphics::GetDevice3D().CreateShaderResourceView(texture.Get(), &shaderResourceViewDesc, shaderResourceView.GetAddressOf());
+        Graphics::GetDevice3D().CreateShaderResourceView(_texture.Get(), &shaderResourceViewDesc, _shaderResourceView.GetAddressOf());
 
-        samplerState.Reset();
+        _samplerState.Reset();
         D3D11_SAMPLER_DESC samplerDesc = {};
         samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
         samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -94,28 +94,28 @@ public:
         samplerDesc.BorderColor[3] = 0.0f;
         samplerDesc.MinLOD = 0.0f;
         samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-        Graphics::GetDevice3D().CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
+        Graphics::GetDevice3D().CreateSamplerState(&samplerDesc, _samplerState.GetAddressOf());
     }
     DirectX::XMINT2 GetSize() const
     {
-        return size;
+        return _size;
     }
     void Attach(int slot)
     {
-        if (texture == nullptr)
+        if (_texture == nullptr)
             return;
 
-        Graphics::GetContext3D().PSSetShaderResources(slot, 1, shaderResourceView.GetAddressOf());
-        Graphics::GetContext3D().PSSetSamplers(slot, 1, samplerState.GetAddressOf());
+        Graphics::GetContext3D().PSSetShaderResources(slot, 1, _shaderResourceView.GetAddressOf());
+        Graphics::GetContext3D().PSSetSamplers(slot, 1, _samplerState.GetAddressOf());
     }
     ID3D11Texture2D& GetInterface()
     {
-        return *texture.Get();
+        return *_texture.Get();
     }
 
 private:
-    DirectX::XMINT2 size;
-    ComPtr<ID3D11Texture2D> texture = nullptr;
-    ComPtr<ID3D11ShaderResourceView> shaderResourceView = nullptr;
-    ComPtr<ID3D11SamplerState> samplerState = nullptr;
+    DirectX::XMINT2 _size;
+    ComPtr<ID3D11Texture2D> _texture = nullptr;
+    ComPtr<ID3D11ShaderResourceView> _shaderResourceView = nullptr;
+    ComPtr<ID3D11SamplerState> _samplerState = nullptr;
 };

@@ -3,19 +3,19 @@ class Random
 public:
     static void SetSeed(int seed)
     {
-        GetInstance().mt.seed(seed);
+        GetInstance()._mt.seed(seed);
     }
     static float Get()
     {
         std::uniform_real_distribution<float> range(0.0f, 1.0f);
 
-        return range(GetInstance().mt);
+        return range(GetInstance()._mt);
     }
 
 private:
     friend std::unique_ptr<Random>::deleter_type;
 
-    std::mt19937 mt;
+    std::mt19937 _mt;
 
     Random(const Random&) = delete;
     Random& operator=(const Random&) = delete;
@@ -24,7 +24,7 @@ private:
         InitializeApplication();
 
         std::random_device device;
-        mt.seed(device());
+        _mt.seed(device());
     }
     ~Random()
     {

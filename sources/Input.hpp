@@ -3,19 +3,19 @@ class Input
 public:
     static bool GetKey(int VK_CODE)
     {
-        return GetInstance().keyState[VK_CODE] & 0x80;
+        return GetInstance()._keyState[VK_CODE] & 0x80;
     }
     static bool GetKeyUp(int VK_CODE)
     {
-        return !(GetInstance().keyState[VK_CODE] & 0x80) && (GetInstance().preKeyState[VK_CODE] & 0x80);
+        return !(GetInstance()._keyState[VK_CODE] & 0x80) && (GetInstance()._preKeyState[VK_CODE] & 0x80);
     }
     static bool GetKeyDown(int VK_CODE)
     {
-        return (GetInstance().keyState[VK_CODE] & 0x80) && !(GetInstance().preKeyState[VK_CODE] & 0x80);
+        return (GetInstance()._keyState[VK_CODE] & 0x80) && !(GetInstance()._preKeyState[VK_CODE] & 0x80);
     }
     static Float2 GetMousePosition()
     {
-        return GetInstance().mousePosition;
+        return GetInstance()._mousePosition;
     }
     static void SetMousePosition(float x, float y)
     {
@@ -28,15 +28,15 @@ public:
         ClientToScreen(Window::GetHandle(), &point);
         SetCursorPos(point.x, point.y);
 
-        GetInstance().mousePosition.x = x;
-        GetInstance().mousePosition.y = y;
+        GetInstance()._mousePosition.x = x;
+        GetInstance()._mousePosition.y = y;
     }
     static void SetShowCursor(bool isShowCursor)
     {
-        if (GetInstance().isShowCursor == isShowCursor)
+        if (GetInstance()._isShowCursor == isShowCursor)
             return;
 
-        GetInstance().isShowCursor = isShowCursor;
+        GetInstance()._isShowCursor = isShowCursor;
         ShowCursor(isShowCursor);
     }
     static void Update()
@@ -45,24 +45,24 @@ public:
         GetCursorPos(&point);
         ScreenToClient(Window::GetHandle(), &point);
 
-        GetInstance().mousePosition.x = static_cast<float>(point.x - Window::GetSize().x / 2);
-        GetInstance().mousePosition.y = static_cast<float>(-point.y + Window::GetSize().y / 2);
+        GetInstance()._mousePosition.x = static_cast<float>(point.x - Window::GetSize().x / 2);
+        GetInstance()._mousePosition.y = static_cast<float>(-point.y + Window::GetSize().y / 2);
 
         for (int i = 0; i < 256; i++)
         {
-            GetInstance().preKeyState[i] = GetInstance().keyState[i];
+            GetInstance()._preKeyState[i] = GetInstance()._keyState[i];
         }
 
-        GetKeyboardState(GetInstance().keyState);
+        GetKeyboardState(GetInstance()._keyState);
     }
 
 private:
     friend std::unique_ptr<Input>::deleter_type;
 
-    Float2 mousePosition;
-    BYTE preKeyState[256];
-    BYTE keyState[256];
-    bool isShowCursor = true;
+    Float2 _mousePosition;
+    BYTE _preKeyState[256];
+    BYTE _keyState[256];
+    bool _isShowCursor = true;
 
     Input(const Input&) = delete;
     Input& operator=(const Input&) = delete;

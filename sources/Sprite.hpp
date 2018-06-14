@@ -25,46 +25,46 @@ public:
     }
     void Load(const wchar_t* const filePath)
     {
-        texture.Load(filePath);
+        _texture.Load(filePath);
 
-        mesh.GetMaterial().SetTexture(0, &texture);
+        _mesh.GetMaterial().SetTexture(0, &_texture);
 
         SetPivot(0.0f);
     }
     void Create(const BYTE* const buffer, int width, int height)
     {
-        texture.Create(buffer, width, height);
+        _texture.Create(buffer, width, height);
 
-        mesh.GetMaterial().SetTexture(0, &texture);
+        _mesh.GetMaterial().SetTexture(0, &_texture);
 
         SetPivot(0.0f);
     }
     DirectX::XMINT2 GetSize() const
     {
-        return texture.GetSize();
+        return _texture.GetSize();
     }
     void SetPivot(Float2 pivot)
     {
-        Float2 textureSize(static_cast<float>(texture.GetSize().x), static_cast<float>(texture.GetSize().y));
+        Float2 textureSize(static_cast<float>(_texture.GetSize().x), static_cast<float>(_texture.GetSize().y));
         Float2 offset = textureSize / 2.0f * -pivot;
 
-        mesh.CreatePlane(textureSize / 2.0f, Float3(offset.x, offset.y, 0.0f));
+        _mesh.CreatePlane(textureSize / 2.0f, Float3(offset.x, offset.y, 0.0f));
     }
     Material& GetMaterial()
     {
-        return mesh.GetMaterial();
+        return _mesh.GetMaterial();
     }
     void Draw()
     {
-        mesh.position = position;
-        mesh.angles = angles;
-        mesh.scale = scale;
-        mesh.Draw();
+        _mesh.position = position;
+        _mesh.angles = angles;
+        _mesh.scale = scale;
+        _mesh.Draw();
     }
 
 protected:
-    Mesh mesh;
-    Texture texture;
+    Mesh _mesh;
+    Texture _texture;
 
     void Initialize()
     {
@@ -75,7 +75,7 @@ protected:
         scale = Float3(1.0f, 1.0f, 1.0f);
         color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        mesh.GetMaterial().Create(
+        _mesh.GetMaterial().Create(
             "cbuffer Camera : register(b0)"
             "{"
             "    matrix view;"
@@ -119,7 +119,7 @@ protected:
             "}"
         );
 
-        mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
-        mesh.SetCullingMode(D3D11_CULL_NONE);
+        _mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
+        _mesh.SetCullingMode(D3D11_CULL_NONE);
     }
 };
