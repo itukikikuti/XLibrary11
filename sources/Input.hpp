@@ -1,17 +1,17 @@
 class Input
 {
 public:
-    static bool GetKey(int keyCode)
+    static bool GetKey(int VK_CODE)
     {
-        return GetInstance().keyState[keyCode] & 0x80;
+        return GetInstance().keyState[VK_CODE] & 0x80;
     }
-    static bool GetKeyUp(int keyCode)
+    static bool GetKeyUp(int VK_CODE)
     {
-        return !(GetInstance().keyState[keyCode] & 0x80) && (GetInstance().preKeyState[keyCode] & 0x80);
+        return !(GetInstance().keyState[VK_CODE] & 0x80) && (GetInstance().preKeyState[VK_CODE] & 0x80);
     }
-    static bool GetKeyDown(int keyCode)
+    static bool GetKeyDown(int VK_CODE)
     {
-        return (GetInstance().keyState[keyCode] & 0x80) && !(GetInstance().preKeyState[keyCode] & 0x80);
+        return (GetInstance().keyState[VK_CODE] & 0x80) && !(GetInstance().preKeyState[VK_CODE] & 0x80);
     }
     static Float2 GetMousePosition()
     {

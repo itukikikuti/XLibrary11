@@ -584,9 +584,7 @@ private:
     HWND handle;
     std::list<Proceedable*> procedures;
 
-    Window(Window&) = delete;
     Window(const Window&) = delete;
-    Window& operator=(Window&) = delete;
     Window& operator=(const Window&) = delete;
     Window()
     {
@@ -642,17 +640,17 @@ private:
 class Input
 {
 public:
-    static bool GetKey(int keyCode)
+    static bool GetKey(int VK_CODE)
     {
-        return GetInstance().keyState[keyCode] & 0x80;
+        return GetInstance().keyState[VK_CODE] & 0x80;
     }
-    static bool GetKeyUp(int keyCode)
+    static bool GetKeyUp(int VK_CODE)
     {
-        return !(GetInstance().keyState[keyCode] & 0x80) && (GetInstance().preKeyState[keyCode] & 0x80);
+        return !(GetInstance().keyState[VK_CODE] & 0x80) && (GetInstance().preKeyState[VK_CODE] & 0x80);
     }
-    static bool GetKeyDown(int keyCode)
+    static bool GetKeyDown(int VK_CODE)
     {
-        return (GetInstance().keyState[keyCode] & 0x80) && !(GetInstance().preKeyState[keyCode] & 0x80);
+        return (GetInstance().keyState[VK_CODE] & 0x80) && !(GetInstance().preKeyState[VK_CODE] & 0x80);
     }
     static Float2 GetMousePosition()
     {
@@ -705,9 +703,7 @@ private:
     BYTE keyState[256];
     bool isShowCursor = true;
 
-    Input(Input&) = delete;
     Input(const Input&) = delete;
-    Input& operator=(Input&) = delete;
     Input& operator=(const Input&) = delete;
     Input()
     {
@@ -787,9 +783,7 @@ private:
     ComPtr<IDWriteFactory> textFactory = nullptr;
     bool isFullScreen = false;
 
-    Graphics(Graphics&) = delete;
     Graphics(const Graphics&) = delete;
-    Graphics& operator=(Graphics&) = delete;
     Graphics& operator=(const Graphics&) = delete;
     Graphics()
     {
@@ -940,9 +934,7 @@ private:
 
     ComPtr<IDirectSound8> device = nullptr;
 
-    Audio(Audio&) = delete;
     Audio(const Audio&) = delete;
-    Audio& operator=(Audio&) = delete;
     Audio& operator=(const Audio&) = delete;
     Audio()
     {
@@ -1018,9 +1010,7 @@ private:
     LARGE_INTEGER preCount;
     LARGE_INTEGER frequency;
 
-    Timer(Timer&) = delete;
     Timer(const Timer&) = delete;
-    Timer& operator=(Timer&) = delete;
     Timer& operator=(const Timer&) = delete;
     Timer()
     {
@@ -1047,17 +1037,17 @@ private:
     {
         return new Timer();
     }
-    LARGE_INTEGER GetCounter() const
+    LARGE_INTEGER GetCounter()
     {
         LARGE_INTEGER counter;
         QueryPerformanceCounter(&counter);
         return counter;
     }
-    LARGE_INTEGER GetCountFrequency() const
+    LARGE_INTEGER GetCountFrequency()
     {
-        LARGE_INTEGER frequency;
-        QueryPerformanceFrequency(&frequency);
-        return frequency;
+        LARGE_INTEGER _frequency;
+        QueryPerformanceFrequency(&_frequency);
+        return _frequency;
     }
 };
 class Random
@@ -1079,9 +1069,7 @@ private:
 
     std::mt19937 mt;
 
-    Random(Random&) = delete;
     Random(const Random&) = delete;
-    Random& operator=(Random&) = delete;
     Random& operator=(const Random&) = delete;
     Random()
     {

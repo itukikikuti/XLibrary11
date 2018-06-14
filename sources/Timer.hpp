@@ -69,16 +69,16 @@ private:
     {
         return new Timer();
     }
-    LARGE_INTEGER GetCounter() const
+    LARGE_INTEGER GetCounter()
     {
         LARGE_INTEGER counter;
         QueryPerformanceCounter(&counter);
         return counter;
     }
-    LARGE_INTEGER GetCountFrequency() const
+    LARGE_INTEGER GetCountFrequency()
     {
-        LARGE_INTEGER frequency;
-        QueryPerformanceFrequency(&frequency);
-        return frequency;
+        LARGE_INTEGER _frequency;
+        QueryPerformanceFrequency(&_frequency);
+        return _frequency;
     }
 };
