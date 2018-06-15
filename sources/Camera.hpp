@@ -117,8 +117,8 @@ private:
 
         _depthTexture.Reset();
         D3D11_TEXTURE2D_DESC textureDesc = {};
-        textureDesc.Width = static_cast<UINT>(Window::GetSize().x);
-        textureDesc.Height = static_cast<UINT>(Window::GetSize().y);
+        textureDesc.Width = (UINT)Window::GetSize().x;
+        textureDesc.Height = (UINT)Window::GetSize().y;
         textureDesc.MipLevels = 1;
         textureDesc.ArraySize = 1;
         textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -146,7 +146,7 @@ private:
 
         _constantBuffer.Reset();
         D3D11_BUFFER_DESC constantBufferDesc = {};
-        constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
+        constantBufferDesc.ByteWidth = sizeof(Constant);
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         constantBufferDesc.CPUAccessFlags = 0;

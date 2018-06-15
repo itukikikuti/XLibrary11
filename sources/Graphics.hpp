@@ -174,8 +174,8 @@ private:
         factory->MakeWindowAssociation(Window::GetHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
         D3D11_VIEWPORT viewPort = {};
-        viewPort.Width = static_cast<float>(Window::GetSize().x);
-        viewPort.Height = static_cast<float>(Window::GetSize().y);
+        viewPort.Width = (float)Window::GetSize().x;
+        viewPort.Height = (float)Window::GetSize().y;
         viewPort.MaxDepth = 1.0f;
         _context3D->RSSetViewports(1, &viewPort);
     }

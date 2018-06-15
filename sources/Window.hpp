@@ -108,7 +108,7 @@ private:
         WNDCLASSW windowClass = {};
         windowClass.lpfnWndProc = DefWindowProcW;
         windowClass.hInstance = instance;
-        windowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED));
+        windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED);
         windowClass.lpszClassName = _className;
         RegisterClassW(&windowClass);
 

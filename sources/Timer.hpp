@@ -16,7 +16,7 @@ public:
     static void Update()
     {
         LARGE_INTEGER count = GetInstance().GetCounter();
-        GetInstance()._deltaTime = static_cast<float>(count.QuadPart - GetInstance()._preCount.QuadPart) / GetInstance()._frequency.QuadPart;
+        GetInstance()._deltaTime = (float)(count.QuadPart - GetInstance()._preCount.QuadPart) / GetInstance()._frequency.QuadPart;
         GetInstance()._preCount = GetInstance().GetCounter();
 
         GetInstance()._time += GetInstance()._deltaTime;

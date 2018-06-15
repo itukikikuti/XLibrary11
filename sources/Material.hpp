@@ -134,8 +134,8 @@ private:
 
         if (errorBlob != nullptr)
         {
-            OutputDebugStringA(static_cast<char*>(errorBlob->GetBufferPointer()));
-            MessageBoxA(Window::GetHandle(), static_cast<char*>(errorBlob->GetBufferPointer()), "Shader Error", MB_OK);
+            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+            MessageBoxA(Window::GetHandle(), (char*)errorBlob->GetBufferPointer(), "Shader Error", MB_OK);
         }
     }
 };

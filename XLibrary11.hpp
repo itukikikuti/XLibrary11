@@ -595,7 +595,7 @@ private:
         WNDCLASSW windowClass = {};
         windowClass.lpfnWndProc = DefWindowProcW;
         windowClass.hInstance = instance;
-        windowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED));
+        windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED);
         windowClass.lpszClassName = _className;
         RegisterClassW(&windowClass);
 
@@ -662,8 +662,8 @@ public:
             return;
 
         POINT point = {};
-        point.x = static_cast<int>(x) + Window::GetSize().x / 2;
-        point.y = static_cast<int>(-y) + Window::GetSize().y / 2;
+        point.x = (int)x + Window::GetSize().x / 2;
+        point.y = (int)-y + Window::GetSize().y / 2;
         ClientToScreen(Window::GetHandle(), &point);
         SetCursorPos(point.x, point.y);
 
@@ -684,8 +684,8 @@ public:
         GetCursorPos(&point);
         ScreenToClient(Window::GetHandle(), &point);
 
-        GetInstance()._mousePosition.x = static_cast<float>(point.x - Window::GetSize().x / 2);
-        GetInstance()._mousePosition.y = static_cast<float>(-point.y + Window::GetSize().y / 2);
+        GetInstance()._mousePosition.x = (float)point.x - Window::GetSize().x / 2;
+        GetInstance()._mousePosition.y = (float)-point.y + Window::GetSize().y / 2;
 
         for (int i = 0; i < 256; i++)
         {
@@ -905,8 +905,8 @@ private:
         factory->MakeWindowAssociation(Window::GetHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
         D3D11_VIEWPORT viewPort = {};
-        viewPort.Width = static_cast<float>(Window::GetSize().x);
-        viewPort.Height = static_cast<float>(Window::GetSize().y);
+        viewPort.Width = (float)Window::GetSize().x;
+        viewPort.Height = (float)Window::GetSize().y;
         viewPort.MaxDepth = 1.0f;
         _context3D->RSSetViewports(1, &viewPort);
     }
@@ -984,7 +984,7 @@ public:
     static void Update()
     {
         LARGE_INTEGER count = GetInstance().GetCounter();
-        GetInstance()._deltaTime = static_cast<float>(count.QuadPart - GetInstance()._preCount.QuadPart) / GetInstance()._frequency.QuadPart;
+        GetInstance()._deltaTime = (float)(count.QuadPart - GetInstance()._preCount.QuadPart) / GetInstance()._frequency.QuadPart;
         GetInstance()._preCount = GetInstance().GetCounter();
 
         GetInstance()._time += GetInstance()._deltaTime;
@@ -1356,8 +1356,8 @@ private:
 
         if (errorBlob != nullptr)
         {
-            OutputDebugStringA(static_cast<char*>(errorBlob->GetBufferPointer()));
-            MessageBoxA(Window::GetHandle(), static_cast<char*>(errorBlob->GetBufferPointer()), "Shader Error", MB_OK);
+            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+            MessageBoxA(Window::GetHandle(), (char*)errorBlob->GetBufferPointer(), "Shader Error", MB_OK);
         }
     }
 };
@@ -1480,8 +1480,8 @@ private:
 
         _depthTexture.Reset();
         D3D11_TEXTURE2D_DESC textureDesc = {};
-        textureDesc.Width = static_cast<UINT>(Window::GetSize().x);
-        textureDesc.Height = static_cast<UINT>(Window::GetSize().y);
+        textureDesc.Width = (UINT)Window::GetSize().x;
+        textureDesc.Height = (UINT)Window::GetSize().y;
         textureDesc.MipLevels = 1;
         textureDesc.ArraySize = 1;
         textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -1509,7 +1509,7 @@ private:
 
         _constantBuffer.Reset();
         D3D11_BUFFER_DESC constantBufferDesc = {};
-        constantBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Constant));
+        constantBufferDesc.ByteWidth = sizeof(Constant);
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         constantBufferDesc.CPUAccessFlags = 0;
@@ -1778,7 +1778,7 @@ public:
     }
     void SetPivot(Float2 pivot)
     {
-        Float2 textureSize(static_cast<float>(_texture.GetSize().x), static_cast<float>(_texture.GetSize().y));
+        Float2 textureSize((float)_texture.GetSize().x, (float)_texture.GetSize().y);
         Float2 offset = textureSize / 2.0f * -pivot;
 
         _mesh.CreatePlane(textureSize / 2.0f, Float3(offset.x, offset.y, 0.0f));

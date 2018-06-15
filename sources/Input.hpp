@@ -23,8 +23,8 @@ public:
             return;
 
         POINT point = {};
-        point.x = static_cast<int>(x) + Window::GetSize().x / 2;
-        point.y = static_cast<int>(-y) + Window::GetSize().y / 2;
+        point.x = (int)x + Window::GetSize().x / 2;
+        point.y = (int)-y + Window::GetSize().y / 2;
         ClientToScreen(Window::GetHandle(), &point);
         SetCursorPos(point.x, point.y);
 
@@ -45,8 +45,8 @@ public:
         GetCursorPos(&point);
         ScreenToClient(Window::GetHandle(), &point);
 
-        GetInstance()._mousePosition.x = static_cast<float>(point.x - Window::GetSize().x / 2);
-        GetInstance()._mousePosition.y = static_cast<float>(-point.y + Window::GetSize().y / 2);
+        GetInstance()._mousePosition.x = (float)point.x - Window::GetSize().x / 2;
+        GetInstance()._mousePosition.y = (float)-point.y + Window::GetSize().y / 2;
 
         for (int i = 0; i < 256; i++)
         {

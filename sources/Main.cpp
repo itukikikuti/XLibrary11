@@ -49,6 +49,7 @@ int MAIN()
     sprite1.scale = 1.0f / 256.0f;
 
     Sprite sprite(L"assets/box.jpg");
+    sprite.scale = 0.5f;
 
     float pos1 = -2.0f;
     float pos2 = -3.0f;
@@ -108,7 +109,8 @@ int MAIN()
 
         uiCamera.Update(false);
 
-        sprite.position.x = Window::GetSize().x / 2.0f - sprite.GetSize().x / 2.0f;
+        sprite.position.x = Window::GetSize().x / 2.0f - sprite.GetSize().x * sprite.scale.x / 2.0f;
+        sprite.position.y = Window::GetSize().y / 2.0f - sprite.GetSize().y * sprite.scale.y / 2.0f;
         //sprite.angles.z += 10.0f;
         sprite.Draw();
     }
