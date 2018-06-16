@@ -1871,13 +1871,13 @@ protected:
 class Text : public Sprite
 {
 public:
-    Text(const std::wstring& text = L"", float fontSize = 16.0f, const wchar_t* const fontFace = L"ＭＳ ゴシック")
+    Text(const std::wstring& text = L"", float fontSize = 16.0f, DWRITE_TEXT_ALIGNMENT align = DWRITE_TEXT_ALIGNMENT_CENTER, const wchar_t* const fontFace = L"ＭＳ ゴシック")
     {
         Sprite::Initialize();
         color = Float4(0.0f, 0.0f, 0.0f, 1.0f);
-        Create(text, fontSize, fontFace);
+        Create(text, fontSize, align, fontFace);
     }
-    void Create(const std::wstring& text = L"", float fontSize = 16.0f, const wchar_t* const fontFace = L"ＭＳ ゴシック")
+    void Create(const std::wstring& text = L"", float fontSize = 16.0f, DWRITE_TEXT_ALIGNMENT align = DWRITE_TEXT_ALIGNMENT_CENTER, const wchar_t* const fontFace = L"ＭＳ ゴシック")
     {
         if (text == L"")
             return;
@@ -1889,7 +1889,7 @@ public:
         ComPtr<IDWriteTextFormat> textFormat = nullptr;
         Graphics::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
 
-        textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+        textFormat->SetTextAlignment(align);
         textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
         _textLayout.Reset();
