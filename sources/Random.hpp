@@ -11,6 +11,18 @@ public:
 
         return range(GetInstance()._mt);
     }
+    static int Range(int min, int max)
+    {
+        std::uniform_int_distribution<int> range(min, max - 1);
+
+        return range(GetInstance()._mt);
+    }
+    static float Range(float min, float max)
+    {
+        std::uniform_real_distribution<float> range(min, max);
+
+        return range(GetInstance()._mt);
+    }
 
 private:
     friend std::unique_ptr<Random>::deleter_type;
