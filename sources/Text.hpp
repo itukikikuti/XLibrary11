@@ -1,6 +1,8 @@
 ﻿class Text : public Sprite
 {
 public:
+    bool antialias = true;
+
     Text(const std::wstring& text = L"", float fontSize = 16.0f, DWRITE_TEXT_ALIGNMENT align = DWRITE_TEXT_ALIGNMENT_CENTER, const wchar_t* const fontFace = L"ＭＳ ゴシック")
     {
         Sprite::Initialize();
@@ -14,7 +16,6 @@ public:
 
         _brush.Reset();
         Graphics::GetContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), _brush.GetAddressOf());
-        Graphics::GetContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
         ComPtr<IDWriteTextFormat> textFormat = nullptr;
         Graphics::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
@@ -51,6 +52,11 @@ public:
     }
     void Draw()
     {
+        if (antialias)
+            Graphics::GetContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_DEFAULT);
+        else
+            Graphics::GetContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+
         Graphics::GetContext2D().SetTarget(_bitmap.Get());
 
         Graphics::GetContext2D().BeginDraw();

@@ -25,15 +25,11 @@ int MAIN()
     mesh.CreateCube(Float3(1.0f, 0.5f, 0.3f));
     mesh.GetMaterial().SetTexture(0, &texture);
 
-    Text text(L"あいうえおかきくけこさしすせそ\nabcdefghijklmnopqrstuvwxyz", 16.0f);
-    //text.SetPivot(Float2(-1.0f, 1.0f));
-    text.position.y = 2.0f;
-    text.scale = 1.0f / 50.0f;
-
     Text number(L"0", 100.0f);
     number.position.y = 3.0f;
     number.scale = 1.0f / 100.0f;
     number.color = Float4(1.0f, 0.0f, 0.0f, 1.0f);
+    number.antialias = false;
 
     Sound music(L"assets/music.mp3");
     music.SetPitch(1.0f);
@@ -48,8 +44,14 @@ int MAIN()
     sprite1.position.x = 1.0f;
     sprite1.scale = 1.0f / 256.0f;
 
+    Text text(L"あいうえおかきくけこさしすせそ\nabcdefghijklmnopqrstuvwxyz", 16.0f);
+    //text.SetPivot(Float2(-1.0f, 1.0f));
+    text.position.y = 100.0f;
+    text.scale = 2.0f;
+
     Sprite sprite(L"assets/box.jpg");
     sprite.scale = 0.5f;
+    sprite.color.w = 0.5f;
 
     float pos1 = -2.0f;
     float pos2 = -3.0f;
@@ -74,12 +76,7 @@ int MAIN()
         }
 
         number.angles.y += 1.0f;
-        if (!Input::GetKey('2'))
-        {
-            text.angles.z += 1.0f;
-            text.Draw();
-        }
-        else
+        if (Input::GetKey('2'))
         {
             wstringstream ss;
             ss << Timer::GetTime();
@@ -110,6 +107,9 @@ int MAIN()
         sprite1.Draw();
 
         uiCamera.Update(false);
+
+        text.angles.z += 1.0f;
+        text.Draw();
 
         sprite.position.x = Window::GetSize().x / 2.0f - sprite.GetSize().x * sprite.scale.x / 2.0f;
         sprite.position.y = Window::GetSize().y / 2.0f - sprite.GetSize().y * sprite.scale.y / 2.0f;
