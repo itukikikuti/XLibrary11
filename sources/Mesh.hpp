@@ -114,6 +114,69 @@ public:
         if (shouldClear)
             Apply();
     }
+    void CreateSphere(float diameter = 1.0f, int tessellation = 10, bool shouldClear = true)
+    {
+        if (shouldClear)
+        {
+            vertices.clear();
+            indices.clear();
+        }
+
+        int verticalSegments = tessellation;
+        int horizontalSegments = tessellation * 2;
+
+        float radius = diameter / 2;
+
+        for (int i = 0; i <= verticalSegments; i++)
+        {
+            float v = 1 - float(i) / verticalSegments;
+
+            float latitude = (i * XM_PI / verticalSegments) - XM_PIDIV2;
+            float dy, dxz;
+
+            XMScalarSinCos(&dy, &dxz, latitude);
+
+            for (int j = 0; j <= horizontalSegments; j++)
+            {
+                float u = float(j) / horizontalSegments;
+
+                float longitude = j * XM_2PI / horizontalSegments;
+                float dx, dz;
+
+                XMScalarSinCos(&dx, &dz, longitude);
+
+                dx *= dxz;
+                dz *= dxz;
+
+                XMVECTOR normal = XMVectorSet(-dx, -dy, -dz, 0);
+                XMVECTOR textureCoordinate = XMVectorSet(u, v, 0, 0);
+
+                vertices.push_back(Vertex(XMVectorScale(normal, radius), normal, textureCoordinate));
+            }
+        }
+
+        int stride = horizontalSegments + 1;
+
+        for (int i = 0; i < verticalSegments; i++)
+        {
+            for (int j = 0; j <= horizontalSegments; j++)
+            {
+                int nextI = i + 1;
+                int nextJ = (j + 1) % stride;
+
+                indices.push_back(i * stride + j);
+                indices.push_back(nextI * stride + j);
+                indices.push_back(i * stride + nextJ);
+
+                indices.push_back(i * stride + nextJ);
+                indices.push_back(nextI * stride + j);
+                indices.push_back(nextI * stride + nextJ);
+            }
+        }
+
+        if (shouldClear)
+            Apply();
+    }
     Material& GetMaterial()
     {
         return _material;

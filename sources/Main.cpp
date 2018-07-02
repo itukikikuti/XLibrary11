@@ -25,6 +25,11 @@ int MAIN()
     mesh.CreateCube(Float3(1.0f, 0.5f, 0.3f));
     mesh.GetMaterial().SetTexture(0, &texture);
 
+    Mesh sphere;
+    sphere.CreateSphere();
+    sphere.GetMaterial().SetTexture(0, &texture);
+    sphere.position.x = -2.0f;
+
     Text number(L"0", 100.0f);
     number.position.y = 3.0f;
     number.scale = 1.0f / 100.0f;
@@ -99,6 +104,9 @@ int MAIN()
 
         mesh.position.x = -0.5f;
         mesh.Draw();
+
+        sphere.angles.x += 10.0f;
+        sphere.Draw();
 
         if (Input::GetKey('1'))
             Input::SetMousePosition(0.0f, 0.0f);
