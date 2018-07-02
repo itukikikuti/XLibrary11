@@ -13,7 +13,7 @@ public:
     }
     static int Range(int min, int max)
     {
-        std::uniform_int_distribution<int> range(min, max - 1);
+        std::uniform_int_distribution<int> range(min, max);
 
         return range(GetInstance()._mt);
     }
