@@ -1600,7 +1600,7 @@ public:
             "    float3 lightDirection = normalize(float3(0.25, -1.0, 0.5));"
             "    float3 lightColor = float3(1.0, 1.0, 1.0);"
             "    float4 diffuseColor = texture0.Sample(sampler0, pixel.uv);"
-            "    float3 diffuseIntensity = dot(-lightDirection, normal) * lightColor;"
+            "    float3 diffuseIntensity = dot(-lightDirection, normal) * lightColor * 0.7 + 0.3;"
             "    float3 ambientIntensity = lightColor * 0.2;"
             "    return diffuseColor * float4(diffuseIntensity + ambientIntensity, 1);"
             "}"
@@ -1674,7 +1674,7 @@ public:
 
         for (int i = 0; i <= verticalSegments; i++)
         {
-            float v = 1 - float(i) / verticalSegments;
+            float v = float(i) / verticalSegments;
 
             float latitude = (i * XM_PI / verticalSegments) - XM_PIDIV2;
             float dy, dxz;
@@ -1685,7 +1685,7 @@ public:
             {
                 float u = float(j) / horizontalSegments;
 
-                float longitude = j * XM_2PI / horizontalSegments;
+                float longitude = j * XM_2PI / horizontalSegments +XM_PI;
                 float dx, dz;
 
                 XMScalarSinCos(&dx, &dz, longitude);
@@ -1693,10 +1693,10 @@ public:
                 dx *= dxz;
                 dz *= dxz;
 
-                XMVECTOR normal = XMVectorSet(-dx, -dy, -dz, 0);
-                XMVECTOR textureCoordinate = XMVectorSet(u, v, 0, 0);
+                Float3 normal(dx, dy, dz);
+                Float2 uv(u, v);
 
-                vertices.push_back(Vertex(XMVectorScale(normal, radius), normal, textureCoordinate));
+                vertices.push_back(Vertex(XMVectorScale(-normal, radius), -normal, uv));
             }
         }
 

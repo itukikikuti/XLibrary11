@@ -20,6 +20,7 @@ int MAIN()
     uiCamera.SetDepthTest(false);
 
     Texture texture(L"assets/box.jpg");
+    Texture playerTexture(L"assets/player.png");
 
     Mesh mesh;
     mesh.CreateCube(Float3(1.0f, 0.5f, 0.3f));
@@ -27,8 +28,8 @@ int MAIN()
 
     Mesh sphere;
     sphere.CreateSphere();
-    sphere.GetMaterial().SetTexture(0, &texture);
-    sphere.position.x = -2.0f;
+    sphere.GetMaterial().SetTexture(0, &playerTexture);
+    sphere.position.y = 2.0f;
 
     Text number(L"0", 100.0f);
     number.position.y = 3.0f;
@@ -105,7 +106,7 @@ int MAIN()
         mesh.position.x = -0.5f;
         mesh.Draw();
 
-        sphere.angles.x += 10.0f;
+        sphere.angles.x = Input::GetMousePosition().y;
         sphere.Draw();
 
         if (Input::GetKey('1'))
