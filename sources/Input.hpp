@@ -1,4 +1,4 @@
-class Input
+class Input : public Window::Proceedable
 {
 public:
     static bool GetKey(int VK_CODE)
@@ -16,6 +16,10 @@ public:
     static Float2 GetMousePosition()
     {
         return GetInstance()._mousePosition;
+    }
+    static int GetMouseWheel()
+    {
+        return GetInstance()._mouseWheel;
     }
     static void SetMousePosition(float x, float y)
     {
@@ -41,6 +45,8 @@ public:
     }
     static void Update()
     {
+        GetInstance()._mouseWheel = 0;
+
         POINT point = {};
         GetCursorPos(&point);
         ScreenToClient(Window::GetHandle(), &point);
@@ -60,6 +66,7 @@ private:
     friend std::unique_ptr<Input>::deleter_type;
 
     Float2 _mousePosition;
+    int _mouseWheel = 0;
     BYTE _preKeyState[256];
     BYTE _keyState[256];
     bool _isShowCursor = true;
@@ -69,9 +76,12 @@ private:
     Input()
     {
         InitializeApplication();
+
+        Window::AddProcedure(this);
     }
     ~Input()
     {
+        Window::RemoveProcedure(this);
     }
     static Input& GetInstance()
     {
@@ -88,5 +98,12 @@ private:
     static Input* Instantiate()
     {
         return new Input();
+    }
+    void OnProceed(HWND, UINT message, WPARAM wParam, LPARAM) override
+    {
+        if (message == WM_MOUSEWHEEL)
+        {
+            _mouseWheel = GET_WHEEL_DELTA_WPARAM(wParam);
+        }
     }
 };

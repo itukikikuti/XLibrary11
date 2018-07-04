@@ -10,6 +10,7 @@ int MAIN()
 {
     LibraryGenerator::Generate(L"sources/Library.hpp", L"XLibrary11.hpp");
 
+    Sprite sprite1(L"assets/box.jpg");
     Camera camera;
     camera.position = Float3(0.0f, 1.0f, -5.0f);
     camera.SetPerspective(60.0f, 0.1f, 100.0f);
@@ -46,7 +47,6 @@ int MAIN()
 
     Sound sound(L"assets/sound.wav");
 
-    Sprite sprite1(L"assets/box.jpg");
     sprite1.position.x = 1.0f;
     sprite1.scale = 1.0f / 256.0f;
 
@@ -58,6 +58,8 @@ int MAIN()
     Sprite sprite(L"assets/box.jpg");
     sprite.scale = 0.5f;
     sprite.color.w = 0.5f;
+
+    float scrollVelocity = 0.0f;
 
     float pos1 = -2.0f;
     float pos2 = -3.0f;
@@ -82,6 +84,7 @@ int MAIN()
         }
 
         number.angles.y += 1.0f;
+        number.Create(std::to_wstring(Input::GetMouseWheel()), 100.0f);
         if (Input::GetKey('2'))
         {
             wstringstream ss;
@@ -106,7 +109,9 @@ int MAIN()
         mesh.position.x = -0.5f;
         mesh.Draw();
 
-        sphere.angles.x = Input::GetMousePosition().y;
+        scrollVelocity += Input::GetMouseWheel() * 0.1f;
+        scrollVelocity *= 0.9f;
+        sphere.angles.x += scrollVelocity;
         sphere.Draw();
 
         if (Input::GetKey('1'))
