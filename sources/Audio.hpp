@@ -3,13 +3,13 @@ class Audio
 public:
     static IDirectSound8& GetDevice()
     {
-        return *Get()._device.Get();
+        return *Get().device.Get();
     }
 
 private:
     struct Property
     {
-        ComPtr<IDirectSound8> _device = nullptr;
+        ComPtr<IDirectSound8> device = nullptr;
     };
 
     static Property& Get()
@@ -22,9 +22,9 @@ private:
 
             InitializeApplication();
 
-            DirectSoundCreate8(nullptr, &Get()._device, nullptr);
+            DirectSoundCreate8(nullptr, &Get().device, nullptr);
 
-            Get()._device->SetCooperativeLevel(Window::GetHandle(), DSSCL_NORMAL);
+            Get().device->SetCooperativeLevel(Window::GetHandle(), DSSCL_NORMAL);
 
             MFStartup(MF_VERSION);
         }

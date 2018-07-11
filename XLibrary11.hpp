@@ -43,7 +43,7 @@ namespace XLibrary
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
-static void InitializeApplication()
+inline void InitializeApplication()
 {
     static bool isInitialized = false;
 
@@ -631,23 +631,23 @@ class Input
 public:
     static bool GetKey(int VK_CODE)
     {
-        return Get()._keyState[VK_CODE] & 0x80;
+        return Get().keyState[VK_CODE] & 0x80;
     }
     static bool GetKeyUp(int VK_CODE)
     {
-        return !(Get()._keyState[VK_CODE] & 0x80) && (Get()._preKeyState[VK_CODE] & 0x80);
+        return !(Get().keyState[VK_CODE] & 0x80) && (Get().preKeyState[VK_CODE] & 0x80);
     }
     static bool GetKeyDown(int VK_CODE)
     {
-        return (Get()._keyState[VK_CODE] & 0x80) && !(Get()._preKeyState[VK_CODE] & 0x80);
+        return (Get().keyState[VK_CODE] & 0x80) && !(Get().preKeyState[VK_CODE] & 0x80);
     }
     static Float2 GetMousePosition()
     {
-        return Get()._mousePosition;
+        return Get().mousePosition;
     }
     static int GetMouseWheel()
     {
-        return Get()._mouseWheel;
+        return Get().mouseWheel;
     }
     static void SetMousePosition(float x, float y)
     {
@@ -660,50 +660,50 @@ public:
         ClientToScreen(Window::GetHandle(), &point);
         SetCursorPos(point.x, point.y);
 
-        Get()._mousePosition.x = x;
-        Get()._mousePosition.y = y;
+        Get().mousePosition.x = x;
+        Get().mousePosition.y = y;
     }
     static void SetShowCursor(bool isShowCursor)
     {
-        if (Get()._isShowCursor == isShowCursor)
+        if (Get().isShowCursor == isShowCursor)
             return;
 
-        Get()._isShowCursor = isShowCursor;
+        Get().isShowCursor = isShowCursor;
         ShowCursor(isShowCursor);
     }
     static void Update()
     {
-        Get()._mouseWheel = 0;
+        Get().mouseWheel = 0;
 
         POINT point = {};
         GetCursorPos(&point);
         ScreenToClient(Window::GetHandle(), &point);
 
-        Get()._mousePosition.x = (float)point.x - Window::GetSize().x / 2;
-        Get()._mousePosition.y = (float)-point.y + Window::GetSize().y / 2;
+        Get().mousePosition.x = (float)point.x - Window::GetSize().x / 2;
+        Get().mousePosition.y = (float)-point.y + Window::GetSize().y / 2;
 
         for (int i = 0; i < 256; i++)
         {
-            Get()._preKeyState[i] = Get()._keyState[i];
+            Get().preKeyState[i] = Get().keyState[i];
         }
 
-        GetKeyboardState(Get()._keyState);
+        GetKeyboardState(Get().keyState);
     }
 
 private:
     struct Property : public Window::Proceedable
     {
-        Float2 _mousePosition;
-        int _mouseWheel = 0;
-        BYTE _preKeyState[256];
-        BYTE _keyState[256];
-        bool _isShowCursor = true;
+        Float2 mousePosition;
+        int mouseWheel = 0;
+        BYTE preKeyState[256];
+        BYTE keyState[256];
+        bool isShowCursor = true;
 
         void OnProceedMessage(HWND, UINT message, WPARAM wParam, LPARAM) override
         {
             if (message == WM_MOUSEWHEEL)
             {
-                _mouseWheel = GET_WHEEL_DELTA_WPARAM(wParam);
+                mouseWheel = GET_WHEEL_DELTA_WPARAM(wParam);
             }
         }
     };
@@ -730,54 +730,54 @@ class Graphics
 public:
     static ID3D11Device& GetDevice3D()
     {
-        return *Get()._device3D.Get();
+        return *Get().device3D.Get();
     }
     static ID3D11DeviceContext& GetContext3D()
     {
-        return *Get()._context3D.Get();
+        return *Get().context3D.Get();
     }
     static ID2D1Device& GetDevice2D()
     {
-        return *Get()._device2D.Get();
+        return *Get().device2D.Get();
     }
     static ID2D1DeviceContext& GetContext2D()
     {
-        return *Get()._context2D.Get();
+        return *Get().context2D.Get();
     }
     static IDXGISwapChain& GetSwapChain()
     {
-        return *Get()._swapChain.Get();
+        return *Get().swapChain.Get();
     }
     static IWICImagingFactory& GetTextureFactory()
     {
-        return *Get()._textureFactory.Get();
+        return *Get().textureFactory.Get();
     }
     static IDWriteFactory& GetTextFactory()
     {
-        return *Get()._textFactory.Get();
+        return *Get().textFactory.Get();
     }
     static void Update()
     {
         if (Input::GetKey(VK_MENU) && Input::GetKeyDown(VK_RETURN))
         {
-            Get()._isFullScreen = !Get()._isFullScreen;
-            Window::SetFullScreen(Get()._isFullScreen);
+            Get().isFullScreen = !Get().isFullScreen;
+            Window::SetFullScreen(Get().isFullScreen);
         }
 
-        Get()._swapChain->Present(1, 0);
+        Get().swapChain->Present(1, 0);
     }
 
 private:
     struct Property : public Window::Proceedable
     {
-        ComPtr<ID3D11Device> _device3D = nullptr;
-        ComPtr<ID3D11DeviceContext> _context3D = nullptr;
-        ComPtr<ID2D1Device> _device2D = nullptr;
-        ComPtr<ID2D1DeviceContext> _context2D = nullptr;
-        ComPtr<IDXGISwapChain> _swapChain = nullptr;
-        ComPtr<IWICImagingFactory> _textureFactory = nullptr;
-        ComPtr<IDWriteFactory> _textFactory = nullptr;
-        bool _isFullScreen = false;
+        ComPtr<ID3D11Device> device3D = nullptr;
+        ComPtr<ID3D11DeviceContext> context3D = nullptr;
+        ComPtr<ID2D1Device> device2D = nullptr;
+        ComPtr<ID2D1DeviceContext> context2D = nullptr;
+        ComPtr<IDXGISwapChain> swapChain = nullptr;
+        ComPtr<IWICImagingFactory> textureFactory = nullptr;
+        ComPtr<IDWriteFactory> textFactory = nullptr;
+        bool isFullScreen = false;
 
         void OnProceedMessage(HWND, UINT message, WPARAM, LPARAM) override
         {
@@ -823,13 +823,13 @@ private:
 
             for (size_t i = 0; i < driverTypes.size(); i++)
             {
-                HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), (UINT)featureLevels.size(), D3D11_SDK_VERSION, Get()._device3D.GetAddressOf(), nullptr, Get()._context3D.GetAddressOf());
+                HRESULT r = D3D11CreateDevice(nullptr, driverTypes[i], nullptr, flags, featureLevels.data(), (UINT)featureLevels.size(), D3D11_SDK_VERSION, Get().device3D.GetAddressOf(), nullptr, Get().context3D.GetAddressOf());
 
                 if (SUCCEEDED(r))
                     break;
             }
 
-            Get()._context3D->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            Get().context3D->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
             ComPtr<ID3D11BlendState> blendState = nullptr;
             D3D11_BLEND_DESC blendDesc = {};
@@ -843,8 +843,8 @@ private:
             blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
             float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-            Get()._device3D->CreateBlendState(&blendDesc, &blendState);
-            Get()._context3D->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
+            Get().device3D->CreateBlendState(&blendDesc, &blendState);
+            Get().context3D->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
 
             D2D1_FACTORY_OPTIONS options = {};
 #if defined(_DEBUG)
@@ -855,15 +855,15 @@ private:
             D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, factory.GetAddressOf());
 
             ComPtr<IDXGIDevice> device = nullptr;
-            Get()._device3D->QueryInterface(device.GetAddressOf());
+            Get().device3D->QueryInterface(device.GetAddressOf());
 
-            factory->CreateDevice(device.Get(), Get()._device2D.GetAddressOf());
+            factory->CreateDevice(device.Get(), Get().device2D.GetAddressOf());
 
-            Get()._device2D->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, Get()._context2D.GetAddressOf());
+            Get().device2D->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, Get().context2D.GetAddressOf());
 
-            CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, reinterpret_cast<void**>(Get()._textureFactory.GetAddressOf()));
+            CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, reinterpret_cast<void**>(Get().textureFactory.GetAddressOf()));
 
-            DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(Get()._textFactory.GetAddressOf()));
+            DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(Get().textFactory.GetAddressOf()));
 
             Create();
 
@@ -875,7 +875,7 @@ private:
     static void Create()
     {
         ComPtr<IDXGIDevice> dxgi = nullptr;
-        Get()._device3D->QueryInterface(dxgi.GetAddressOf());
+        Get().device3D->QueryInterface(dxgi.GetAddressOf());
 
         ComPtr<IDXGIAdapter> adapter = nullptr;
         dxgi->GetAdapter(&adapter);
@@ -896,15 +896,15 @@ private:
         swapChainDesc.OutputWindow = Window::GetHandle();
         swapChainDesc.Windowed = true;
 
-        Get()._swapChain.Reset();
-        factory->CreateSwapChain(Get()._device3D.Get(), &swapChainDesc, Get()._swapChain.GetAddressOf());
+        Get().swapChain.Reset();
+        factory->CreateSwapChain(Get().device3D.Get(), &swapChainDesc, Get().swapChain.GetAddressOf());
         factory->MakeWindowAssociation(Window::GetHandle(), DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
 
         D3D11_VIEWPORT viewPort = {};
         viewPort.Width = (float)Window::GetSize().x;
         viewPort.Height = (float)Window::GetSize().y;
         viewPort.MaxDepth = 1.0f;
-        Get()._context3D->RSSetViewports(1, &viewPort);
+        Get().context3D->RSSetViewports(1, &viewPort);
     }
 };
 class Audio
@@ -912,13 +912,13 @@ class Audio
 public:
     static IDirectSound8& GetDevice()
     {
-        return *Get()._device.Get();
+        return *Get().device.Get();
     }
 
 private:
     struct Property
     {
-        ComPtr<IDirectSound8> _device = nullptr;
+        ComPtr<IDirectSound8> device = nullptr;
     };
 
     static Property& Get()
@@ -931,9 +931,9 @@ private:
 
             InitializeApplication();
 
-            DirectSoundCreate8(nullptr, &Get()._device, nullptr);
+            DirectSoundCreate8(nullptr, &Get().device, nullptr);
 
-            Get()._device->SetCooperativeLevel(Window::GetHandle(), DSSCL_NORMAL);
+            Get().device->SetCooperativeLevel(Window::GetHandle(), DSSCL_NORMAL);
 
             MFStartup(MF_VERSION);
         }
@@ -946,44 +946,44 @@ class Timer
 public:
     static float GetTime()
     {
-        return Get()._time;
+        return Get().time;
     }
     static float GetDeltaTime()
     {
-        return Get()._deltaTime;
+        return Get().deltaTime;
     }
     static int GetFrameRate()
     {
-        return Get()._frameRate;
+        return Get().frameRate;
     }
     static void Update()
     {
         LARGE_INTEGER count = GetCounter();
-        Get()._deltaTime = (float)(count.QuadPart - Get()._preCount.QuadPart) / Get()._frequency.QuadPart;
-        Get()._preCount = GetCounter();
+        Get().deltaTime = (float)(count.QuadPart - Get().preCount.QuadPart) / Get().frequency.QuadPart;
+        Get().preCount = GetCounter();
 
-        Get()._time += Get()._deltaTime;
+        Get().time += Get().deltaTime;
 
-        Get()._frameCount++;
-        Get()._second += Get()._deltaTime;
-        if (Get()._second >= 1.0f)
+        Get().frameCount++;
+        Get().second += Get().deltaTime;
+        if (Get().second >= 1.0f)
         {
-            Get()._frameRate = Get()._frameCount;
-            Get()._frameCount = 0;
-            Get()._second -= 1.0f;
+            Get().frameRate = Get().frameCount;
+            Get().frameCount = 0;
+            Get().second -= 1.0f;
         }
     }
 
 private:
     struct Property
     {
-        float _time = 0.0f;
-        float _deltaTime = 0.0f;
-        int _frameRate = 0;
-        float _second = 0.0f;
-        int _frameCount = 0;
-        LARGE_INTEGER _preCount;
-        LARGE_INTEGER _frequency;
+        float time = 0.0f;
+        float deltaTime = 0.0f;
+        int frameRate = 0;
+        float second = 0.0f;
+        int frameCount = 0;
+        LARGE_INTEGER preCount;
+        LARGE_INTEGER frequency;
     };
 
     static Property& Get()
@@ -996,8 +996,8 @@ private:
 
             InitializeApplication();
 
-            Get()._preCount = GetCounter();
-            Get()._frequency = GetCountFrequency();
+            Get().preCount = GetCounter();
+            Get().frequency = GetCountFrequency();
         }
 
         return *prop;
@@ -1020,31 +1020,31 @@ class Random
 public:
     static void SetSeed(int seed)
     {
-        Get()._mt.seed(seed);
+        Get().mt.seed(seed);
     }
     static float GetValue()
     {
         std::uniform_real_distribution<float> range(0.0f, 1.0f);
 
-        return range(Get()._mt);
+        return range(Get().mt);
     }
     static int Range(int min, int max)
     {
         std::uniform_int_distribution<int> range(min, max);
 
-        return range(Get()._mt);
+        return range(Get().mt);
     }
     static float Range(float min, float max)
     {
         std::uniform_real_distribution<float> range(min, max);
 
-        return range(Get()._mt);
+        return range(Get().mt);
     }
 
 private:
     struct Property
     {
-        std::mt19937 _mt;
+        std::mt19937 mt;
     };
 
     static Property& Get()
@@ -1058,7 +1058,7 @@ private:
             InitializeApplication();
 
             std::random_device device;
-            Get()._mt.seed(device());
+            Get().mt.seed(device());
         }
 
         return *prop;
@@ -2214,7 +2214,7 @@ private:
 };
 
 
-static bool Refresh()
+inline bool Refresh()
 {
     Graphics::Update();
     Input::Update();

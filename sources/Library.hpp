@@ -42,7 +42,7 @@ XLIBRARY_NAMESPACE_BEGIN
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
-static void InitializeApplication()
+inline void InitializeApplication()
 {
     static bool isInitialized = false;
 
@@ -71,7 +71,7 @@ static void InitializeApplication()
 #include "Text.hpp"
 #include "Sound.hpp"
 
-static bool Refresh()
+inline bool Refresh()
 {
     Graphics::Update();
     Input::Update();

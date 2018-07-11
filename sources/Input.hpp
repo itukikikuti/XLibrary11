@@ -3,23 +3,23 @@ class Input
 public:
     static bool GetKey(int VK_CODE)
     {
-        return Get()._keyState[VK_CODE] & 0x80;
+        return Get().keyState[VK_CODE] & 0x80;
     }
     static bool GetKeyUp(int VK_CODE)
     {
-        return !(Get()._keyState[VK_CODE] & 0x80) && (Get()._preKeyState[VK_CODE] & 0x80);
+        return !(Get().keyState[VK_CODE] & 0x80) && (Get().preKeyState[VK_CODE] & 0x80);
     }
     static bool GetKeyDown(int VK_CODE)
     {
-        return (Get()._keyState[VK_CODE] & 0x80) && !(Get()._preKeyState[VK_CODE] & 0x80);
+        return (Get().keyState[VK_CODE] & 0x80) && !(Get().preKeyState[VK_CODE] & 0x80);
     }
     static Float2 GetMousePosition()
     {
-        return Get()._mousePosition;
+        return Get().mousePosition;
     }
     static int GetMouseWheel()
     {
-        return Get()._mouseWheel;
+        return Get().mouseWheel;
     }
     static void SetMousePosition(float x, float y)
     {
@@ -32,50 +32,50 @@ public:
         ClientToScreen(Window::GetHandle(), &point);
         SetCursorPos(point.x, point.y);
 
-        Get()._mousePosition.x = x;
-        Get()._mousePosition.y = y;
+        Get().mousePosition.x = x;
+        Get().mousePosition.y = y;
     }
     static void SetShowCursor(bool isShowCursor)
     {
-        if (Get()._isShowCursor == isShowCursor)
+        if (Get().isShowCursor == isShowCursor)
             return;
 
-        Get()._isShowCursor = isShowCursor;
+        Get().isShowCursor = isShowCursor;
         ShowCursor(isShowCursor);
     }
     static void Update()
     {
-        Get()._mouseWheel = 0;
+        Get().mouseWheel = 0;
 
         POINT point = {};
         GetCursorPos(&point);
         ScreenToClient(Window::GetHandle(), &point);
 
-        Get()._mousePosition.x = (float)point.x - Window::GetSize().x / 2;
-        Get()._mousePosition.y = (float)-point.y + Window::GetSize().y / 2;
+        Get().mousePosition.x = (float)point.x - Window::GetSize().x / 2;
+        Get().mousePosition.y = (float)-point.y + Window::GetSize().y / 2;
 
         for (int i = 0; i < 256; i++)
         {
-            Get()._preKeyState[i] = Get()._keyState[i];
+            Get().preKeyState[i] = Get().keyState[i];
         }
 
-        GetKeyboardState(Get()._keyState);
+        GetKeyboardState(Get().keyState);
     }
 
 private:
     struct Property : public Window::Proceedable
     {
-        Float2 _mousePosition;
-        int _mouseWheel = 0;
-        BYTE _preKeyState[256];
-        BYTE _keyState[256];
-        bool _isShowCursor = true;
+        Float2 mousePosition;
+        int mouseWheel = 0;
+        BYTE preKeyState[256];
+        BYTE keyState[256];
+        bool isShowCursor = true;
 
         void OnProceedMessage(HWND, UINT message, WPARAM wParam, LPARAM) override
         {
             if (message == WM_MOUSEWHEEL)
             {
-                _mouseWheel = GET_WHEEL_DELTA_WPARAM(wParam);
+                mouseWheel = GET_WHEEL_DELTA_WPARAM(wParam);
             }
         }
     };

@@ -3,44 +3,44 @@ class Timer
 public:
     static float GetTime()
     {
-        return Get()._time;
+        return Get().time;
     }
     static float GetDeltaTime()
     {
-        return Get()._deltaTime;
+        return Get().deltaTime;
     }
     static int GetFrameRate()
     {
-        return Get()._frameRate;
+        return Get().frameRate;
     }
     static void Update()
     {
         LARGE_INTEGER count = GetCounter();
-        Get()._deltaTime = (float)(count.QuadPart - Get()._preCount.QuadPart) / Get()._frequency.QuadPart;
-        Get()._preCount = GetCounter();
+        Get().deltaTime = (float)(count.QuadPart - Get().preCount.QuadPart) / Get().frequency.QuadPart;
+        Get().preCount = GetCounter();
 
-        Get()._time += Get()._deltaTime;
+        Get().time += Get().deltaTime;
 
-        Get()._frameCount++;
-        Get()._second += Get()._deltaTime;
-        if (Get()._second >= 1.0f)
+        Get().frameCount++;
+        Get().second += Get().deltaTime;
+        if (Get().second >= 1.0f)
         {
-            Get()._frameRate = Get()._frameCount;
-            Get()._frameCount = 0;
-            Get()._second -= 1.0f;
+            Get().frameRate = Get().frameCount;
+            Get().frameCount = 0;
+            Get().second -= 1.0f;
         }
     }
 
 private:
     struct Property
     {
-        float _time = 0.0f;
-        float _deltaTime = 0.0f;
-        int _frameRate = 0;
-        float _second = 0.0f;
-        int _frameCount = 0;
-        LARGE_INTEGER _preCount;
-        LARGE_INTEGER _frequency;
+        float time = 0.0f;
+        float deltaTime = 0.0f;
+        int frameRate = 0;
+        float second = 0.0f;
+        int frameCount = 0;
+        LARGE_INTEGER preCount;
+        LARGE_INTEGER frequency;
     };
 
     static Property& Get()
@@ -53,8 +53,8 @@ private:
 
             InitializeApplication();
 
-            Get()._preCount = GetCounter();
-            Get()._frequency = GetCountFrequency();
+            Get().preCount = GetCounter();
+            Get().frequency = GetCountFrequency();
         }
 
         return *prop;

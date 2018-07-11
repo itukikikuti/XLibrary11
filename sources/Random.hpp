@@ -3,31 +3,31 @@ class Random
 public:
     static void SetSeed(int seed)
     {
-        Get()._mt.seed(seed);
+        Get().mt.seed(seed);
     }
     static float GetValue()
     {
         std::uniform_real_distribution<float> range(0.0f, 1.0f);
 
-        return range(Get()._mt);
+        return range(Get().mt);
     }
     static int Range(int min, int max)
     {
         std::uniform_int_distribution<int> range(min, max);
 
-        return range(Get()._mt);
+        return range(Get().mt);
     }
     static float Range(float min, float max)
     {
         std::uniform_real_distribution<float> range(min, max);
 
-        return range(Get()._mt);
+        return range(Get().mt);
     }
 
 private:
     struct Property
     {
-        std::mt19937 _mt;
+        std::mt19937 mt;
     };
 
     static Property& Get()
@@ -41,7 +41,7 @@ private:
             InitializeApplication();
 
             std::random_device device;
-            Get()._mt.seed(device());
+            Get().mt.seed(device());
         }
 
         return *prop;
