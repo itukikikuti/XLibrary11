@@ -6,19 +6,18 @@
 #include "Sub.hpp"
 using namespace std;
 
-int main()
+int MAIN()
 {
     LibraryGenerator::Generate(L"sources/Library.hpp", L"XLibrary11.hpp");
 
     Sprite sprite1(L"assets/box.jpg");
     Camera camera;
     camera.position = Float3(0.0f, 1.0f, -5.0f);
-    camera.SetPerspective(60.0f, 0.1f, 100.0f);
-    camera.SetDepthTest(true);
+    camera.Setup3D(60.0f, 0.1f, 100.0f);
 
     Camera uiCamera;
     uiCamera.color = Float4(1.0f, 0.0f, 1.0f, 1.0f);
-    uiCamera.SetDepthTest(false);
+    uiCamera.clear = false;
 
     Texture texture(L"assets/box.jpg");
     Texture playerTexture(L"assets/player.png");
@@ -117,7 +116,7 @@ int main()
         sprite1.angles.z = Random::GetValue() * 360.0f;
         sprite1.Draw();
 
-        uiCamera.Update(false);
+        uiCamera.Update();
 
         text.angles.z += 1.0f;
         text.Draw();

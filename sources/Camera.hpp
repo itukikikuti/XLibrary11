@@ -4,6 +4,7 @@ public:
     Float3 position;
     Float3 angles;
     Float4 color;
+    bool clear = true;
 
     Camera()
     {
@@ -13,8 +14,7 @@ public:
         angles = Float3(0.0f, 0.0f, 0.0f);
         color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        _isDepthTest = false;
-        SetOrthographic(1.0f, -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
+        Setup2D(1.0f, -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
 
         Create();
 
@@ -24,9 +24,9 @@ public:
     {
         Window::RemoveProcedure(this);
     }
-    void SetPerspective(float fieldOfView, float nearClip, float farClip)
+    void Setup3D(float fieldOfView, float nearClip, float farClip)
     {
-        _isPerspective = true;
+        _is3D = true;
         _fieldOfView = fieldOfView;
         _nearClip = nearClip;
         _farClip = farClip;
@@ -35,9 +35,9 @@ public:
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
-    void SetOrthographic(float size, float nearClip, float farClip)
+    void Setup2D(float size, float nearClip, float farClip)
     {
-        _isPerspective = false;
+        _is3D = false;
         _size = size;
         _nearClip = nearClip;
         _farClip = farClip;
@@ -45,11 +45,7 @@ public:
             DirectX::XMMatrixOrthographicLH(Window::GetSize().x * size, Window::GetSize().y * size, nearClip, farClip)
         );
     }
-    void SetDepthTest(bool isDepthTest)
-    {
-        _isDepthTest = isDepthTest;
-    }
-    void Update(bool shouldClear = true)
+    void Update()
     {
         _constant.view = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixInverse(
@@ -68,13 +64,13 @@ public:
         Graphics::GetContext3D().GSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
         Graphics::GetContext3D().PSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
 
-        if (shouldClear)
+        if (clear)
         {
             float clearColor[4] = { color.x, color.y, color.z, color.w };
             Graphics::GetContext3D().ClearRenderTargetView(_renderTargetView.Get(), clearColor);
         }
 
-        if (_isDepthTest)
+        if (_is3D)
         {
             Graphics::GetContext3D().ClearDepthStencilView(_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
             Graphics::GetContext3D().OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), _depthStencilView.Get());
@@ -92,12 +88,11 @@ private:
         DirectX::XMMATRIX projection;
     };
 
-    bool _isPerspective;
+    bool _is3D;
     float _fieldOfView;
     float _size;
     float _nearClip;
     float _farClip;
-    bool _isDepthTest;
     Constant _constant;
     ComPtr<ID3D11RenderTargetView> _renderTargetView = nullptr;
     ComPtr<ID3D11DepthStencilView> _depthStencilView = nullptr;
@@ -160,10 +155,10 @@ private:
         if (Window::GetSize().x <= 0.0f || Window::GetSize().y <= 0.0f)
             return;
 
-        if (_isPerspective)
-            SetPerspective(_fieldOfView, _nearClip, _farClip);
+        if (_is3D)
+            Setup3D(_fieldOfView, _nearClip, _farClip);
         else
-            SetOrthographic(_size, _nearClip, _farClip);
+            Setup2D(_size, _nearClip, _farClip);
 
         Create();
     }
