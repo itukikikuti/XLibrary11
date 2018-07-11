@@ -1,12 +1,12 @@
 ﻿#define XLIBRARY_NAMESPACE_BEGIN
 #define XLIBRARY_NAMESPACE_END
-#include "Library.hpp"
-#include "LibraryGenerator.cpp"
+#include "../Library.hpp"
+#include "../LibraryGenerator.cpp"
 #include <sstream>
-
+#include "Sub.hpp"
 using namespace std;
 
-int MAIN()
+int main()
 {
     LibraryGenerator::Generate(L"sources/Library.hpp", L"XLibrary11.hpp");
 
@@ -65,7 +65,8 @@ int MAIN()
     {
         camera.Update();
 
-        printf("%d\n", Random::Range(0, 10));
+        PrintFrameRate();
+        //printf("%d\n", Random::Range(0, 10));
 
         music.SetPitch(Input::GetMousePosition().x / (Window::GetSize().x / 2.0f));
 

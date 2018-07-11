@@ -4,6 +4,9 @@
     <Filter Include="sources">
       <UniqueIdentifier>{115a15bf-cf66-4227-8ac6-649f7cd79b4e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="sources\test">
+      <UniqueIdentifier>{bc1ced0a-b1d1-482e-a2c6-a775d506a58c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sources\Camera.hpp">
@@ -51,13 +54,19 @@
     <ClInclude Include="sources\Library.hpp">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\test\Sub.hpp">
+      <Filter>sources\test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sources\Main.cpp">
-      <Filter>sources</Filter>
-    </ClCompile>
     <ClCompile Include="sources\LibraryGenerator.cpp">
       <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\test\Main.cpp">
+      <Filter>sources\test</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\test\Sub.cpp">
+      <Filter>sources\test</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

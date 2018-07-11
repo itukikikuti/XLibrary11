@@ -127,6 +127,7 @@
     <ClInclude Include="sources\Input.hpp" />
     <ClInclude Include="sources\Material.hpp" />
     <ClInclude Include="sources\Random.hpp" />
+    <ClInclude Include="sources\test\Sub.hpp" />
     <ClInclude Include="sources\Utility.hpp" />
     <ClInclude Include="sources\Mesh.hpp" />
     <ClInclude Include="sources\Sprite.hpp" />
@@ -138,7 +139,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\LibraryGenerator.cpp" />
-    <ClCompile Include="sources\Main.cpp" />
+    <ClCompile Include="sources\test\Main.cpp" />
+    <ClCompile Include="sources\test\Sub.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
