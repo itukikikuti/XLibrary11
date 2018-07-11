@@ -59,8 +59,6 @@ int MAIN()
     sprite.scale = 0.5f;
     sprite.color.w = 0.5f;
 
-    float scrollVelocity = 0.0f;
-
     float pos1 = -2.0f;
     float pos2 = -3.0f;
     while (Refresh())
@@ -109,15 +107,13 @@ int MAIN()
         mesh.position.x = -0.5f;
         mesh.Draw();
 
-        scrollVelocity += Input::GetMouseWheel() * 0.1f;
-        scrollVelocity *= 0.9f;
-        sphere.angles.x += scrollVelocity;
+        sphere.angles.x += Input::GetMouseWheel() * 0.5f;
         sphere.Draw();
 
         if (Input::GetKey('1'))
             Input::SetMousePosition(0.0f, 0.0f);
 
-        sprite1.angles.z = Random::Get() * 360.0f;
+        sprite1.angles.z = Random::GetValue() * 360.0f;
         sprite1.Draw();
 
         uiCamera.Update(false);

@@ -152,7 +152,7 @@ private:
         constantBufferDesc.CPUAccessFlags = 0;
         Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, _constantBuffer.GetAddressOf());
     }
-    void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
+    void OnProceedMessage(HWND, UINT message, WPARAM, LPARAM) override
     {
         if (message != WM_SIZE)
             return;

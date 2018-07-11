@@ -3,43 +3,32 @@ class Audio
 public:
     static IDirectSound8& GetDevice()
     {
-        return *GetInstance()._device.Get();
+        return *Get()._device.Get();
     }
 
 private:
-    friend std::unique_ptr<Audio>::deleter_type;
-
-    ComPtr<IDirectSound8> _device = nullptr;
-
-    Audio(const Audio&) = delete;
-    Audio& operator=(const Audio&) = delete;
-    Audio()
+    struct Property
     {
-        InitializeApplication();
+        ComPtr<IDirectSound8> _device = nullptr;
+    };
 
-        DirectSoundCreate8(nullptr, &_device, nullptr);
-
-        _device->SetCooperativeLevel(Window::GetHandle(), DSSCL_NORMAL);
-
-        MFStartup(MF_VERSION);
-    }
-    ~Audio()
+    static Property& Get()
     {
-        MFShutdown();
-    }
-    static Audio& GetInstance()
-    {
-        static std::unique_ptr<Audio> instance;
+        static std::unique_ptr<Property> prop;
 
-        if (instance == nullptr)
+        if (prop == nullptr)
         {
-            instance.reset(Instantiate());
+            prop.reset(new Property());
+
+            InitializeApplication();
+
+            DirectSoundCreate8(nullptr, &Get()._device, nullptr);
+
+            Get()._device->SetCooperativeLevel(Window::GetHandle(), DSSCL_NORMAL);
+
+            MFStartup(MF_VERSION);
         }
 
-        return *instance;
-    }
-    static Audio* Instantiate()
-    {
-        return new Audio();
+        return *prop;
     }
 };

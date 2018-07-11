@@ -206,7 +206,7 @@ private:
         memcpy(buffer, temp, size);
         mediaBuffer->Unlock();
     }
-    void OnProceed(HWND, UINT message, WPARAM, LPARAM) override
+    void OnProceedMessage(HWND, UINT message, WPARAM, LPARAM) override
     {
         if (message != WM_APP)
             return;

@@ -1,25 +1,25 @@
-class Input : public Window::Proceedable
+class Input
 {
 public:
     static bool GetKey(int VK_CODE)
     {
-        return GetInstance()._keyState[VK_CODE] & 0x80;
+        return Get()._keyState[VK_CODE] & 0x80;
     }
     static bool GetKeyUp(int VK_CODE)
     {
-        return !(GetInstance()._keyState[VK_CODE] & 0x80) && (GetInstance()._preKeyState[VK_CODE] & 0x80);
+        return !(Get()._keyState[VK_CODE] & 0x80) && (Get()._preKeyState[VK_CODE] & 0x80);
     }
     static bool GetKeyDown(int VK_CODE)
     {
-        return (GetInstance()._keyState[VK_CODE] & 0x80) && !(GetInstance()._preKeyState[VK_CODE] & 0x80);
+        return (Get()._keyState[VK_CODE] & 0x80) && !(Get()._preKeyState[VK_CODE] & 0x80);
     }
     static Float2 GetMousePosition()
     {
-        return GetInstance()._mousePosition;
+        return Get()._mousePosition;
     }
     static int GetMouseWheel()
     {
-        return GetInstance()._mouseWheel;
+        return Get()._mouseWheel;
     }
     static void SetMousePosition(float x, float y)
     {
@@ -32,78 +32,68 @@ public:
         ClientToScreen(Window::GetHandle(), &point);
         SetCursorPos(point.x, point.y);
 
-        GetInstance()._mousePosition.x = x;
-        GetInstance()._mousePosition.y = y;
+        Get()._mousePosition.x = x;
+        Get()._mousePosition.y = y;
     }
     static void SetShowCursor(bool isShowCursor)
     {
-        if (GetInstance()._isShowCursor == isShowCursor)
+        if (Get()._isShowCursor == isShowCursor)
             return;
 
-        GetInstance()._isShowCursor = isShowCursor;
+        Get()._isShowCursor = isShowCursor;
         ShowCursor(isShowCursor);
     }
     static void Update()
     {
-        GetInstance()._mouseWheel = 0;
+        Get()._mouseWheel = 0;
 
         POINT point = {};
         GetCursorPos(&point);
         ScreenToClient(Window::GetHandle(), &point);
 
-        GetInstance()._mousePosition.x = (float)point.x - Window::GetSize().x / 2;
-        GetInstance()._mousePosition.y = (float)-point.y + Window::GetSize().y / 2;
+        Get()._mousePosition.x = (float)point.x - Window::GetSize().x / 2;
+        Get()._mousePosition.y = (float)-point.y + Window::GetSize().y / 2;
 
         for (int i = 0; i < 256; i++)
         {
-            GetInstance()._preKeyState[i] = GetInstance()._keyState[i];
+            Get()._preKeyState[i] = Get()._keyState[i];
         }
 
-        GetKeyboardState(GetInstance()._keyState);
+        GetKeyboardState(Get()._keyState);
     }
 
 private:
-    friend std::unique_ptr<Input>::deleter_type;
-
-    Float2 _mousePosition;
-    int _mouseWheel = 0;
-    BYTE _preKeyState[256];
-    BYTE _keyState[256];
-    bool _isShowCursor = true;
-
-    Input(const Input&) = delete;
-    Input& operator=(const Input&) = delete;
-    Input()
+    struct Property : public Window::Proceedable
     {
-        InitializeApplication();
+        Float2 _mousePosition;
+        int _mouseWheel = 0;
+        BYTE _preKeyState[256];
+        BYTE _keyState[256];
+        bool _isShowCursor = true;
 
-        Window::AddProcedure(this);
-    }
-    ~Input()
-    {
-        Window::RemoveProcedure(this);
-    }
-    static Input& GetInstance()
-    {
-        static std::unique_ptr<Input> instance;
-
-        if (instance == nullptr)
+        void OnProceedMessage(HWND, UINT message, WPARAM wParam, LPARAM) override
         {
-            instance.reset(Instantiate());
+            if (message == WM_MOUSEWHEEL)
+            {
+                _mouseWheel = GET_WHEEL_DELTA_WPARAM(wParam);
+            }
+        }
+    };
+
+    static Property& Get()
+    {
+        static std::unique_ptr<Property> prop;
+
+        if (prop == nullptr)
+        {
+            prop.reset(new Property());
+
+            InitializeApplication();
+            Window::AddProcedure(&Get());
+
             Update();
         }
 
-        return *instance;
-    }
-    static Input* Instantiate()
-    {
-        return new Input();
-    }
-    void OnProceed(HWND, UINT message, WPARAM wParam, LPARAM) override
-    {
-        if (message == WM_MOUSEWHEEL)
-        {
-            _mouseWheel = GET_WHEEL_DELTA_WPARAM(wParam);
-        }
+        return *prop;
     }
 };
