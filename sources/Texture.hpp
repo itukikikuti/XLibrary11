@@ -23,6 +23,10 @@ public:
         ComPtr<IWICBitmapDecoder> decoder = nullptr;
 
         Graphics::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+
+        if (decoder == nullptr)
+            Utility::Alert(GetLastError());
+
         ComPtr<IWICBitmapFrameDecode> frame = nullptr;
         decoder->GetFrame(0, &frame);
         UINT width, height;

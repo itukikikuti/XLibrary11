@@ -10,6 +10,7 @@
 #include <memory>
 #include <random>
 #include <string>
+#include <system_error>
 #include <thread>
 #include <vector>
 #include <Windows.h>
@@ -486,6 +487,44 @@ struct Vertex
         this->uv = uv;
     }
 };
+
+class Utility
+{
+public:
+    static std::string Format(const char* const format, ...)
+    {
+        va_list arguments;
+
+        va_start(arguments, format);
+        int size = vprintf_s(format, arguments);
+        va_end(arguments);
+
+        std::unique_ptr<char[]> buffer(new char[size + 1]);
+        va_start(arguments, format);
+        vsprintf_s(buffer.get(), size + 1, format, arguments);
+        va_end(arguments);
+
+        return std::string(buffer.get());
+    }
+    static std::wstring WFormat(const wchar_t* const format, ...)
+    {
+        va_list arguments;
+
+        va_start(arguments, format);
+        int size = vwprintf_s(format, arguments);
+        va_end(arguments);
+
+        std::unique_ptr<wchar_t[]> buffer(new wchar_t[size + 1]);
+        va_start(arguments, format);
+        vswprintf_s(buffer.get(), size + 1, format, arguments);
+        va_end(arguments);
+
+        return std::wstring(buffer.get());
+    }
+    static void Alert(DWORD errorCodeValue)
+    {
+        std::error_code errorCode(errorCodeValue, std::system_category());
+        MessageBoxA(nullptr, errorCode.message().c_str(), Utility::Format("
 
 class Window
 {
@@ -1081,6 +1120,10 @@ public:
         ComPtr<IWICBitmapDecoder> decoder = nullptr;
 
         Graphics::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+
+        if (decoder == nullptr)
+            Utility::Alert(GetLastError());
+
         ComPtr<IWICBitmapFrameDecode> frame = nullptr;
         decoder->GetFrame(0, &frame);
         UINT width, height;
@@ -1310,11 +1353,12 @@ private:
 
         ComPtr<ID3DBlob> errorBlob = nullptr;
         D3DCompile(source.c_str(), source.length(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, errorBlob.GetAddressOf());
-
+        
         if (errorBlob != nullptr)
         {
             OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-            MessageBoxA(Window::GetHandle(), (char*)errorBlob->GetBufferPointer(), "Shader Error", MB_OK);
+            MessageBoxA(Window::GetHandle(), (char*)errorBlob->GetBufferPointer(), "シェーダーエラー", MB_ICONERROR | MB_OK);
+            std::exit(EXIT_FAILURE);
         }
     }
 };
@@ -1971,6 +2015,9 @@ public:
 
         ComPtr<IStream> stream = nullptr;
         SHCreateStreamOnFileW(filePath, STGM_READ, stream.GetAddressOf());
+
+        if (stream == nullptr)
+            Utility::Alert(GetLastError());
 
         ComPtr<IMFByteStream> byteStream = nullptr;
         MFCreateMFByteStreamOnStream(stream.Get(), byteStream.GetAddressOf());

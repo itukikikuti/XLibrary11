@@ -6,7 +6,7 @@
 #include "Sub.hpp"
 using namespace std;
 
-int MAIN()
+int main()
 {
     LibraryGenerator::Generate(L"sources/Library.hpp", L"XLibrary11.hpp");
 

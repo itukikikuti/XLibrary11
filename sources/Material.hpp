@@ -131,11 +131,12 @@ private:
 
         ComPtr<ID3DBlob> errorBlob = nullptr;
         D3DCompile(source.c_str(), source.length(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, errorBlob.GetAddressOf());
-
+        
         if (errorBlob != nullptr)
         {
             OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-            MessageBoxA(Window::GetHandle(), (char*)errorBlob->GetBufferPointer(), "Shader Error", MB_OK);
+            MessageBoxA(Window::GetHandle(), (char*)errorBlob->GetBufferPointer(), "シェーダーエラー", MB_ICONERROR | MB_OK);
+            std::exit(EXIT_FAILURE);
         }
     }
 };
