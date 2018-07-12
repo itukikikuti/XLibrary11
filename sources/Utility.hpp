@@ -427,3 +427,26 @@ struct Vertex
         this->uv = uv;
     }
 };
+
+class Utility
+{
+public:
+    static std::wstring Format(const wchar_t* const format, ...)
+    {
+        va_list arguments;
+
+        va_start(arguments, format);
+        int size = vwprintf_s(format, arguments);
+        va_end(arguments);
+
+        for (int i = 0; i < size; i++)
+            printf("\b \b");
+
+        std::unique_ptr<wchar_t[]> buffer(new wchar_t[size + 1]);
+        va_start(arguments, format);
+        vswprintf_s(buffer.get(), size + 1, format, arguments);
+        va_end(arguments);
+
+        return std::wstring(buffer.get());
+    }
+};
