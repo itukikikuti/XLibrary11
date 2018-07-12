@@ -464,7 +464,7 @@ public:
     static void Alert(DWORD errorCodeValue)
     {
         std::error_code errorCode(errorCodeValue, std::system_category());
-        MessageBoxA(nullptr, errorCode.message().c_str(), Utility::Format("エラーコード %d", errorCode.value()).c_str(), MB_ICONERROR | MB_OK);
+        MessageBoxA(nullptr, errorCode.message().c_str(), Utility::Format("Error code %d", errorCode.value()).c_str(), MB_ICONERROR | MB_OK);
 #if !defined(_DEBUG)
         std::exit(errorCode.value());
 #endif

@@ -135,7 +135,7 @@ private:
         if (errorBlob != nullptr)
         {
             OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-            MessageBoxA(Window::GetHandle(), (char*)errorBlob->GetBufferPointer(), "シェーダーエラー", MB_ICONERROR | MB_OK);
+            MessageBoxA(Window::GetHandle(), (char*)errorBlob->GetBufferPointer(), "Shader error", MB_ICONERROR | MB_OK);
             std::exit(EXIT_FAILURE);
         }
     }
