@@ -431,7 +431,25 @@ struct Vertex
 class Utility
 {
 public:
-    static std::wstring Format(const wchar_t* const format, ...)
+    static std::string Format(const char* const format, ...)
+    {
+        va_list arguments;
+
+        va_start(arguments, format);
+        int size = vprintf_s(format, arguments);
+        va_end(arguments);
+
+        for (int i = 0; i < size; i++)
+            printf("\b \b");
+
+        std::unique_ptr<char[]> buffer(new char[size + 1]);
+        va_start(arguments, format);
+        vsprintf_s(buffer.get(), size + 1, format, arguments);
+        va_end(arguments);
+
+        return std::string(buffer.get());
+    }
+    static std::wstring WFormat(const wchar_t* const format, ...)
     {
         va_list arguments;
 
