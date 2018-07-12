@@ -2,6 +2,7 @@
 #pragma once
 
 #define OEMRESOURCE
+#include <chrono>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -59,7 +60,7 @@ inline void InitializeApplication()
 #include "Window.hpp"
 #include "Input.hpp"
 #include "Graphics.hpp"
-#include "Audio.hpp"
+#include "MasterSound.hpp"
 #include "Timer.hpp"
 #include "Random.hpp"
 

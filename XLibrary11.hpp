@@ -2,6 +2,7 @@
 #pragma once
 
 #define OEMRESOURCE
+#include <chrono>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -907,7 +908,7 @@ private:
         Get().context3D->RSSetViewports(1, &viewPort);
     }
 };
-class Audio
+class MasterSound
 {
 public:
     static IDirectSound8& GetDevice()
@@ -1977,7 +1978,7 @@ public:
     }
     void Load(const wchar_t* const filePath)
     {
-        Audio::GetDevice();
+        MasterSound::GetDevice();
 
         ComPtr<IStream> stream = nullptr;
         SHCreateStreamOnFileW(filePath, STGM_READ, stream.GetAddressOf());
@@ -2020,7 +2021,7 @@ public:
         bufferDesc.lpwfxFormat = _format;
 
         _soundBuffer.Reset();
-        Audio::GetDevice().CreateSoundBuffer(&bufferDesc, _soundBuffer.GetAddressOf(), nullptr);
+        MasterSound::GetDevice().CreateSoundBuffer(&bufferDesc, _soundBuffer.GetAddressOf(), nullptr);
     }
     void SetLoop(bool isLoop)
     {

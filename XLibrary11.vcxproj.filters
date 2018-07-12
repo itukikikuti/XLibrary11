@@ -45,9 +45,6 @@
     <ClInclude Include="sources\Sound.hpp">
       <Filter>sources</Filter>
     </ClInclude>
-    <ClInclude Include="sources\Audio.hpp">
-      <Filter>sources</Filter>
-    </ClInclude>
     <ClInclude Include="sources\Random.hpp">
       <Filter>sources</Filter>
     </ClInclude>
@@ -56,6 +53,9 @@
     </ClInclude>
     <ClInclude Include="sources\test\Sub.hpp">
       <Filter>sources\test</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\MasterSound.hpp">
+      <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

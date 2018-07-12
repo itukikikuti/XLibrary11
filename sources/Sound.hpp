@@ -16,7 +16,7 @@ public:
     }
     void Load(const wchar_t* const filePath)
     {
-        Audio::GetDevice();
+        MasterSound::GetDevice();
 
         ComPtr<IStream> stream = nullptr;
         SHCreateStreamOnFileW(filePath, STGM_READ, stream.GetAddressOf());
@@ -59,7 +59,7 @@ public:
         bufferDesc.lpwfxFormat = _format;
 
         _soundBuffer.Reset();
-        Audio::GetDevice().CreateSoundBuffer(&bufferDesc, _soundBuffer.GetAddressOf(), nullptr);
+        MasterSound::GetDevice().CreateSoundBuffer(&bufferDesc, _soundBuffer.GetAddressOf(), nullptr);
     }
     void SetLoop(bool isLoop)
     {
