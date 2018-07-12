@@ -439,9 +439,6 @@ public:
         int size = vprintf_s(format, arguments);
         va_end(arguments);
 
-        for (int i = 0; i < size; i++)
-            printf("\b \b");
-
         std::unique_ptr<char[]> buffer(new char[size + 1]);
         va_start(arguments, format);
         vsprintf_s(buffer.get(), size + 1, format, arguments);
@@ -456,9 +453,6 @@ public:
         va_start(arguments, format);
         int size = vwprintf_s(format, arguments);
         va_end(arguments);
-
-        for (int i = 0; i < size; i++)
-            printf("\b \b");
 
         std::unique_ptr<wchar_t[]> buffer(new wchar_t[size + 1]);
         va_start(arguments, format);
