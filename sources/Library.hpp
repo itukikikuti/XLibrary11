@@ -10,6 +10,7 @@
 #include <memory>
 #include <random>
 #include <string>
+#include <thread>
 #include <vector>
 #include <Windows.h>
 #include <d2d1_1.h>

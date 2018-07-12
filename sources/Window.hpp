@@ -77,7 +77,7 @@ public:
         PostMessageW(Get()._handle, WM_APP, 0, 0);
 
         if (GetSize().x <= 0.0f || GetSize().y <= 0.0f)
-            Sleep(100);
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         return true;
     }
