@@ -99,7 +99,7 @@ int MAIN()
         number.color = Float4(0.0f, 0.0f, 1.0f, 1.0f);
         number.Draw();
 
-        mesh.angles.y += 1.0f;
+        mesh.angles.y += 30.0f * Timer::GetDeltaTime();
 
         mesh.position.x = 0.5f;
         mesh.Draw();

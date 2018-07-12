@@ -960,11 +960,11 @@ public:
     }
     static void Update()
     {
-        LARGE_INTEGER count = GetCounter();
-        Get().deltaTime = (float)(count.QuadPart - Get().preCount.QuadPart) / Get().frequency.QuadPart;
-        Get().preCount = GetCounter();
+        std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+        Get().deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - Get().prev).count() / 1000.0f;
+        Get().prev = now;
 
-        Get().time += Get().deltaTime;
+        Get().time = std::chrono::duration_cast<std::chrono::milliseconds>(now - Get().begin).count() / 1000.0f;
 
         Get().frameCount++;
         Get().second += Get().deltaTime;
@@ -984,8 +984,8 @@ private:
         int frameRate = 0;
         float second = 0.0f;
         int frameCount = 0;
-        LARGE_INTEGER preCount;
-        LARGE_INTEGER frequency;
+        std::chrono::high_resolution_clock::time_point begin;
+        std::chrono::high_resolution_clock::time_point prev;
     };
 
     static Property& Get()
@@ -998,23 +998,11 @@ private:
 
             InitializeApplication();
 
-            Get().preCount = GetCounter();
-            Get().frequency = GetCountFrequency();
+            Get().begin = std::chrono::high_resolution_clock::now();
+            Get().prev = std::chrono::high_resolution_clock::now();
         }
 
         return *prop;
-    }
-    static LARGE_INTEGER GetCounter()
-    {
-        LARGE_INTEGER counter;
-        QueryPerformanceCounter(&counter);
-        return counter;
-    }
-    static LARGE_INTEGER GetCountFrequency()
-    {
-        LARGE_INTEGER frequency;
-        QueryPerformanceFrequency(&frequency);
-        return frequency;
     }
 };
 class Random

@@ -4,5 +4,6 @@
 
 void PrintFrameRate()
 {
-    printf("%d\n", Timer::GetFrameRate());
+    Window::SetTitle(std::to_wstring(Timer::GetFrameRate()).c_str());
+    //printf("%d\n", Timer::GetFrameRate());
 }
