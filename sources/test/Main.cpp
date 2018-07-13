@@ -18,6 +18,7 @@ int main()
     Camera uiCamera;
     uiCamera.color = Float4(1.0f, 0.0f, 1.0f, 1.0f);
     uiCamera.clear = false;
+    uiCamera.SetupOrthographic((float)Window::GetSize().y, true);
 
     Texture texture(L"assets/box.jpg");
     Texture playerTexture(L"assets/player.png");
@@ -57,6 +58,8 @@ int main()
     Sprite sprite(L"assets/box.jpg");
     sprite.scale = 0.5f;
     sprite.color.w = 0.5f;
+
+    Sprite clock(L"assets/clock.png");
 
     float pos1 = -2.0f;
     float pos2 = -3.0f;
@@ -130,6 +133,9 @@ int main()
         sprite.position.y = Window::GetSize().y / 2.0f - sprite.GetSize().y * sprite.scale.y / 2.0f;
         //sprite.angles.z += 10.0f;
         sprite.Draw();
+
+        clock.position = Input::GetMousePosition();
+        clock.Draw();
     }
 
     return 0;

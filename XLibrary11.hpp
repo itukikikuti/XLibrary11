@@ -1425,14 +1425,16 @@ public:
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
-    void SetupOrthographic(float size = 1.0f, float nearClip = -std::numeric_limits<float>::max(), float farClip = std::numeric_limits<float>::max())
+    void SetupOrthographic(float size = (float)Window::GetSize().y, bool isAdjust = true, float nearClip = -std::numeric_limits<float>::max(), float farClip = std::numeric_limits<float>::max())
     {
         _is3D = false;
         _size = size;
+        _isAdjust = isAdjust;
         _nearClip = nearClip;
         _farClip = farClip;
+        float aspectRatio = Window::GetSize().x / (float)Window::GetSize().y;
         _constant.projection = DirectX::XMMatrixTranspose(
-            DirectX::XMMatrixOrthographicLH(Window::GetSize().x * size, Window::GetSize().y * size, nearClip, farClip)
+            DirectX::XMMatrixOrthographicLH(size * aspectRatio, size, nearClip, farClip)
         );
     }
     void Update()
@@ -1481,6 +1483,7 @@ private:
     bool _is3D;
     float _fieldOfView;
     float _size;
+    bool _isAdjust;
     float _nearClip;
     float _farClip;
     Constant _constant;
@@ -1546,9 +1549,16 @@ private:
             return;
 
         if (_is3D)
+        {
             SetupPerspective(_fieldOfView, _nearClip, _farClip);
+        }
         else
-            SetupOrthographic(_size, _nearClip, _farClip);
+        {
+            if (_isAdjust)
+                SetupOrthographic((float)Window::GetSize().y, _isAdjust, _nearClip, _farClip);
+            else
+                SetupOrthographic(_size, _isAdjust, _nearClip, _farClip);
+        }
 
         Create();
     }
