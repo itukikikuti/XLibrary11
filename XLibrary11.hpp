@@ -691,10 +691,6 @@ public:
     {
         return Get().mousePosition;
     }
-    static int GetMouseWheel()
-    {
-        return Get().mouseWheel;
-    }
     static void SetMousePosition(float x, float y)
     {
         if (GetActiveWindow() != Window::GetHandle())
@@ -708,6 +704,10 @@ public:
 
         Get().mousePosition.x = x;
         Get().mousePosition.y = y;
+    }
+    static int GetMouseWheel()
+    {
+        return Get().mouseWheel;
     }
     static void SetShowCursor(bool isShowCursor)
     {
