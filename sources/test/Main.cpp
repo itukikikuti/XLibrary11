@@ -81,6 +81,11 @@ int main()
             sound.Play();
         }
 
+        if (Input::GetKeyDown('3'))
+        {
+            Window::SetMode(Window::Mode::FullScreen);
+        }
+
         number.angles.y += 1.0f;
         number.Create(std::to_wstring(Input::GetMouseWheel()), 100.0f);
         if (Input::GetKey('2'))

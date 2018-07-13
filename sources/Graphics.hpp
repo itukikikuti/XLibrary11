@@ -33,8 +33,7 @@ public:
     {
         if (Input::GetKey(VK_MENU) && Input::GetKeyDown(VK_RETURN))
         {
-            Get().isFullScreen = !Get().isFullScreen;
-            Window::SetFullScreen(Get().isFullScreen);
+            Window::ToggleMode();
         }
 
         Get().swapChain->Present(1, 0);
@@ -50,7 +49,6 @@ private:
         ComPtr<IDXGISwapChain> swapChain = nullptr;
         ComPtr<IWICImagingFactory> textureFactory = nullptr;
         ComPtr<IDWriteFactory> textFactory = nullptr;
-        bool isFullScreen = false;
 
         void OnProceedMessage(HWND, UINT message, WPARAM, LPARAM) override
         {

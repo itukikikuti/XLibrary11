@@ -6,6 +6,11 @@ public:
     public:
         virtual void OnProceedMessage(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
     };
+    enum Mode
+    {
+        Windowed,
+        FullScreen,
+    };
 
     static HWND GetHandle()
     {
@@ -42,11 +47,19 @@ public:
     {
         SetWindowTextW(Get().handle, title);
     }
-    static void SetFullScreen(bool isFullScreen)
+    static Mode GetMode()
     {
-        static DirectX::XMINT2 size = GetSize();
+        return Get().mode;
+    }
+    static void SetMode(Mode mode)
+    {
+        if (Get().mode == mode)
+            return;
 
-        if (isFullScreen)
+        Get().mode = mode;
+
+        static DirectX::XMINT2 size = GetSize();
+        if (mode == Mode::FullScreen)
         {
             size = GetSize();
             int w = GetSystemMetrics(SM_CXSCREEN);
@@ -60,6 +73,13 @@ public:
             SetWindowPos(Get().handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
             SetSize(size.x, size.y);
         }
+    }
+    static void ToggleMode()
+    {
+        if (Get().mode == Mode::Windowed)
+            SetMode(Mode::FullScreen);
+        else
+            SetMode(Mode::Windowed);
     }
     static bool Update()
     {
@@ -95,6 +115,7 @@ private:
     {
         const wchar_t* className = L"XLibrary11";
         HWND handle;
+        Mode mode = Mode::Windowed;
         std::list<Proceedable*> procedures;
     };
 
