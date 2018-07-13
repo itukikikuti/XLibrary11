@@ -195,7 +195,7 @@ public:
         if (vertices.size() > 0)
         {
             D3D11_BUFFER_DESC vertexBufferDesc = {};
-            vertexBufferDesc.ByteWidth = sizeof(Vertex) * (UINT)vertices.size();
+            vertexBufferDesc.ByteWidth = sizeof(Vertex) * UINT(vertices.size());
             vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
             vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
             D3D11_SUBRESOURCE_DATA vertexSubresourceData = {};
@@ -207,7 +207,7 @@ public:
         if (indices.size() > 0)
         {
             D3D11_BUFFER_DESC indexBufferDesc = {};
-            indexBufferDesc.ByteWidth = sizeof(int) * (UINT)indices.size();
+            indexBufferDesc.ByteWidth = sizeof(UINT) * UINT(indices.size());
             indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
             indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
             D3D11_SUBRESOURCE_DATA indexSubresourceData = {};
