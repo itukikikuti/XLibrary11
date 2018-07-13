@@ -24,7 +24,7 @@ public:
         textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
         _textLayout.Reset();
-        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), FLT_MAX, FLT_MAX, _textLayout.GetAddressOf());
+        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), _textLayout.GetAddressOf());
         
         DWRITE_TEXT_METRICS textMetrics;
         _textLayout->GetMetrics(&textMetrics);

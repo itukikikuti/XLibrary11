@@ -1,11 +1,13 @@
 ﻿/*! © 2017 itukikikuti | MIT License | gitlab.com/itukikikuti/XLibrary11 */
 #pragma once
 
+#define NOMINMAX
 #define OEMRESOURCE
 #include <chrono>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <list>
 #include <memory>
 #include <random>

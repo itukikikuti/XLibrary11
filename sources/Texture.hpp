@@ -97,7 +97,7 @@ public:
         samplerDesc.BorderColor[2] = 0.0f;
         samplerDesc.BorderColor[3] = 0.0f;
         samplerDesc.MinLOD = 0.0f;
-        samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+        samplerDesc.MaxLOD = std::numeric_limits<float>::max();
         Graphics::GetDevice3D().CreateSamplerState(&samplerDesc, _samplerState.GetAddressOf());
     }
     DirectX::XMINT2 GetSize() const

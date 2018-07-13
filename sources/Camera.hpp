@@ -14,7 +14,7 @@ public:
         angles = Float3(0.0f, 0.0f, 0.0f);
         color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        Setup2D(1.0f, -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
+        Setup2D(1.0f, -std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 
         Create();
 

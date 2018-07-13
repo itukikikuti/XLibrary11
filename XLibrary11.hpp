@@ -1,11 +1,13 @@
 ﻿/*! © 2017 itukikikuti | MIT License | gitlab.com/itukikikuti/XLibrary11 */
 #pragma once
 
+#define NOMINMAX
 #define OEMRESOURCE
 #include <chrono>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <list>
 #include <memory>
 #include <random>
@@ -1218,7 +1220,7 @@ public:
         samplerDesc.BorderColor[2] = 0.0f;
         samplerDesc.BorderColor[3] = 0.0f;
         samplerDesc.MinLOD = 0.0f;
-        samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+        samplerDesc.MaxLOD = std::numeric_limits<float>::max();
         Graphics::GetDevice3D().CreateSamplerState(&samplerDesc, _samplerState.GetAddressOf());
     }
     DirectX::XMINT2 GetSize() const
@@ -1402,7 +1404,7 @@ public:
         angles = Float3(0.0f, 0.0f, 0.0f);
         color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        Setup2D(1.0f, -D3D11_FLOAT32_MAX, D3D11_FLOAT32_MAX);
+        Setup2D(1.0f, -std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 
         Create();
 
@@ -1965,7 +1967,7 @@ public:
         textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
         _textLayout.Reset();
-        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), FLT_MAX, FLT_MAX, _textLayout.GetAddressOf());
+        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), _textLayout.GetAddressOf());
         
         DWRITE_TEXT_METRICS textMetrics;
         _textLayout->GetMetrics(&textMetrics);
