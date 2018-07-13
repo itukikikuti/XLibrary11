@@ -121,7 +121,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="sources\Library.hpp" />
-    <ClInclude Include="sources\MasterSound.hpp" />
+    <ClInclude Include="sources\SoundManager.hpp" />
     <ClInclude Include="sources\Camera.hpp" />
     <ClInclude Include="sources\Graphics.hpp" />
     <ClInclude Include="sources\Input.hpp" />

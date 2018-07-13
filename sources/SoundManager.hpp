@@ -1,4 +1,4 @@
-class MasterSound
+class SoundManager
 {
 public:
     static IDirectSound8& GetDevice()

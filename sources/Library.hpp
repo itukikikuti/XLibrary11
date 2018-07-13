@@ -62,7 +62,7 @@ inline void InitializeApplication()
 #include "Window.hpp"
 #include "Input.hpp"
 #include "Graphics.hpp"
-#include "MasterSound.hpp"
+#include "SoundManager.hpp"
 #include "Timer.hpp"
 #include "Random.hpp"
 
