@@ -9,12 +9,12 @@ public:
 
     static HWND GetHandle()
     {
-        return Get()._handle;
+        return Get().handle;
     }
     static DirectX::XMINT2 GetSize()
     {
         RECT clientRect = {};
-        GetClientRect(Get()._handle, &clientRect);
+        GetClientRect(Get().handle, &clientRect);
 
         return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
     }
@@ -22,25 +22,25 @@ public:
     {
         RECT windowRect = {};
         RECT clientRect = {};
-        GetWindowRect(Get()._handle, &windowRect);
-        GetClientRect(Get()._handle, &clientRect);
+        GetWindowRect(Get().handle, &windowRect);
+        GetClientRect(Get().handle, &clientRect);
 
         int w = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + width;
         int h = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + height;
         int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
         int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
 
-        SetWindowPos(Get()._handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
+        SetWindowPos(Get().handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
     }
     static wchar_t* const GetTitle()
     {
         wchar_t* title = nullptr;
-        GetWindowTextW(Get()._handle, title, GetWindowTextLengthW(Get()._handle));
+        GetWindowTextW(Get().handle, title, GetWindowTextLengthW(Get().handle));
         return title;
     }
     static void SetTitle(const wchar_t* const title)
     {
-        SetWindowTextW(Get()._handle, title);
+        SetWindowTextW(Get().handle, title);
     }
     static void SetFullScreen(bool isFullScreen)
     {
@@ -51,13 +51,13 @@ public:
             size = GetSize();
             int w = GetSystemMetrics(SM_CXSCREEN);
             int h = GetSystemMetrics(SM_CYSCREEN);
-            SetWindowLongPtrW(Get()._handle, GWL_STYLE, WS_VISIBLE | WS_POPUP);
-            SetWindowPos(Get()._handle, HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
+            SetWindowLongPtrW(Get().handle, GWL_STYLE, WS_VISIBLE | WS_POPUP);
+            SetWindowPos(Get().handle, HWND_TOP, 0, 0, w, h, SWP_FRAMECHANGED);
         }
         else
         {
-            SetWindowLongPtrW(Get()._handle, GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
-            SetWindowPos(Get()._handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+            SetWindowLongPtrW(Get().handle, GWL_STYLE, WS_VISIBLE | WS_OVERLAPPEDWINDOW);
+            SetWindowPos(Get().handle, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
             SetSize(size.x, size.y);
         }
     }
@@ -74,7 +74,7 @@ public:
             DispatchMessageW(&message);
         }
 
-        PostMessageW(Get()._handle, WM_APP, 0, 0);
+        PostMessageW(Get().handle, WM_APP, 0, 0);
 
         if (GetSize().x <= 0.0f || GetSize().y <= 0.0f)
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -83,19 +83,19 @@ public:
     }
     static void AddProcedure(Proceedable* const procedure)
     {
-        Get()._procedures.push_back(procedure);
+        Get().procedures.push_back(procedure);
     }
     static void RemoveProcedure(Proceedable* const procedure)
     {
-        Get()._procedures.remove(procedure);
+        Get().procedures.remove(procedure);
     }
 
 private:
     struct Property
     {
-        const wchar_t* _className = L"XLibrary11";
-        HWND _handle;
-        std::list<Proceedable*> _procedures;
+        const wchar_t* className = L"XLibrary11";
+        HWND handle;
+        std::list<Proceedable*> procedures;
     };
 
     static Property& Get()
@@ -114,21 +114,21 @@ private:
             windowClass.lpfnWndProc = ProceedMessage;
             windowClass.hInstance = hInstance;
             windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED);
-            windowClass.lpszClassName = Get()._className;
+            windowClass.lpszClassName = Get().className;
             RegisterClassW(&windowClass);
 
-            Get()._handle = CreateWindowW(Get()._className, Get()._className, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, hInstance, nullptr);
+            Get().handle = CreateWindowW(Get().className, Get().className, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, hInstance, nullptr);
 
             SetSize(640, 480);
 
-            ShowWindow(Get()._handle, SW_SHOWNORMAL);
+            ShowWindow(Get().handle, SW_SHOWNORMAL);
         }
 
         return *prop;
     }
     static LRESULT CALLBACK ProceedMessage(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
     {
-        for (Proceedable* procedure : Get()._procedures)
+        for (Proceedable* procedure : Get().procedures)
         {
             procedure->OnProceedMessage(window, message, wParam, lParam);
         }
