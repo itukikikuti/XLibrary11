@@ -13,7 +13,7 @@ int main()
     Sprite sprite1(L"assets/box.jpg");
     Camera camera;
     camera.position = Float3(0.0f, 1.0f, -5.0f);
-    camera.Setup3D(60.0f, 0.1f, 100.0f);
+    camera.SetupPerspective();
 
     Camera uiCamera;
     uiCamera.color = Float4(1.0f, 0.0f, 1.0f, 1.0f);

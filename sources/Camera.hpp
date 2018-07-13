@@ -14,7 +14,7 @@ public:
         angles = Float3(0.0f, 0.0f, 0.0f);
         color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        Setup2D(1.0f, -std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+        SetupOrthographic();
 
         Create();
 
@@ -24,7 +24,7 @@ public:
     {
         Window::RemoveProcedure(this);
     }
-    void Setup3D(float fieldOfView, float nearClip, float farClip)
+    void SetupPerspective(float fieldOfView = 60.0f, float nearClip = 0.1f, float farClip = 1000.0f)
     {
         _is3D = true;
         _fieldOfView = fieldOfView;
@@ -35,7 +35,7 @@ public:
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
-    void Setup2D(float size, float nearClip, float farClip)
+    void SetupOrthographic(float size = 1.0f, float nearClip = -std::numeric_limits<float>::max(), float farClip = std::numeric_limits<float>::max())
     {
         _is3D = false;
         _size = size;
@@ -156,9 +156,9 @@ private:
             return;
 
         if (_is3D)
-            Setup3D(_fieldOfView, _nearClip, _farClip);
+            SetupPerspective(_fieldOfView, _nearClip, _farClip);
         else
-            Setup2D(_size, _nearClip, _farClip);
+            SetupOrthographic(_size, _nearClip, _farClip);
 
         Create();
     }
