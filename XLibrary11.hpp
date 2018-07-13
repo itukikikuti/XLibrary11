@@ -641,16 +641,16 @@ private:
 
             InitializeApplication();
 
-            HINSTANCE hInstance = GetModuleHandleW(nullptr);
+            HINSTANCE instance = GetModuleHandleW(nullptr);
 
             WNDCLASSW windowClass = {};
             windowClass.lpfnWndProc = ProceedMessage;
-            windowClass.hInstance = hInstance;
+            windowClass.hInstance = instance;
             windowClass.hCursor = (HCURSOR)LoadImageW(nullptr, MAKEINTRESOURCEW(OCR_NORMAL), IMAGE_CURSOR, 0, 0, LR_SHARED);
             windowClass.lpszClassName = Get().className;
             RegisterClassW(&windowClass);
 
-            Get().handle = CreateWindowW(Get().className, Get().className, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, hInstance, nullptr);
+            Get().handle = CreateWindowW(Get().className, Get().className, WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, nullptr, nullptr, instance, nullptr);
 
             SetSize(640, 480);
 
