@@ -35,7 +35,7 @@ public:
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
-    void SetupOrthographic(float size = (float)Window::GetSize().y, bool isAdjust = true, float nearClip = -std::numeric_limits<float>::max(), float farClip = std::numeric_limits<float>::max())
+    void SetupOrthographic(float size = (float)Window::GetSize().y, bool isAdjust = true, float nearClip = std::numeric_limits<float>::lowest(), float farClip = std::numeric_limits<float>::max())
     {
         _is3D = false;
         _size = size;

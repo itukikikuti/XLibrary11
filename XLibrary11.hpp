@@ -1425,7 +1425,7 @@ public:
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
-    void SetupOrthographic(float size = (float)Window::GetSize().y, bool isAdjust = true, float nearClip = -std::numeric_limits<float>::max(), float farClip = std::numeric_limits<float>::max())
+    void SetupOrthographic(float size = (float)Window::GetSize().y, bool isAdjust = true, float nearClip = std::numeric_limits<float>::lowest(), float farClip = std::numeric_limits<float>::max())
     {
         _is3D = false;
         _size = size;
@@ -1985,7 +1985,7 @@ public:
         _textLayout.Reset();
         Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, _textLayout.GetAddressOf());
 
-        std::unique_ptr<BYTE[]> buffer(new BYTE[(int)textMetrics.width * (int)textMetrics.height * 4]);
+        std::unique_ptr<BYTE[]> buffer(new BYTE[int(textMetrics.width * textMetrics.height) * 4]);
         _texture.Create(buffer.get(), (int)textMetrics.width, (int)textMetrics.height);
 
         ComPtr<IDXGISurface> surface = nullptr;
@@ -2101,10 +2101,10 @@ public:
     }
     void SetVolume(float volume)
     {
-        if (volume < 0.00000001f)
-            volume = 0.00000001f;
+        if (volume < std::numeric_limits<float>::min())
+            volume = std::numeric_limits<float>::min();
 
-        LONG decibel = (LONG)(log10f(volume) * 20.0f * 100.0f);
+        LONG decibel = LONG(log10f(volume) * 20.0f * 100.0f);
 
         if (decibel < DSBVOLUME_MIN)
             decibel = DSBVOLUME_MIN;
@@ -2119,10 +2119,10 @@ public:
         int sign = (pan > 0) - (pan < 0);
 
         pan = 1.0f - fabsf(pan);
-        if (pan < 0.00000001f)
-            pan = 0.00000001f;
+        if (pan < std::numeric_limits<float>::min())
+            pan = std::numeric_limits<float>::min();
 
-        LONG decibel = (LONG)(log10f(pan) * 20.0f * 100.0f) * -sign;
+        LONG decibel = LONG(log10f(pan) * 20.0f * 100.0f) * -sign;
 
         if (decibel < DSBPAN_LEFT)
             decibel = DSBPAN_LEFT;
@@ -2137,7 +2137,7 @@ public:
         if (pitch < 0.0f)
             pitch = 0.0f;
 
-        DWORD frequency = (DWORD)(_format->nSamplesPerSec * pitch);
+        DWORD frequency = DWORD(_format->nSamplesPerSec * pitch);
 
         if (frequency < DSBFREQUENCY_MIN)
             frequency = DSBFREQUENCY_MIN;
@@ -2154,17 +2154,17 @@ public:
             Stop();
         }
 
-        _state = play;
+        _state = Playing;
         _soundBuffer->Play(0, 0, DSBPLAY_LOOPING);
     }
     void Pause()
     {
-        _state = pause;
+        _state = Paused;
         _soundBuffer->Stop();
     }
     void Stop()
     {
-        _state = stop;
+        _state = Stopped;
         Reset();
 
         _bufferIndex = 0;
@@ -2180,9 +2180,9 @@ public:
 private:
     enum State
     {
-        play,
-        pause,
-        stop,
+        Playing,
+        Paused,
+        Stopped,
     };
 
     ComPtr<IMFSourceReader> _sourceReader = nullptr;
@@ -2190,7 +2190,7 @@ private:
     DWORD _bufferSize;
     int _bufferIndex = 0;
     WAVEFORMATEX* _format;
-    State _state = stop;
+    State _state = Stopped;
     bool _isLoop = false;
 
     void Initialize()
@@ -2248,7 +2248,7 @@ private:
         DWORD position;
         _soundBuffer->GetCurrentPosition(&position, 0);
 
-        if (_state == stop)
+        if (_state == Stopped)
         {
             void* buffer = nullptr;
             DWORD bufferSize = 0;

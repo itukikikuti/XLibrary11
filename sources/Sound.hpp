@@ -70,10 +70,10 @@ public:
     }
     void SetVolume(float volume)
     {
-        if (volume < 0.00000001f)
-            volume = 0.00000001f;
+        if (volume < std::numeric_limits<float>::min())
+            volume = std::numeric_limits<float>::min();
 
-        LONG decibel = (LONG)(log10f(volume) * 20.0f * 100.0f);
+        LONG decibel = LONG(log10f(volume) * 20.0f * 100.0f);
 
         if (decibel < DSBVOLUME_MIN)
             decibel = DSBVOLUME_MIN;
@@ -88,10 +88,10 @@ public:
         int sign = (pan > 0) - (pan < 0);
 
         pan = 1.0f - fabsf(pan);
-        if (pan < 0.00000001f)
-            pan = 0.00000001f;
+        if (pan < std::numeric_limits<float>::min())
+            pan = std::numeric_limits<float>::min();
 
-        LONG decibel = (LONG)(log10f(pan) * 20.0f * 100.0f) * -sign;
+        LONG decibel = LONG(log10f(pan) * 20.0f * 100.0f) * -sign;
 
         if (decibel < DSBPAN_LEFT)
             decibel = DSBPAN_LEFT;
@@ -106,7 +106,7 @@ public:
         if (pitch < 0.0f)
             pitch = 0.0f;
 
-        DWORD frequency = (DWORD)(_format->nSamplesPerSec * pitch);
+        DWORD frequency = DWORD(_format->nSamplesPerSec * pitch);
 
         if (frequency < DSBFREQUENCY_MIN)
             frequency = DSBFREQUENCY_MIN;
@@ -123,17 +123,17 @@ public:
             Stop();
         }
 
-        _state = play;
+        _state = Playing;
         _soundBuffer->Play(0, 0, DSBPLAY_LOOPING);
     }
     void Pause()
     {
-        _state = pause;
+        _state = Paused;
         _soundBuffer->Stop();
     }
     void Stop()
     {
-        _state = stop;
+        _state = Stopped;
         Reset();
 
         _bufferIndex = 0;
@@ -149,9 +149,9 @@ public:
 private:
     enum State
     {
-        play,
-        pause,
-        stop,
+        Playing,
+        Paused,
+        Stopped,
     };
 
     ComPtr<IMFSourceReader> _sourceReader = nullptr;
@@ -159,7 +159,7 @@ private:
     DWORD _bufferSize;
     int _bufferIndex = 0;
     WAVEFORMATEX* _format;
-    State _state = stop;
+    State _state = Stopped;
     bool _isLoop = false;
 
     void Initialize()
@@ -217,7 +217,7 @@ private:
         DWORD position;
         _soundBuffer->GetCurrentPosition(&position, 0);
 
-        if (_state == stop)
+        if (_state == Stopped)
         {
             void* buffer = nullptr;
             DWORD bufferSize = 0;
