@@ -681,11 +681,11 @@ public:
     }
     static bool GetKeyUp(int VK_CODE)
     {
-        return !(Get().keyState[VK_CODE] & 0x80) && (Get().preKeyState[VK_CODE] & 0x80);
+        return !(Get().keyState[VK_CODE] & 0x80) && (Get().prevKeyState[VK_CODE] & 0x80);
     }
     static bool GetKeyDown(int VK_CODE)
     {
-        return (Get().keyState[VK_CODE] & 0x80) && !(Get().preKeyState[VK_CODE] & 0x80);
+        return (Get().keyState[VK_CODE] & 0x80) && !(Get().prevKeyState[VK_CODE] & 0x80);
     }
     static Float2 GetMousePosition()
     {
@@ -697,8 +697,8 @@ public:
             return;
 
         POINT point = {};
-        point.x = (int)x + Window::GetSize().x / 2;
-        point.y = (int)-y + Window::GetSize().y / 2;
+        point.x = int(x + Window::GetSize().x / 2);
+        point.y = int(-y + Window::GetSize().y / 2);
         ClientToScreen(Window::GetHandle(), &point);
         SetCursorPos(point.x, point.y);
 
@@ -725,12 +725,12 @@ public:
         GetCursorPos(&point);
         ScreenToClient(Window::GetHandle(), &point);
 
-        Get().mousePosition.x = (float)point.x - Window::GetSize().x / 2;
-        Get().mousePosition.y = (float)-point.y + Window::GetSize().y / 2;
+        Get().mousePosition.x = float(point.x - Window::GetSize().x / 2);
+        Get().mousePosition.y = float(-point.y + Window::GetSize().y / 2);
 
         for (int i = 0; i < 256; i++)
         {
-            Get().preKeyState[i] = Get().keyState[i];
+            Get().prevKeyState[i] = Get().keyState[i];
         }
 
         GetKeyboardState(Get().keyState);
@@ -741,7 +741,7 @@ private:
     {
         Float2 mousePosition;
         int mouseWheel = 0;
-        BYTE preKeyState[256];
+        BYTE prevKeyState[256];
         BYTE keyState[256];
         bool isShowCursor = true;
 
