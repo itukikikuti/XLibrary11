@@ -43,6 +43,56 @@ public:
         Get().isShowCursor = isShowCursor;
         ShowCursor(isShowCursor);
     }
+    static bool GetPadButton(int id, int XINPUT_GAMEPAD_CODE)
+    {
+        return Get().padState[id].Gamepad.wButtons & XINPUT_GAMEPAD_CODE;
+    }
+    static bool GetPadButtonUp(int id, int XINPUT_GAMEPAD_CODE)
+    {
+        return !(Get().padState[id].Gamepad.wButtons & XINPUT_GAMEPAD_CODE) && (Get().prevPadState[id].Gamepad.wButtons & XINPUT_GAMEPAD_CODE);
+    }
+    static bool GetPadButtonDown(int id, int XINPUT_GAMEPAD_CODE)
+    {
+        return (Get().padState[id].Gamepad.wButtons & XINPUT_GAMEPAD_CODE) && !(Get().prevPadState[id].Gamepad.wButtons & XINPUT_GAMEPAD_CODE);
+    }
+    static float GetPadLeftTrigger(int id)
+    {
+        return float(Get().padState[id].Gamepad.bLeftTrigger) / std::numeric_limits<BYTE>::max();
+    }
+    static float GetPadRightTrigger(int id)
+    {
+        return float(Get().padState[id].Gamepad.bRightTrigger) / std::numeric_limits<BYTE>::max();
+    }
+    static Float2 GetPadLeftThumb(int id)
+    {
+        static const float deadZone = float(XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) / std::numeric_limits<SHORT>::max();
+
+        Float2 value;
+        value.x = float(Get().padState[id].Gamepad.sThumbLX) / std::numeric_limits<SHORT>::max();
+        value.y = float(Get().padState[id].Gamepad.sThumbLY) / std::numeric_limits<SHORT>::max();
+
+        if (-deadZone < value.x && value.x < deadZone)
+            value.x = 0.0f;
+        if (-deadZone < value.y && value.y < deadZone)
+            value.y = 0.0f;
+
+        return value;
+    }
+    static Float2 GetPadRightThumb(int id)
+    {
+        static const float deadZone = float(XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) / std::numeric_limits<SHORT>::max();
+
+        Float2 value;
+        value.x = float(Get().padState[id].Gamepad.sThumbRX) / std::numeric_limits<SHORT>::max();
+        value.y = float(Get().padState[id].Gamepad.sThumbRY) / std::numeric_limits<SHORT>::max();
+
+        if (-deadZone < value.x && value.x < deadZone)
+            value.x = 0.0f;
+        if (-deadZone < value.y && value.y < deadZone)
+            value.y = 0.0f;
+
+        return value;
+    }
     static void Update()
     {
         Get().mouseWheel = 0;
@@ -60,6 +110,12 @@ public:
         }
 
         GetKeyboardState(Get().keyState);
+
+        for (int i = 0; i < 4; i++)
+        {
+            Get().prevPadState[i] = Get().padState[i];
+            XInputGetState(i, &Get().padState[i]);
+        }
     }
 
 private:
@@ -70,6 +126,8 @@ private:
         BYTE prevKeyState[256];
         BYTE keyState[256];
         bool isShowCursor = true;
+        XINPUT_STATE prevPadState[4];
+        XINPUT_STATE padState[4];
 
         void OnProceedMessage(HWND, UINT message, WPARAM wParam, LPARAM) override
         {

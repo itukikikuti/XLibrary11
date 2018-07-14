@@ -28,6 +28,7 @@
 #include <Shlwapi.h>
 #include <wincodec.h>
 #include <wrl.h>
+#include <Xinput.h>
 
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "d3d11.lib")
@@ -39,6 +40,7 @@
 #pragma comment(lib, "mfuuid.lib")
 #pragma comment(lib, "Shlwapi.lib")
 #pragma comment(lib, "windowscodecs.lib")
+#pragma comment(lib, "Xinput.lib")
 
 #define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 

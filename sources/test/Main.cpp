@@ -84,6 +84,11 @@ int main()
             sound.Play();
         }
 
+        if (Input::GetPadButtonDown(0, XINPUT_GAMEPAD_A))
+        {
+            sound.Play();
+        }
+
         if (Input::GetKeyDown('3'))
         {
             Window::SetMode(Window::Mode::FullScreen);
@@ -107,12 +112,15 @@ int main()
         number.color = Float4(0.0f, 0.0f, 1.0f, 1.0f);
         number.Draw();
 
-        mesh.angles.y += 30.0f * Timer::GetDeltaTime();
+        mesh.angles.z += Input::GetPadLeftThumb(0).y * 3.0f;
+        mesh.angles.y += -Input::GetPadLeftThumb(0).x * 3.0f;
 
         mesh.position.x = 0.5f;
+        mesh.angles.x = Input::GetPadRightTrigger(0) * 90.0f;
         mesh.Draw();
 
         mesh.position.x = -0.5f;
+        mesh.angles.x = Input::GetPadLeftTrigger(0) * 90.0f;
         mesh.Draw();
 
         sphere.angles.x += Input::GetMouseWheel() * 0.5f;
@@ -126,7 +134,7 @@ int main()
 
         uiCamera.Update();
 
-        text.angles.z += 1.0f;
+        text.angles.z += Timer::GetDeltaTime() * 30.0f;
         text.Draw();
 
         sprite.position.x = Window::GetSize().x / 2.0f - sprite.GetSize().x * sprite.scale.x / 2.0f;
