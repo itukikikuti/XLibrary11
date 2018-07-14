@@ -6,7 +6,7 @@ public:
     public:
         virtual void OnProceedMessage(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
     };
-    enum Mode
+    enum class Mode
     {
         Windowed,
         FullScreen,

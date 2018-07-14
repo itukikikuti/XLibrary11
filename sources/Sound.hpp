@@ -1,6 +1,13 @@
 class Sound : public Window::Proceedable
 {
 public:
+    enum class State
+    {
+        Playing,
+        Paused,
+        Stopped,
+    };
+
     Sound()
     {
         Initialize();
@@ -116,6 +123,10 @@ public:
 
         _soundBuffer->SetFrequency(frequency);
     }
+    State GetState()
+    {
+        return _state;
+    }
     void Play()
     {
         if (!_isLoop)
@@ -123,17 +134,17 @@ public:
             Stop();
         }
 
-        _state = Playing;
+        _state = State::Playing;
         _soundBuffer->Play(0, 0, DSBPLAY_LOOPING);
     }
     void Pause()
     {
-        _state = Paused;
+        _state = State::Paused;
         _soundBuffer->Stop();
     }
     void Stop()
     {
-        _state = Stopped;
+        _state = State::Stopped;
         Reset();
 
         _bufferIndex = 0;
@@ -147,19 +158,12 @@ public:
     }
 
 private:
-    enum State
-    {
-        Playing,
-        Paused,
-        Stopped,
-    };
-
     ComPtr<IMFSourceReader> _sourceReader = nullptr;
     ComPtr<IDirectSoundBuffer> _soundBuffer = nullptr;
     DWORD _bufferSize;
     int _bufferIndex = 0;
     WAVEFORMATEX* _format;
-    State _state = Stopped;
+    State _state = State::Stopped;
     bool _isLoop = false;
 
     void Initialize()
@@ -217,7 +221,7 @@ private:
         DWORD position;
         _soundBuffer->GetCurrentPosition(&position, 0);
 
-        if (_state == Stopped)
+        if (_state == State::Stopped)
         {
             void* buffer = nullptr;
             DWORD bufferSize = 0;
