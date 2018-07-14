@@ -53,8 +53,8 @@ public:
             DirectX::XMMatrixInverse(
                 nullptr,
                 DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
-                DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
                 DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
+                DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
                 DirectX::XMMatrixTranslation(position.x, position.y, position.z)
             )
         );
