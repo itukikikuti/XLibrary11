@@ -133,7 +133,7 @@ private:
         {
             if (message == WM_MOUSEWHEEL)
             {
-                mouseWheel = GET_WHEEL_DELTA_WPARAM(wParam);
+                mouseWheel = -GET_WHEEL_DELTA_WPARAM(wParam);
             }
         }
     };
