@@ -76,6 +76,8 @@ public:
             indices.clear();
         }
 
+        size /= 2.0f;
+
         leftDirection = DirectX::XMVector3Normalize(leftDirection);
         upDirection = DirectX::XMVector3Normalize(upDirection);
         forwardDirection = DirectX::XMVector3Normalize(forwardDirection);
@@ -96,7 +98,7 @@ public:
         if (shouldClear)
             Apply();
     }
-    void CreateCube(Float3 size = Float3(0.5f, 0.5f, 0.5f), bool shouldClear = true)
+    void CreateCube(Float3 size = Float3(1.0f, 1.0f, 1.0f), bool shouldClear = true)
     {
         if (shouldClear)
         {
@@ -104,12 +106,12 @@ public:
             indices.clear();
         }
 
-        CreatePlane(Float2(size.x, size.y), Float3(0.0f, 0.0f, -size.z), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));	// front
-        CreatePlane(Float2(size.x, size.y), Float3(0.0f, 0.0f, size.z), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));	// back
-        CreatePlane(Float2(size.z, size.y), Float3(size.x, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));	// left
-        CreatePlane(Float2(size.z, size.y), Float3(-size.x, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));	// right
-        CreatePlane(Float2(size.x, size.z), Float3(0.0f, size.y, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));	// up
-        CreatePlane(Float2(size.x, size.z), Float3(0.0f, -size.y, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
+        CreatePlane(Float2(size.x, size.y), Float3(0.0f, 0.0f, -size.z / 2.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));	// front
+        CreatePlane(Float2(size.x, size.y), Float3(0.0f, 0.0f, size.z / 2.0f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));	// back
+        CreatePlane(Float2(size.z, size.y), Float3(size.x / 2.0f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));	// left
+        CreatePlane(Float2(size.z, size.y), Float3(-size.x / 2.0f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));	// right
+        CreatePlane(Float2(size.x, size.z), Float3(0.0f, size.y / 2.0f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));	// up
+        CreatePlane(Float2(size.x, size.z), Float3(0.0f, -size.y / 2.0f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
 
         if (shouldClear)
             Apply();
