@@ -61,7 +61,10 @@ public:
         constantBufferDesc.ByteWidth = (UINT)size;
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, _constantBuffer[slot].buffer.GetAddressOf());
+        HRESULT result = Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, _constantBuffer[slot].buffer.GetAddressOf());
+
+        if (_constantBuffer[slot].buffer == nullptr)
+            Utility::Alert(result);
     }
     void SetTexture(int slot, Texture* texture)
     {

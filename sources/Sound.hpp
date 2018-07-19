@@ -26,10 +26,10 @@ public:
         SoundManager::GetDevice();
 
         ComPtr<IStream> stream = nullptr;
-        SHCreateStreamOnFileW(filePath, STGM_READ, stream.GetAddressOf());
+        HRESULT result = SHCreateStreamOnFileW(filePath, STGM_READ, stream.GetAddressOf());
 
         if (stream == nullptr)
-            Utility::Alert(GetLastError());
+            Utility::Alert(result);
 
         ComPtr<IMFByteStream> byteStream = nullptr;
         MFCreateMFByteStreamOnStream(stream.Get(), byteStream.GetAddressOf());

@@ -22,10 +22,10 @@ public:
     {
         ComPtr<IWICBitmapDecoder> decoder = nullptr;
 
-        Graphics::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+        HRESULT result = Graphics::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
 
         if (decoder == nullptr)
-            Utility::Alert(GetLastError());
+            Utility::Alert(result);
 
         ComPtr<IWICBitmapFrameDecode> frame = nullptr;
         decoder->GetFrame(0, &frame);
