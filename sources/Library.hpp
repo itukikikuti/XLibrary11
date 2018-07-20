@@ -66,6 +66,7 @@ inline void InitializeApplication()
 #include "Window.hpp"
 #include "Input.hpp"
 #include "Graphics.hpp"
+#include "LightManager.hpp"
 #include "SoundManager.hpp"
 #include "Timer.hpp"
 #include "Random.hpp"
@@ -73,6 +74,7 @@ inline void InitializeApplication()
 #include "Texture.hpp"
 #include "Material.hpp"
 #include "Camera.hpp"
+#include "Light.hpp"
 #include "Mesh.hpp"
 #include "Sprite.hpp"
 #include "Text.hpp"
@@ -81,6 +83,7 @@ inline void InitializeApplication()
 inline bool Refresh()
 {
     Graphics::Update();
+    LightManager::Update();
     Input::Update();
     Timer::Update();
     return Window::Update();

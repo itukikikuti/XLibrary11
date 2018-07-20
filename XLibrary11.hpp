@@ -528,8 +528,10 @@ public:
     static void Alert(DWORD errorCodeValue)
     {
         std::error_code errorCode(errorCodeValue, std::system_category());
-        MessageBoxA(nullptr, errorCode.message().c_str(), Utility::Format("Error code %d", errorCode.value()).c_str(), MB_ICONERROR | MB_OK);
-#if !defined(_DEBUG)
+        MessageBoxA(nullptr, errorCode.message().c_str(), Utility::Format("Error code 0x%x(%d)", errorCode.value(), errorCode.value()).c_str(), MB_ICONERROR | MB_OK);
+#if defined(_DEBUG)
+        throw std::system_error(errorCode);
+#else
         std::exit(errorCode.value());
 #endif
     }
@@ -832,7 +834,7 @@ private:
         {
             if (message == WM_MOUSEWHEEL)
             {
-                mouseWheel = GET_WHEEL_DELTA_WPARAM(wParam);
+                mouseWheel = -GET_WHEEL_DELTA_WPARAM(wParam);
             }
         }
     };
@@ -1034,6 +1036,73 @@ private:
         Get().context3D->RSSetViewports(1, &viewPort);
     }
 };
+class LightManager
+{
+public:
+    struct Constant
+    {
+        int type;
+        Float3 position;
+        Float3 direction;
+        float range;
+        Float4 color;
+    };
+
+    static const int limit = 100;
+
+    static void AddLight(Constant* const constant)
+    {
+        Get().lights.push_back(constant);
+    }
+    static void RemoveLight(Constant* const constant)
+    {
+        std::vector<Constant*>& v = Get().lights;
+        v.erase(remove(v.begin(), v.end(), constant), v.end());
+    }
+    static void Update()
+    {
+        for (int i = 0; i < limit; i++)
+        {
+            if (Get().lights.size() > i)
+                Get().constant[i] = *Get().lights[i];
+            else
+                Get().constant[i].type = -1;
+        }
+
+        Graphics::GetContext3D().UpdateSubresource(Get().constantBuffer.Get(), 0, nullptr, Get().constant, 0, 0);
+        Graphics::GetContext3D().VSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().HSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().DSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().GSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
+        Graphics::GetContext3D().PSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
+    }
+
+private:
+    struct Property
+    {
+        std::vector<Constant*> lights;
+        Constant constant[limit];
+        ComPtr<ID3D11Buffer> constantBuffer = nullptr;
+    };
+
+    static Property& Get()
+    {
+        static std::unique_ptr<Property> prop;
+
+        if (prop == nullptr)
+        {
+            prop.reset(new Property());
+
+            D3D11_BUFFER_DESC constantBufferDesc = {};
+            constantBufferDesc.ByteWidth = sizeof(Constant) * limit;
+            constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+            constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+            Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, Get().constantBuffer.GetAddressOf());
+        }
+
+        return *prop;
+    }
+};
 class SoundManager
 {
 public:
@@ -1205,10 +1274,10 @@ public:
     {
         ComPtr<IWICBitmapDecoder> decoder = nullptr;
 
-        Graphics::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+        HRESULT result = Graphics::GetTextureFactory().CreateDecoderFromFilename(filePath, 0, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
 
         if (decoder == nullptr)
-            Utility::Alert(GetLastError());
+            Utility::Alert(result);
 
         ComPtr<IWICBitmapFrameDecode> frame = nullptr;
         decoder->GetFrame(0, &frame);
@@ -1369,7 +1438,10 @@ public:
         constantBufferDesc.ByteWidth = (UINT)size;
         constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
         constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, _constantBuffer[slot].buffer.GetAddressOf());
+        HRESULT result = Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, _constantBuffer[slot].buffer.GetAddressOf());
+
+        if (_constantBuffer[slot].buffer == nullptr)
+            Utility::Alert(result);
     }
     void SetTexture(int slot, Texture* texture)
     {
@@ -1623,6 +1695,52 @@ private:
         Create();
     }
 };
+class Light
+{
+public:
+    enum class Type : int
+    {
+        Directional,
+        Point,
+    };
+
+    Type type;
+    Float3 position;
+    Float3 angles;
+    Float3 color;
+    float range;
+    float intensity;
+
+    Light()
+    {
+        type = Type::Directional;
+        color = Float3(1.0f, 1.0f, 1.0f);
+        range = 5.0f;
+        intensity = 1.0f;
+
+        LightManager::AddLight(&_constant);
+    }
+    ~Light()
+    {
+        LightManager::RemoveLight(&_constant);
+    }
+    void Update()
+    {
+        _constant.direction = Float3(
+            cosf(XMConvertToRadians(angles.x)) * cosf(XMConvertToRadians(angles.y + 90.0f)),
+            sinf(XMConvertToRadians(angles.x)),
+            cosf(XMConvertToRadians(angles.x)) * sinf(XMConvertToRadians(angles.y + 90.0f))
+        );
+
+        _constant.type = (int)type;
+        _constant.position = position;
+        _constant.color = color * intensity;
+        _constant.range = range;
+    }
+
+private:
+    LightManager::Constant _constant;
+};
 class Mesh
 {
 public:
@@ -1640,51 +1758,77 @@ public:
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
 
-        _material.Create(
-            "cbuffer Camera : register(b0)"
-            "{"
-            "    matrix view;"
-            "    matrix projection;"
-            "};"
-            "cbuffer Object : register(b1)"
-            "{"
-            "    matrix world;"
-            "};"
-            "Texture2D texture0 : register(t0);"
-            "SamplerState sampler0 : register(s0);"
-            "struct Vertex"
-            "{"
-            "    float4 position : POSITION;"
-            "    float3 normal : NORMAL;"
-            "    float2 uv : TEXCOORD;"
-            "};"
-            "struct Pixel"
-            "{"
-            "    float4 position : SV_POSITION;"
-            "    float3 normal : NORMAL;"
-            "    float2 uv : TEXCOORD;"
-            "};"
-            "Pixel VS(Vertex vertex)"
-            "{"
-            "    Pixel output;"
-            "    output.position = mul(vertex.position, world);"
-            "    output.position = mul(output.position, view);"
-            "    output.position = mul(output.position, projection);"
-            "    output.normal = mul(vertex.normal, (float3x3)world);"
-            "    output.uv = vertex.uv;"
-            "    return output;"
-            "}"
-            "float4 PS(Pixel pixel) : SV_TARGET"
-            "{"
-            "    float3 normal = normalize(pixel.normal);"
-            "    float3 lightDirection = normalize(float3(0.25, -1.0, 0.5));"
-            "    float3 lightColor = float3(1.0, 1.0, 1.0);"
-            "    float4 diffuseColor = texture0.Sample(sampler0, pixel.uv);"
-            "    float3 diffuseIntensity = dot(-lightDirection, normal) * lightColor * 0.7 + 0.3;"
-            "    float3 ambientIntensity = lightColor * 0.2;"
-            "    return diffuseColor * float4(diffuseIntensity + ambientIntensity, 1);"
-            "}"
-        );
+        _material.Create(R"(
+struct Vertex
+{
+    float4 position : POSITION;
+    float3 normal : NORMAL;
+    float2 uv : TEXCOORD;
+};
+struct Pixel
+{
+    float4 position : SV_POSITION;
+    float3 normal : NORMAL;
+    float2 uv : TEXCOORD0;
+    float3 worldPosition : TEXCOORD1;
+};
+struct Light
+{
+    int type;
+    float3 position;
+    float3 direction;
+    float range;
+    float4 color;
+};
+cbuffer Camera : register(b0)
+{
+    matrix view;
+    matrix projection;
+};
+cbuffer Light : register(b1)
+{
+    Light lights[100];
+};
+cbuffer Object : register(b5)
+{
+    matrix world;
+};
+Texture2D texture0 : register(t0);
+SamplerState sampler0 : register(s0);
+Pixel VS(Vertex vertex)
+{
+    Pixel output;
+    output.position = mul(vertex.position, world);
+    output.position = mul(output.position, view);
+    output.position = mul(output.position, projection);
+    output.normal = mul(vertex.normal, (float3x3)world);
+    output.uv = vertex.uv;
+    output.worldPosition = mul(vertex.position, world).xyz;
+    return output;
+}
+float4 PS(Pixel pixel) : SV_TARGET
+{
+    float3 diffuseColor = texture0.Sample(sampler0, pixel.uv).rgb;
+    float3 normal = normalize(pixel.normal);
+    float3 lightColor = float3(0.0, 0.0, 0.0);
+    for (int i = 0; i < 100; i++)
+    {
+        if (lights[i].type == 0)
+        {
+            float shade = max(0, dot(-lights[i].direction, normal));
+            lightColor += lights[i].color.xyz * shade;
+        }
+        if (lights[i].type == 1)
+        {
+            float3 lightDirection = normalize(lights[i].position.xyz - pixel.worldPosition);
+            float shade = max(0, dot(normal, lightDirection));
+            float attenuation = max(0, (lights[i].range - length(lights[i].position.xyz - pixel.worldPosition)) / lights[i].range);
+            lightColor += lights[i].color.xyz * shade * attenuation;
+        }
+    }
+    float3 ambientColor = float3(1.0, 1.0, 1.0) * 0.1;
+    return float4(diffuseColor * (lightColor + ambientColor), 1);
+}       )");
 
         SetCullingMode(D3D11_CULL_BACK);
 
@@ -1700,6 +1844,8 @@ public:
             vertices.clear();
             indices.clear();
         }
+
+        size /= 2.0f;
 
         leftDirection = DirectX::XMVector3Normalize(leftDirection);
         upDirection = DirectX::XMVector3Normalize(upDirection);
@@ -1721,7 +1867,7 @@ public:
         if (shouldClear)
             Apply();
     }
-    void CreateCube(Float3 size = Float3(0.5f, 0.5f, 0.5f), bool shouldClear = true)
+    void CreateCube(Float3 size = Float3(1.0f, 1.0f, 1.0f), bool shouldClear = true)
     {
         if (shouldClear)
         {
@@ -1729,12 +1875,12 @@ public:
             indices.clear();
         }
 
-        CreatePlane(Float2(size.x, size.y), Float3(0.0f, 0.0f, -size.z), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));	// front
-        CreatePlane(Float2(size.x, size.y), Float3(0.0f, 0.0f, size.z), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));	// back
-        CreatePlane(Float2(size.z, size.y), Float3(size.x, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));	// left
-        CreatePlane(Float2(size.z, size.y), Float3(-size.x, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));	// right
-        CreatePlane(Float2(size.x, size.z), Float3(0.0f, size.y, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));	// up
-        CreatePlane(Float2(size.x, size.z), Float3(0.0f, -size.y, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
+        CreatePlane(Float2(size.x, size.y), Float3(0.0f, 0.0f, -size.z / 2.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f));	// front
+        CreatePlane(Float2(size.x, size.y), Float3(0.0f, 0.0f, size.z / 2.0f), false, Float3(-1.0f, 0.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f));	// back
+        CreatePlane(Float2(size.z, size.y), Float3(size.x / 2.0f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(-1.0f, 0.0f, 0.0f));	// left
+        CreatePlane(Float2(size.z, size.y), Float3(-size.x / 2.0f, 0.0f, 0.0f), false, Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f), Float3(1.0f, 0.0f, 0.0f));	// right
+        CreatePlane(Float2(size.x, size.z), Float3(0.0f, size.y / 2.0f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, 1.0f), Float3(0.0f, -1.0f, 0.0f));	// up
+        CreatePlane(Float2(size.x, size.z), Float3(0.0f, -size.y / 2.0f, 0.0f), false, Float3(1.0f, 0.0f, 0.0f), Float3(0.0f, 0.0f, -1.0f), Float3(0.0f, 1.0f, 0.0f));	// down
 
         if (shouldClear)
             Apply();
@@ -1765,7 +1911,7 @@ public:
             {
                 float u = float(j) / horizontalSegments;
 
-                float longitude = j * XM_2PI / horizontalSegments +XM_PI;
+                float longitude = j * XM_2PI / horizontalSegments + XM_PI;
                 float dx, dz;
 
                 XMScalarSinCos(&dx, &dz, longitude);
@@ -1840,7 +1986,7 @@ public:
             Graphics::GetDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, _indexBuffer.GetAddressOf());
         }
 
-        _material.SetBuffer(1, &_constant, sizeof(Constant));
+        _material.SetBuffer(5, &_constant, sizeof(Constant));
     }
     void Draw()
     {
@@ -1936,7 +2082,7 @@ public:
         Float2 textureSize((float)_texture.GetSize().x, (float)_texture.GetSize().y);
         Float2 offset = textureSize / 2.0f * -pivot;
 
-        _mesh.CreatePlane(textureSize / 2.0f, Float3(offset.x, offset.y, 0.0f));
+        _mesh.CreatePlane(textureSize, Float3(offset.x, offset.y, 0.0f));
     }
     Material& GetMaterial()
     {
@@ -1969,11 +2115,11 @@ protected:
             "    matrix view;"
             "    matrix projection;"
             "};"
-            "cbuffer Object : register(b1)"
+            "cbuffer Object : register(b5)"
             "{"
             "    matrix world;"
             "};"
-            "cbuffer Sprite : register(b2)"
+            "cbuffer Sprite : register(b6)"
             "{"
             "    float4 color;"
             "};"
@@ -2007,7 +2153,7 @@ protected:
             "}"
         );
 
-        _mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
+        _mesh.GetMaterial().SetBuffer(6, &color, sizeof(Float4));
         _mesh.SetCullingMode(D3D11_CULL_NONE);
     }
 };
@@ -2117,10 +2263,10 @@ public:
         SoundManager::GetDevice();
 
         ComPtr<IStream> stream = nullptr;
-        SHCreateStreamOnFileW(filePath, STGM_READ, stream.GetAddressOf());
+        HRESULT result = SHCreateStreamOnFileW(filePath, STGM_READ, stream.GetAddressOf());
 
         if (stream == nullptr)
-            Utility::Alert(GetLastError());
+            Utility::Alert(result);
 
         ComPtr<IMFByteStream> byteStream = nullptr;
         MFCreateMFByteStreamOnStream(stream.Get(), byteStream.GetAddressOf());
@@ -2349,6 +2495,7 @@ private:
 inline bool Refresh()
 {
     Graphics::Update();
+    LightManager::Update();
     Input::Update();
     Timer::Update();
     return Window::Update();

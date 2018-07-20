@@ -14,6 +14,7 @@ int main()
     Camera camera;
     camera.position = Float3(0.0f, 1.0f, -5.0f);
     camera.SetupPerspective();
+    camera.color = Float4(0.0f, 0.0f, 0.0f, 1.0f);
 
     Camera uiCamera;
     uiCamera.color = Float4(1.0f, 0.0f, 1.0f, 1.0f);
@@ -24,13 +25,40 @@ int main()
     Texture playerTexture(L"assets/player.png");
 
     Mesh mesh;
-    mesh.CreateCube(Float3(1.0f, 0.5f, 0.3f));
+    mesh.CreateCube(Float3(2.0f, 1.0f, 0.5f));
     mesh.GetMaterial().SetTexture(0, &texture);
 
     Mesh sphere;
     sphere.CreateSphere();
     sphere.GetMaterial().SetTexture(0, &playerTexture);
     sphere.position.y = 2.0f;
+
+    Light directionalLight;
+    directionalLight.type = Light::Type::Directional;
+    directionalLight.angles = Float3(-50.0f, 30.0f, 0.0);
+    directionalLight.intensity = 0.5f;
+    directionalLight.Update();
+
+    Light light;
+    light.type = Light::Type::Point;
+    light.position.z = -1.0f;
+    light.color = Float4(0.0f, 1.0f, 0.0f, 0.0f);
+
+    Light light2;
+    light2.type = Light::Type::Point;
+    light2.position = Float3(1.0f, 1.0f, 0.5f);
+    light2.range = 2.0f;
+    light2.color = Float4(1.0f, 0.0f, 0.0f, 0.0f);
+    light2.intensity = 2.0f;
+    light2.Update();
+
+    Light light3;
+    light3.type = Light::Type::Point;
+    light3.position = Float3(-0.5f, 1.0f, -2.0f);
+    light3.range = 3.0f;
+    light3.color = Float4(0.0f, 0.0f, 1.0f, 0.0f);
+    light3.intensity = 10.0f;
+    light3.Update();
 
     Text number(L"0", 100.0f);
     number.position.y = 3.0f;
@@ -52,23 +80,32 @@ int main()
 
     Text text(L"あいうえおかきくけこさしすせそ\nabcdefghijklmnopqrstuvwxyz", 16.0f);
     //text.SetPivot(Float2(-1.0f, 1.0f));
+    text.position.x = 200.0f;
     text.position.y = 100.0f;
     text.scale = 2.0f;
+    text.color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
     Sprite sprite(L"assets/box.jpg");
     sprite.scale = 0.5f;
     sprite.color.w = 0.5f;
 
     Sprite clock(L"assets/clock.png");
+    clock.scale = 0.2f;
+    clock.angles.z = -135.0f;
 
     float pos1 = -2.0f;
     float pos2 = -3.0f;
+    
     while (Refresh())
     {
         camera.Update();
 
         PrintFrameRate();
         //printf("%d\n", Random::Range(0, 10));
+
+        light.position.x = Input::GetMousePosition().x * 0.01f;
+        light.position.y = Input::GetMousePosition().y * 0.01f;
+        light.Update();
 
         music.SetPitch(Input::GetMousePosition().x / (Window::GetSize().x / 2.0f));
 

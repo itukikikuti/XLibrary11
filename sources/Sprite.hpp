@@ -81,11 +81,11 @@ protected:
             "    matrix view;"
             "    matrix projection;"
             "};"
-            "cbuffer Object : register(b1)"
+            "cbuffer Object : register(b5)"
             "{"
             "    matrix world;"
             "};"
-            "cbuffer Sprite : register(b2)"
+            "cbuffer Sprite : register(b6)"
             "{"
             "    float4 color;"
             "};"
@@ -119,7 +119,7 @@ protected:
             "}"
         );
 
-        _mesh.GetMaterial().SetBuffer(2, &color, sizeof(Float4));
+        _mesh.GetMaterial().SetBuffer(6, &color, sizeof(Float4));
         _mesh.SetCullingMode(D3D11_CULL_NONE);
     }
 };

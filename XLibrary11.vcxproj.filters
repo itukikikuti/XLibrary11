@@ -57,6 +57,12 @@
     <ClInclude Include="sources\SoundManager.hpp">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\LightManager.hpp">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Light.hpp">
+      <Filter>sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\LibraryGenerator.cpp">
