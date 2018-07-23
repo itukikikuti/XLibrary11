@@ -1,4 +1,7 @@
-# Minimum Game Library by DirectX 11
+# XLibrary11
+XLibrary11はDirectX 11の学習用ライブラリです。
+最低限の機能しかないので、すべてのソースコードを短時間で読めるようになってます。
+DirectX 11の理解を深める手助けになればと思います。
 
 ### 詳しくはこちら！
 * [Wiki](https://gitlab.com/itukikikuti/XLibrary11/wikis/home)
