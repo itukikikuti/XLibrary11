@@ -23,7 +23,7 @@ public:
     }
     static void Update()
     {
-        for (int i = 0; i < limit; i++)
+        for (size_t i = 0; i < limit; i++)
         {
             if (Get().lights.size() > i)
                 Get().constant[i] = *Get().lights[i];
