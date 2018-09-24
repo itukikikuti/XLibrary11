@@ -46,7 +46,7 @@ public:
         _bitmap.Reset();
         Graphics::GetContext2D().CreateBitmapFromDxgiSurface(surface.Get(), bitmapProperties, _bitmap.GetAddressOf());
 
-        _mesh.GetMaterial().SetTexture(0, &_texture);
+        _mesh.SetTexture(&_texture);
 
         SetPivot(0.0f);
     }

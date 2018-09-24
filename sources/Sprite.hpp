@@ -27,7 +27,7 @@ public:
     {
         _texture.Load(filePath);
 
-        _mesh.GetMaterial().SetTexture(0, &_texture);
+        _mesh.SetTexture(&_texture);
 
         SetPivot(0.0f);
     }
@@ -35,7 +35,7 @@ public:
     {
         _texture.Create(buffer, width, height);
 
-        _mesh.GetMaterial().SetTexture(0, &_texture);
+        _mesh.SetTexture(&_texture);
 
         SetPivot(0.0f);
     }
@@ -56,6 +56,8 @@ public:
     }
     void Draw()
     {
+        _mesh.GetMaterial().SetBuffer(6, &color, sizeof(Float4));
+
         _mesh.position = position;
         _mesh.angles = angles;
         _mesh.scale = scale;
@@ -75,51 +77,8 @@ protected:
         scale = Float3(1.0f, 1.0f, 1.0f);
         color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        _mesh.GetMaterial().Create(
-            "cbuffer Camera : register(b0)"
-            "{"
-            "    matrix view;"
-            "    matrix projection;"
-            "};"
-            "cbuffer Object : register(b5)"
-            "{"
-            "    matrix world;"
-            "};"
-            "cbuffer Sprite : register(b6)"
-            "{"
-            "    float4 color;"
-            "};"
-            "Texture2D texture0 : register(t0);"
-            "SamplerState sampler0 : register(s0);"
-            "struct Vertex"
-            "{"
-            "    float4 position : POSITION;"
-            "    float2 uv : TEXCOORD;"
-            "};"
-            "struct Pixel"
-            "{"
-            "    float4 position : SV_POSITION;"
-            "    float2 uv : TEXCOORD;"
-            "};"
-            "Pixel VS(Vertex vertex)"
-            "{"
-            "    Pixel output;"
-            "    output.position = mul(vertex.position, world);"
-            "    output.position = mul(output.position, view);"
-            "    output.position = mul(output.position, projection);"
-            "    output.uv = vertex.uv;"
-            "    return output;"
-            "}"
-            "float4 PS(Pixel pixel) : SV_TARGET"
-            "{"
-            "    float4 textureColor = texture0.Sample(sampler0, pixel.uv);"
-            "    if (textureColor.a <= 0)"
-            "        discard;"
-            "    return textureColor * color;"
-            "}"
-        );
+        _mesh.SetMaterial(Material::GetSpriteMaterial());
 
-        _mesh.GetMaterial().SetBuffer(6, &color, sizeof(Float4));
         _mesh.SetCullingMode(D3D11_CULL_NONE);
     }
 };

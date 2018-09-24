@@ -26,11 +26,11 @@ int main()
 
     Mesh mesh;
     mesh.CreateCube(Float3(2.0f, 1.0f, 0.5f));
-    mesh.GetMaterial().SetTexture(0, &texture);
+    mesh.SetTexture(&texture);
 
     Mesh sphere;
     sphere.CreateSphere();
-    sphere.GetMaterial().SetTexture(0, &playerTexture);
+    sphere.SetTexture(&playerTexture);
     sphere.position.y = 2.0f;
 
     Light directionalLight;

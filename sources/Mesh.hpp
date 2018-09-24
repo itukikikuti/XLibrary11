@@ -15,77 +15,7 @@ public:
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
 
-        _material.Create(R"(
-struct Vertex
-{
-    float4 position : POSITION;
-    float3 normal : NORMAL;
-    float2 uv : TEXCOORD;
-};
-struct Pixel
-{
-    float4 position : SV_POSITION;
-    float3 normal : NORMAL;
-    float2 uv : TEXCOORD0;
-    float3 worldPosition : TEXCOORD1;
-};
-struct Light
-{
-    int type;
-    float3 position;
-    float3 direction;
-    float range;
-    float4 color;
-};
-cbuffer Camera : register(b0)
-{
-    matrix view;
-    matrix projection;
-};
-cbuffer Light : register(b1)
-{
-    Light lights[100];
-};
-cbuffer Object : register(b5)
-{
-    matrix world;
-};
-Texture2D texture0 : register(t0);
-SamplerState sampler0 : register(s0);
-Pixel VS(Vertex vertex)
-{
-    Pixel output;
-    output.position = mul(vertex.position, world);
-    output.position = mul(output.position, view);
-    output.position = mul(output.position, projection);
-    output.normal = mul(vertex.normal, (float3x3)world);
-    output.uv = vertex.uv;
-    output.worldPosition = mul(vertex.position, world).xyz;
-    return output;
-}
-float4 PS(Pixel pixel) : SV_TARGET
-{
-    float3 diffuseColor = texture0.Sample(sampler0, pixel.uv).rgb;
-    float3 normal = normalize(pixel.normal);
-    float3 lightColor = float3(0.0, 0.0, 0.0);
-    for (int i = 0; i < 100; i++)
-    {
-        if (lights[i].type == 0)
-        {
-            float shade = max(0, dot(-lights[i].direction, normal));
-            lightColor += lights[i].color.xyz * shade;
-        }
-        if (lights[i].type == 1)
-        {
-            float3 lightDirection = normalize(lights[i].position.xyz - pixel.worldPosition);
-            float shade = max(0, dot(normal, lightDirection));
-            float attenuation = max(0, (lights[i].range - length(lights[i].position.xyz - pixel.worldPosition)) / lights[i].range);
-            lightColor += lights[i].color.xyz * shade * attenuation;
-        }
-    }
-    float3 ambientColor = float3(1.0, 1.0, 1.0) * 0.1;
-    return float4(diffuseColor * (lightColor + ambientColor), 1);
-}       )");
+        SetMaterial(Material::GetDiffuseMaterial());
 
         SetCullingMode(D3D11_CULL_BACK);
 
@@ -205,9 +135,17 @@ float4 PS(Pixel pixel) : SV_TARGET
         if (shouldClear)
             Apply();
     }
+    void SetTexture(Texture* const texture)
+    {
+        _texture = texture;
+    }
     Material& GetMaterial()
     {
-        return _material;
+        return *_material;
+    }
+    void SetMaterial(Material* const material)
+    {
+        _material = material;
     }
     void SetCullingMode(D3D11_CULL_MODE cullingMode)
     {
@@ -242,13 +180,16 @@ float4 PS(Pixel pixel) : SV_TARGET
             indexSubresourceData.pSysMem = indices.data();
             Graphics::GetDevice3D().CreateBuffer(&indexBufferDesc, &indexSubresourceData, _indexBuffer.GetAddressOf());
         }
-
-        _material.SetBuffer(5, &_constant, sizeof(Constant));
     }
     void Draw()
     {
         if (_vertexBuffer == nullptr)
             return;
+
+        if (_texture != nullptr)
+            _texture->Attach(0);
+
+        _material->SetBuffer(5, &_constant, sizeof(Constant));
 
         _constant.world = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
@@ -258,7 +199,7 @@ float4 PS(Pixel pixel) : SV_TARGET
             DirectX::XMMatrixTranslation(position.x, position.y, position.z)
         );
 
-        _material.Attach();
+        _material->Attach();
 
         Graphics::GetContext3D().RSSetState(_rasterizerState.Get());
 
@@ -283,7 +224,8 @@ private:
         DirectX::XMMATRIX world;
     };
 
-    Material _material;
+    Material* _material;
+    Texture* _texture;
     Constant _constant;
     ComPtr<ID3D11Buffer> _vertexBuffer = nullptr;
     ComPtr<ID3D11Buffer> _indexBuffer = nullptr;
