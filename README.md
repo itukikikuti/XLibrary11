@@ -6,9 +6,6 @@ XLibrary11はDirectX 11の学習用ライブラリです。
 
 DirectX 11の理解を深める手助けになればと思います。
 
-### 詳しくはこちら！
-* [Wiki](https://gitlab.com/itukikikuti/XLibrary11/wikis/home)
-
-### ダウンロード
+* [ドキュメント](https://itukikikuti.gitlab.io/XLibrary11/)
 * [XLibrary11.hpp](https://gitlab.com/itukikikuti/XLibrary11/raw/master/XLibrary11.hpp)  
 * ~~XModelLibrary11.hpp（「FBX SDK」が必要です。）~~
