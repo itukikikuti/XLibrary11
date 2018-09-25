@@ -15,7 +15,7 @@ test:
 pages:
   script:
   - doxygen doxygen/Doxyfile
-  - mv doxygen/documentation/ public/
+#  - mv doxygen/documentation/ public/
   artifacts:
     paths:
     - public
