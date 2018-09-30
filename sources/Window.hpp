@@ -1,4 +1,5 @@
-﻿class Window
+﻿// ウィンドウを操作する。
+class Window
 {
 public:
     class Proceedable
