@@ -80,6 +80,7 @@ inline void InitializeApplication()
 #include "Text.hpp"
 #include "Sound.hpp"
 
+// アプリケーションを更新します。while文の中に書いてください。
 inline bool Refresh()
 {
     Graphics::Update();
