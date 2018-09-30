@@ -537,6 +537,7 @@ public:
     }
 };
 
+//! ウィンドウに関する操作が出来ます。
 class Window
 {
 public:
@@ -2528,6 +2529,7 @@ private:
 };
 
 
+//! アプリケーションを更新します。while文の中に書いてください。
 inline bool Refresh()
 {
     Graphics::Update();

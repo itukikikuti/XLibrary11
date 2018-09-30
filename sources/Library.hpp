@@ -44,7 +44,6 @@
 
 #define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
-//! test
 XLIBRARY_NAMESPACE_BEGIN
 
 using namespace DirectX;
