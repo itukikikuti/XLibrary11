@@ -11,8 +11,8 @@ public:
     //! ウィンドウの種類
     enum class Mode
     {
-        Windowed,   //! ウィンドウモード
-        FullScreen, //! フルスクリーンモード
+        Windowed,   //!< ウィンドウモード
+        FullScreen, //!< フルスクリーンモード
     };
 
     //! ウィンドウのハンドルを取得します。
