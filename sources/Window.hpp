@@ -13,6 +13,7 @@ public:
         FullScreen,
     };
 
+    // ウィンドウのハンドルを取得します。
     static HWND GetHandle()
     {
         return Get().handle;
