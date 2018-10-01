@@ -547,11 +547,11 @@ public:
     public:
         virtual void OnProceedMessage(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
     };
-    // ウィンドウの種類
+    //! ウィンドウの種類
     enum class Mode
     {
-        Windowed,
-        FullScreen,
+        Windowed,   //! ウィンドウモード
+        FullScreen, //! フルスクリーンモード
     };
 
     //! ウィンドウのハンドルを取得します。
@@ -559,6 +559,7 @@ public:
     {
         return Get().handle;
     }
+    //! ウィンドウのサイズをピクセル単位で取得します。
     static DirectX::XMINT2 GetSize()
     {
         RECT clientRect = {};
@@ -566,6 +567,7 @@ public:
 
         return DirectX::XMINT2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
     }
+    //! ウィンドウのサイズをピクセル単位で設定します。
     static void SetSize(int width, int height)
     {
         RECT windowRect = {};
@@ -580,20 +582,24 @@ public:
 
         SetWindowPos(Get().handle, nullptr, x, y, w, h, SWP_FRAMECHANGED);
     }
+    //! ウィンドウのタイトルを取得します。
     static wchar_t* const GetTitle()
     {
         wchar_t* title = nullptr;
         GetWindowTextW(Get().handle, title, GetWindowTextLengthW(Get().handle));
         return title;
     }
+    //! ウィンドウのタイトルを設定します。
     static void SetTitle(const wchar_t* const title)
     {
         SetWindowTextW(Get().handle, title);
     }
+    //! ウィンドウモードを取得します。
     static Mode GetMode()
     {
         return Get().mode;
     }
+    //! ウィンドウモードを設定します。
     static void SetMode(Mode mode)
     {
         if (Get().mode == mode)
@@ -617,6 +623,7 @@ public:
             SetSize(size.x, size.y);
         }
     }
+    //! ウィンドウモードを切り替えます。
     static void ToggleMode()
     {
         if (Get().mode == Mode::Windowed)
@@ -644,10 +651,12 @@ public:
 
         return true;
     }
+    //! ウィンドウプロシージャを追加します。
     static void AddProcedure(Proceedable* const procedure)
     {
         Get().procedures.push_back(procedure);
     }
+    //! ウィンドウプロシージャを削除します。
     static void RemoveProcedure(Proceedable* const procedure)
     {
         Get().procedures.remove(procedure);
