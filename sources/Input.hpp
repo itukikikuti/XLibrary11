@@ -2,8 +2,7 @@
 class Input
 {
 public:
-    /// キーが押されているかを取得します。VK_CODEにはAキーなら'A'を、スペースキーならVK_SPACEを指定します。
-    /// 詳しくはhttps://docs.microsoft.com/ja-jp/windows/desktop/inputdev/virtual-key-codesを参照してください。
+    /// キーが押されているかを取得します。VK_CODEにはAキーなら'A'を、スペースキーならVK_SPACEを指定します。詳しくは[こちら](https://docs.microsoft.com/ja-jp/windows/desktop/inputdev/virtual-key-codes)を参照してください。
     static bool GetKey(int VK_CODE)
     {
         return Get().keyState[VK_CODE] & 0x80;
@@ -52,8 +51,7 @@ public:
         Get().isShowCursor = isShowCursor;
         ShowCursor(isShowCursor);
     }
-    /// ゲームパッドのボタンが押されているかを取得します。idには0から3を指定します。
-    /// XINPUT_GAMEPAD_CODEはhttps://docs.microsoft.com/ja-jp/windows/desktop/api/xinput/ns-xinput-_xinput_gamepadを参照してください。
+    /// ゲームパッドのボタンが押されているかを取得します。idには0から3を指定します。XINPUT_GAMEPAD_CODEは[こちら](https://docs.microsoft.com/ja-jp/windows/desktop/api/xinput/ns-xinput-_xinput_gamepad)を参照してください。
     static bool GetPadButton(int id, int XINPUT_GAMEPAD_CODE)
     {
         return Get().padState[id].Gamepad.wButtons & XINPUT_GAMEPAD_CODE;
