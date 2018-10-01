@@ -2,11 +2,13 @@
 class Window
 {
 public:
+    //! 継承するとウィンドウのメッセージを受け取れます。
     class Proceedable
     {
     public:
         virtual void OnProceedMessage(HWND handle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
     };
+    // ウィンドウの種類
     enum class Mode
     {
         Windowed,
