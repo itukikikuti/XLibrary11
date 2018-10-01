@@ -7,5 +7,5 @@ INPUT                  =
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.hpp
 RECURSIVE              = NO
-HTML_STYLESHEET        = doxygen/MacDeveloperLibrary.css
+HTML_EXTRA_STYLESHEET  = doxygen/MacDeveloperLibrary.css
 LAYOUT_FILE            = doxygen/MacDeveloperLibrary.xml
