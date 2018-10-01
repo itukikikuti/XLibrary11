@@ -7,3 +7,5 @@ INPUT                  =
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.hpp
 RECURSIVE              = NO
+HTML_EXTRA_STYLESHEET  = ./customdoxygen.css
+LAYOUT_FILE            = ./DoxygenLayout.xml
