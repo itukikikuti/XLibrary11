@@ -1,29 +1,29 @@
-/// “ü—Í‚ğó‚¯æ‚ê‚Ü‚·B
+ï»¿/// å…¥åŠ›ã‚’å—ã‘å–ã‚Œã¾ã™ã€‚
 class Input
 {
 public:
-    /// ƒL[‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©‚ğæ“¾‚µ‚Ü‚·BVK_CODE‚É‚ÍAƒL[‚È‚ç'A'‚ğAƒXƒy[ƒXƒL[‚È‚çVK_SPACE‚ğw’è‚µ‚Ü‚·B
-    /// Ú‚µ‚­‚Íhttps://docs.microsoft.com/ja-jp/windows/desktop/inputdev/virtual-key-codes‚ğQÆ‚µ‚Ä‚­‚¾‚³‚¢B
+    /// ã‚­ãƒ¼ãŒæŠ¼ã•ã‚Œã¦ã„ã‚‹ã‹ã‚’å–å¾—ã—ã¾ã™ã€‚VK_CODEã«ã¯Aã‚­ãƒ¼ãªã‚‰'A'ã‚’ã€ã‚¹ãƒšãƒ¼ã‚¹ã‚­ãƒ¼ãªã‚‰VK_SPACEã‚’æŒ‡å®šã—ã¾ã™ã€‚
+    /// è©³ã—ãã¯https://docs.microsoft.com/ja-jp/windows/desktop/inputdev/virtual-key-codesã‚’å‚ç…§ã—ã¦ãã ã•ã„ã€‚
     static bool GetKey(int VK_CODE)
     {
         return Get().keyState[VK_CODE] & 0x80;
     }
-    /// ƒL[‚ª—£‚³‚ê‚½uŠÔ‚©‚ğæ“¾‚µ‚Ü‚·B
+    /// ã‚­ãƒ¼ãŒé›¢ã•ã‚ŒãŸç¬é–“ã‹ã‚’å–å¾—ã—ã¾ã™ã€‚
     static bool GetKeyUp(int VK_CODE)
     {
         return !(Get().keyState[VK_CODE] & 0x80) && (Get().prevKeyState[VK_CODE] & 0x80);
     }
-    /// ƒL[‚ª‰Ÿ‚³‚ê‚½uŠÔ‚©‚ğæ“¾‚µ‚Ü‚·B
+    /// ã‚­ãƒ¼ãŒæŠ¼ã•ã‚ŒãŸç¬é–“ã‹ã‚’å–å¾—ã—ã¾ã™ã€‚
     static bool GetKeyDown(int VK_CODE)
     {
         return (Get().keyState[VK_CODE] & 0x80) && !(Get().prevKeyState[VK_CODE] & 0x80);
     }
-    /// ƒ}ƒEƒX‚ÌÀ•W‚ğæ“¾‚µ‚Ü‚·B
+    /// ãƒã‚¦ã‚¹ã®åº§æ¨™ã‚’å–å¾—ã—ã¾ã™ã€‚
     static Float2 GetMousePosition()
     {
         return Get().mousePosition;
     }
-    /// ƒ}ƒEƒX‚ÌÀ•W‚ğİ’è‚µ‚Ü‚·B
+    /// ãƒã‚¦ã‚¹ã®åº§æ¨™ã‚’è¨­å®šã—ã¾ã™ã€‚
     static void SetMousePosition(float x, float y)
     {
         if (GetActiveWindow() != Window::GetHandle())
@@ -38,12 +38,12 @@ public:
         Get().mousePosition.x = x;
         Get().mousePosition.y = y;
     }
-    /// ƒ}ƒEƒXƒzƒC[ƒ‹‚Ì‰ñ“]—Ê‚ğæ“¾‚µ‚Ü‚·B
+    /// ãƒã‚¦ã‚¹ãƒ›ã‚¤ãƒ¼ãƒ«ã®å›è»¢é‡ã‚’å–å¾—ã—ã¾ã™ã€‚
     static int GetMouseWheel()
     {
         return Get().mouseWheel;
     }
-    /// ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚Ì•\¦‚ğØ‚è‘Ö‚¦‚Ü‚·B
+    /// ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«ã®è¡¨ç¤ºã‚’åˆ‡ã‚Šæ›¿ãˆã¾ã™ã€‚
     static void SetShowCursor(bool isShowCursor)
     {
         if (Get().isShowCursor == isShowCursor)
@@ -52,33 +52,33 @@ public:
         Get().isShowCursor = isShowCursor;
         ShowCursor(isShowCursor);
     }
-    /// ƒQ[ƒ€ƒpƒbƒh‚Ìƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©‚ğæ“¾‚µ‚Ü‚·Bid‚É‚Í0‚©‚ç3‚ğw’è‚µ‚Ü‚·B
-    /// XINPUT_GAMEPAD_CODE‚Íhttps://docs.microsoft.com/ja-jp/windows/desktop/api/xinput/ns-xinput-_xinput_gamepad‚ğQÆ‚µ‚Ä‚­‚¾‚³‚¢B
+    /// ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ã®ãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚Œã¦ã„ã‚‹ã‹ã‚’å–å¾—ã—ã¾ã™ã€‚idã«ã¯0ã‹ã‚‰3ã‚’æŒ‡å®šã—ã¾ã™ã€‚
+    /// XINPUT_GAMEPAD_CODEã¯https://docs.microsoft.com/ja-jp/windows/desktop/api/xinput/ns-xinput-_xinput_gamepadã‚’å‚ç…§ã—ã¦ãã ã•ã„ã€‚
     static bool GetPadButton(int id, int XINPUT_GAMEPAD_CODE)
     {
         return Get().padState[id].Gamepad.wButtons & XINPUT_GAMEPAD_CODE;
     }
-    /// ƒQ[ƒ€ƒpƒbƒh‚Ìƒ{ƒ^ƒ“‚ª—£‚³‚ê‚½uŠÔ‚©‚ğæ“¾‚µ‚Ü‚·B
+    /// ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ã®ãƒœã‚¿ãƒ³ãŒé›¢ã•ã‚ŒãŸç¬é–“ã‹ã‚’å–å¾—ã—ã¾ã™ã€‚
     static bool GetPadButtonUp(int id, int XINPUT_GAMEPAD_CODE)
     {
         return !(Get().padState[id].Gamepad.wButtons & XINPUT_GAMEPAD_CODE) && (Get().prevPadState[id].Gamepad.wButtons & XINPUT_GAMEPAD_CODE);
     }
-    /// ƒQ[ƒ€ƒpƒbƒh‚Ìƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½uŠÔ‚©‚ğæ“¾‚µ‚Ü‚·B
+    /// ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ã®ãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸç¬é–“ã‹ã‚’å–å¾—ã—ã¾ã™ã€‚
     static bool GetPadButtonDown(int id, int XINPUT_GAMEPAD_CODE)
     {
         return (Get().padState[id].Gamepad.wButtons & XINPUT_GAMEPAD_CODE) && !(Get().prevPadState[id].Gamepad.wButtons & XINPUT_GAMEPAD_CODE);
     }
-    /// ƒQ[ƒ€ƒpƒbƒh‚Ì¶ƒgƒŠƒK[‚Ì’l‚ğæ“¾‚µ‚Ü‚·B
+    /// ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ã®å·¦ãƒˆãƒªã‚¬ãƒ¼ã®å€¤ã‚’å–å¾—ã—ã¾ã™ã€‚
     static float GetPadLeftTrigger(int id)
     {
         return float(Get().padState[id].Gamepad.bLeftTrigger) / std::numeric_limits<BYTE>::max();
     }
-    /// ƒQ[ƒ€ƒpƒbƒh‚Ì‰EƒgƒŠƒK[‚Ì’l‚ğæ“¾‚µ‚Ü‚·B
+    /// ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ã®å³ãƒˆãƒªã‚¬ãƒ¼ã®å€¤ã‚’å–å¾—ã—ã¾ã™ã€‚
     static float GetPadRightTrigger(int id)
     {
         return float(Get().padState[id].Gamepad.bRightTrigger) / std::numeric_limits<BYTE>::max();
     }
-    /// ƒQ[ƒ€ƒpƒbƒh‚Ì¶ƒXƒeƒBƒbƒN‚Ì’l‚ğæ“¾‚µ‚Ü‚·B
+    /// ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ã®å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯ã®å€¤ã‚’å–å¾—ã—ã¾ã™ã€‚
     static Float2 GetPadLeftThumb(int id)
     {
         static const float deadZone = float(XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) / std::numeric_limits<SHORT>::max();
@@ -94,7 +94,7 @@ public:
 
         return value;
     }
-    /// ƒQ[ƒ€ƒpƒbƒh‚Ì‰EƒXƒeƒBƒbƒN‚Ì’l‚ğæ“¾‚µ‚Ü‚·B
+    /// ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ã®å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯ã®å€¤ã‚’å–å¾—ã—ã¾ã™ã€‚
     static Float2 GetPadRightThumb(int id)
     {
         static const float deadZone = float(XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) / std::numeric_limits<SHORT>::max();
