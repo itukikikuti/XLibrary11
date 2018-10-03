@@ -7,4 +7,4 @@ INPUT                  =
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.hpp
 RECURSIVE              = NO
-SOURCE_BROWSER         = NO
+USE_MDFILE_AS_MAINPAGE = REDOME.md
