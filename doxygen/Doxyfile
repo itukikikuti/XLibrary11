@@ -5,6 +5,6 @@ OUTPUT_LANGUAGE        = Japanese
 FULL_PATH_NAMES        = NO
 INPUT                  = 
 INPUT_ENCODING         = UTF-8
-FILE_PATTERNS          = *.hpp
+FILE_PATTERNS          = *.hpp \ *.md
 RECURSIVE              = NO
 USE_MDFILE_AS_MAINPAGE = REDOME.md
