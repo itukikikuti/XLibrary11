@@ -1,10 +1,15 @@
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = XLibrary11
+
 OUTPUT_DIRECTORY       = doxygen/output/
 OUTPUT_LANGUAGE        = Japanese
+INLINE_INHERITED_MEMB  = YES
 FULL_PATH_NAMES        = NO
-INPUT                  = 
+
 INPUT_ENCODING         = UTF-8
-FILE_PATTERNS          = *.hpp
+INPUT                  = 
+FILE_PATTERNS          = *.hpp \ *.md
 RECURSIVE              = NO
 USE_MDFILE_AS_MAINPAGE = README.md
+
+EXTRACT_ALL            = YES
