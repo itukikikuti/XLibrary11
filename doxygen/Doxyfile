@@ -3,7 +3,7 @@ PROJECT_NAME           = XLibrary11
 
 OUTPUT_DIRECTORY       = doxygen/output/
 OUTPUT_LANGUAGE        = Japanese
-INLINE_INHERITED_MEMB  = YES
+#INLINE_INHERITED_MEMB  = YES
 FULL_PATH_NAMES        = NO
 
 INPUT_ENCODING         = UTF-8
