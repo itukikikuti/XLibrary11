@@ -1,6 +1,8 @@
+﻿/// IDirectSound8を取得できます。
 class SoundManager
 {
 public:
+    /// IDirectSound8を取得します。
     static IDirectSound8& GetDevice()
     {
         return *Get().device.Get();

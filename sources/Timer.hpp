@@ -1,14 +1,18 @@
+﻿/// 時間に関する情報を取得できます。
 class Timer
 {
 public:
+    /// アプリケーションが起動してからの時間を取得します。
     static float GetTime()
     {
         return Get().time;
     }
+    /// 前のフレームからの時間を取得します。
     static float GetDeltaTime()
     {
         return Get().deltaTime;
     }
+    /// フレームレートを取得します。
     static int GetFrameRate()
     {
         return Get().frameRate;
