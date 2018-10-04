@@ -16,6 +16,7 @@ pages:
   script:
   - doxygen doxygen/Doxyfile
   - mv doxygen/output/html/ public/
+  - curl -w '\n' 'https://discordapp.com/api/webhooks/490435280973725697/zqhEWJfpxirgOe0A9E4DsU-xRfpc29hxDHsoAia5yFWEr2HwRFP03kKQMUOKdxgOtE1u' -d '{"content":"デプロイが完了しました。}' -XPOST
   artifacts:
     paths:
     - public
