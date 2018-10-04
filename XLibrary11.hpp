@@ -44,6 +44,7 @@
 
 #define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
+/// XLibraryの名前空間です。
 namespace XLibrary
 {
 
