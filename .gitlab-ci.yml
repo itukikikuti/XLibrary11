@@ -18,6 +18,7 @@ pages:
   - VAR1="'{\"content\":\""
   - VAR2="ビルドが完了しました。\"}'"
   - VAR3=${VAR1}${CI_PROJECT_NAME}${VAR2}
+  - echo VAR3
   - "curl -# -H 'Accept:application/json' -H 'Content-type:application/json' -X POST -d $VAR3 'https://discordapp.com/api/webhooks/490435280973725697/zqhEWJfpxirgOe0A9E4DsU-xRfpc29hxDHsoAia5yFWEr2HwRFP03kKQMUOKdxgOtE1u'"
   artifacts:
     paths:
