@@ -17,7 +17,7 @@ pages:
   - mv doxygen/output/html/ public/
   - VAR1="curl -H 'Accept:application/json' -H 'Content-type:application/json' -X POST -d '{\"content\":\""
   - VAR2="のビルドが完了しました。\"}' 'https://discordapp.com/api/webhooks/490435280973725697/zqhEWJfpxirgOe0A9E4DsU-xRfpc29hxDHsoAia5yFWEr2HwRFP03kKQMUOKdxgOtE1u'"
-  - echo ${VAR1}${CI_PROJECT_NAME}${VAR2}
+  - eval ${VAR1}${CI_PROJECT_NAME}${VAR2}
   artifacts:
     paths:
     - public
