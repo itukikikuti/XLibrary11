@@ -1,9 +1,9 @@
 image: alpine
 
 before_script:
-- "apk update"
-- "apk add curl"
-- "apk add doxygen"
+- apk update
+- apk add curl
+- apk add doxygen
 
 test:
   script:
@@ -13,11 +13,11 @@ test:
   
 pages:
   script:
-  - "doxygen doxygen/Doxyfile"
-  - "mv doxygen/output/html/ public/"
-  - "VAR1 = '{\"content\":\""
-  - "VAR1 = ビルドが完了しました。\"}'"
-  - "VAR3 = ${VAR1}${CI_PROJECT_NAME}${VAR2}"
+  - doxygen doxygen/Doxyfile
+  - mv doxygen/output/html/ public/
+  - VAR1 = "'{\"content\":\""
+  - VAR1 = "ビルドが完了しました。\"}'"
+  - VAR3 = ${VAR1}${CI_PROJECT_NAME}${VAR2}
   - "curl -# -H 'Accept:application/json' -H 'Content-type:application/json' -X POST -d $VAR3 'https://discordapp.com/api/webhooks/490435280973725697/zqhEWJfpxirgOe0A9E4DsU-xRfpc29hxDHsoAia5yFWEr2HwRFP03kKQMUOKdxgOtE1u'"
   artifacts:
     paths:
