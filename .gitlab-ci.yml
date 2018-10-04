@@ -4,12 +4,6 @@ before_script:
 - apk update
 - apk add curl
 - apk add doxygen
-
-test:
-  script:
-  - doxygen doxygen/Doxyfile
-  except:
-  - master
   
 pages:
   script:
