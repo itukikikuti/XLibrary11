@@ -16,7 +16,7 @@ pages:
   - "doxygen doxygen/Doxyfile"
   - "mv doxygen/output/html/ public/"
   - "curl -# -H 'Accept: application/json' -H 'Content-type: application/json' -X POST -d '{\"content\":\"ビルドが完了しました。\"}' 'https://discordapp.com/api/webhooks/490435280973725697/zqhEWJfpxirgOe0A9E4DsU-xRfpc29hxDHsoAia5yFWEr2HwRFP03kKQMUOKdxgOtE1u'"
-  - echo $CI_PROJECT_NAME;
+  - "echo $CI_PROJECT_NAME"
   artifacts:
     paths:
     - public
