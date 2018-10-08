@@ -8,7 +8,7 @@ DirectX 11の理解を深める手助けになればと思います。
 
 * [ドキュメント](https://itukikikuti.gitlab.io/XLibrary11/)
 * [リポジトリ](https://gitlab.com/itukikikuti/XLibrary11)
-* [XLibrary11.hpp](https://gitlab.com/itukikikuti/XLibrary11/raw/master/XLibrary11.hpp)
+* [XLibrary11.hpp](https://github.com/itukikikuti/XLibrary11/releases/download/v0.1/XLibrary11.hpp)
 
 ### サンプル
 * [フラッピーバード風ゲーム](https://gitlab.com/itukikikuti/Bird)
