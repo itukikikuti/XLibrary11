@@ -12,4 +12,4 @@ FILE_PATTERNS          = *.hpp \ *.md
 RECURSIVE              = NO
 USE_MDFILE_AS_MAINPAGE = README.md
 
-EXTRACT_ALL            = YES
+#EXTRACT_ALL            = YES
