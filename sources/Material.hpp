@@ -102,7 +102,7 @@ public:
             }
         }
     }
-    static Material* GetDiffuseMaterial()
+    static Material& GetDiffuseMaterial()
     {
         static std::unique_ptr<Material> diffuseMaterial;
 
@@ -182,9 +182,9 @@ public:
             ));
         }
 
-        return diffuseMaterial.get();
+        return *diffuseMaterial.get();
     }
-    static Material* GetSpriteMaterial()
+    static Material& GetSpriteMaterial()
     {
         static std::unique_ptr<Material> spriteMaterial;
 
@@ -235,7 +235,7 @@ public:
             ));
         }
 
-        return spriteMaterial.get();
+        return *spriteMaterial.get();
     }
 
 private:

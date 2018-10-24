@@ -5,6 +5,7 @@ public:
     Float3 angles;
     Float3 scale;
     Float4 color;
+    Material& material = Material::GetSpriteMaterial();
 
     Sprite()
     {
@@ -50,17 +51,14 @@ public:
 
         _mesh.CreatePlane(textureSize, Float3(offset.x, offset.y, 0.0f));
     }
-    Material& GetMaterial()
-    {
-        return _mesh.GetMaterial();
-    }
     void Draw()
     {
-        _mesh.GetMaterial().SetBuffer(6, &color, sizeof(Float4));
+        material.SetBuffer(6, &color, sizeof(Float4));
 
         _mesh.position = position;
         _mesh.angles = angles;
         _mesh.scale = scale;
+        _mesh.material = material;
         _mesh.Draw();
     }
 
@@ -76,8 +74,6 @@ protected:
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
         color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
-
-        _mesh.SetMaterial(Material::GetSpriteMaterial());
 
         _mesh.SetCullingMode(D3D11_CULL_NONE);
     }

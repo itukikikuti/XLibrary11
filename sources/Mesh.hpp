@@ -6,6 +6,7 @@ public:
     Float3 scale;
     std::vector<Vertex> vertices;
     std::vector<UINT> indices;
+    Material& material = Material::GetDiffuseMaterial();
 
     Mesh()
     {
@@ -14,8 +15,6 @@ public:
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
-
-        SetMaterial(Material::GetDiffuseMaterial());
 
         SetCullingMode(D3D11_CULL_BACK);
 
@@ -139,14 +138,6 @@ public:
     {
         _texture = texture;
     }
-    Material& GetMaterial()
-    {
-        return *_material;
-    }
-    void SetMaterial(Material* const material)
-    {
-        _material = material;
-    }
     void SetCullingMode(D3D11_CULL_MODE cullingMode)
     {
         D3D11_RASTERIZER_DESC rasterizerDesc = {};
@@ -189,7 +180,7 @@ public:
         if (_texture != nullptr)
             _texture->Attach(0);
 
-        _material->SetBuffer(5, &_constant, sizeof(Constant));
+        material.SetBuffer(5, &_constant, sizeof(Constant));
 
         _constant.world = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
@@ -199,7 +190,7 @@ public:
             DirectX::XMMatrixTranslation(position.x, position.y, position.z)
         );
 
-        _material->Attach();
+        material.Attach();
 
         Graphics::GetContext3D().RSSetState(_rasterizerState.Get());
 
@@ -224,7 +215,6 @@ private:
         DirectX::XMMATRIX world;
     };
 
-    Material* _material;
     Texture* _texture;
     Constant _constant;
     ComPtr<ID3D11Buffer> _vertexBuffer = nullptr;
