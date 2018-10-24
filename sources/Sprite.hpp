@@ -5,7 +5,7 @@ public:
     Float3 angles;
     Float3 scale;
     Float4 color;
-    Material& material = Material::GetSpriteMaterial();
+    Material material = Material::GetSpriteMaterial();
 
     Sprite()
     {

@@ -1527,7 +1527,7 @@ public:
             }
         }
     }
-    static Material& GetDiffuseMaterial()
+    static Material GetDiffuseMaterial()
     {
         static std::unique_ptr<Material> diffuseMaterial;
 
@@ -1609,7 +1609,7 @@ public:
 
         return *diffuseMaterial.get();
     }
-    static Material& GetSpriteMaterial()
+    static Material GetSpriteMaterial()
     {
         static std::unique_ptr<Material> spriteMaterial;
 
@@ -1932,7 +1932,7 @@ public:
     Float3 scale;
     std::vector<Vertex> vertices;
     std::vector<UINT> indices;
-    Material& material = Material::GetDiffuseMaterial();
+    Material material = Material::GetDiffuseMaterial();
 
     Mesh()
     {
@@ -2154,7 +2154,7 @@ public:
     Float3 angles;
     Float3 scale;
     Float4 color;
-    Material& material = Material::GetSpriteMaterial();
+    Material material = Material::GetSpriteMaterial();
 
     Sprite()
     {

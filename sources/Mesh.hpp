@@ -6,7 +6,7 @@ public:
     Float3 scale;
     std::vector<Vertex> vertices;
     std::vector<UINT> indices;
-    Material& material = Material::GetDiffuseMaterial();
+    Material material = Material::GetDiffuseMaterial();
 
     Mesh()
     {
