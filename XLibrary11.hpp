@@ -1269,7 +1269,6 @@ private:
     }
 };
 
-
 class Texture
 {
 public:
