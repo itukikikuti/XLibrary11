@@ -6,7 +6,7 @@ public:
     Float3 scale;
     std::vector<Vertex> vertices;
     std::vector<UINT> indices;
-    Material material = Material::GetDiffuseMaterial();
+    Shader material = Shader::GetDiffuseShader();
 
     Mesh()
     {
@@ -180,7 +180,7 @@ public:
         if (_texture != nullptr)
             _texture->Attach(0);
 
-        _cbuffer.GetData().world = DirectX::XMMatrixTranspose(
+        _cbuffer.Get().world = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
             DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
             DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *

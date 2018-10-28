@@ -3,7 +3,6 @@
 
 #define NOMINMAX
 #define OEMRESOURCE
-#include <array>
 #include <chrono>
 #include <cstdio>
 #include <fstream>
@@ -75,7 +74,7 @@ inline void InitializeApplication()
 
 #include "Texture.hpp"
 #include "CBuffer.hpp"
-#include "Material.hpp"
+#include "Shader.hpp"
 #include "Camera.hpp"
 #include "Light.hpp"
 #include "Mesh.hpp"

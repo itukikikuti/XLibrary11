@@ -1,21 +1,21 @@
-﻿class Material
+﻿class Shader
 {
 public:
-    Material()
+    Shader()
     {
         InitializeApplication();
     }
-    Material(const wchar_t* const filePath)
+    Shader(const wchar_t* const filePath)
     {
         InitializeApplication();
         Load(filePath);
     }
-    Material(const std::string& source)
+    Shader(const std::string& source)
     {
         InitializeApplication();
         Create(source);
     }
-    ~Material()
+    ~Shader()
     {
     }
     void Load(const wchar_t* const filePath)
@@ -32,12 +32,12 @@ public:
     {
         _vertexShader.Reset();
         ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
-        CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
+        Compile(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
         Graphics::GetDevice3D().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, _vertexShader.GetAddressOf());
 
         _pixelShader.Reset();
         ComPtr<ID3DBlob> pixelShaderBlob = nullptr;
-        CompileShader(source, "PS", "ps_5_0", pixelShaderBlob.GetAddressOf());
+        Compile(source, "PS", "ps_5_0", pixelShaderBlob.GetAddressOf());
         Graphics::GetDevice3D().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, _pixelShader.GetAddressOf());
 
         _inputLayout.Reset();
@@ -63,13 +63,13 @@ public:
         if (_inputLayout != nullptr)
             Graphics::GetContext3D().IASetInputLayout(_inputLayout.Get());
     }
-    static Material GetDiffuseMaterial()
+    static Shader GetDiffuseShader()
     {
-        static std::unique_ptr<Material> diffuseMaterial;
+        static std::unique_ptr<Shader> diffuseShader;
 
-        if (diffuseMaterial == nullptr)
+        if (diffuseShader == nullptr)
         {
-            diffuseMaterial.reset(new Material(
+            diffuseShader.reset(new Shader(
                 "struct Vertex"
                 "{"
                 "    float4 position : POSITION;"
@@ -143,15 +143,15 @@ public:
             ));
         }
 
-        return *diffuseMaterial.get();
+        return *diffuseShader.get();
     }
-    static Material GetSpriteMaterial()
+    static Shader GetSpriteShader()
     {
-        static std::unique_ptr<Material> spriteMaterial;
+        static std::unique_ptr<Shader> spriteShader;
 
-        if (spriteMaterial == nullptr)
+        if (spriteShader == nullptr)
         {
-            spriteMaterial.reset(new Material(
+            spriteShader.reset(new Shader(
                 "cbuffer Camera : register(b0)"
                 "{"
                 "    matrix view;"
@@ -196,7 +196,7 @@ public:
             ));
         }
 
-        return *spriteMaterial.get();
+        return *spriteShader.get();
     }
 
 private:
@@ -204,7 +204,7 @@ private:
     ComPtr<ID3D11PixelShader> _pixelShader = nullptr;
     ComPtr<ID3D11InputLayout> _inputLayout = nullptr;
 
-    static void CompileShader(const std::string& source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
+    static void Compile(const std::string& source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {
         UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)

@@ -3,7 +3,6 @@
 
 #define NOMINMAX
 #define OEMRESOURCE
-#include <array>
 #include <chrono>
 #include <cstdio>
 #include <fstream>
@@ -1442,7 +1441,7 @@ public:
     ~CBuffer()
     {
     }
-    T& GetData()
+    T& Get()
     {
         return *data.get();
     }
@@ -1457,24 +1456,24 @@ private:
     ComPtr<ID3D11Buffer> buffer = nullptr;
     std::unique_ptr<T> data;
 };
-class Material
+class Shader
 {
 public:
-    Material()
+    Shader()
     {
         InitializeApplication();
     }
-    Material(const wchar_t* const filePath)
+    Shader(const wchar_t* const filePath)
     {
         InitializeApplication();
         Load(filePath);
     }
-    Material(const std::string& source)
+    Shader(const std::string& source)
     {
         InitializeApplication();
         Create(source);
     }
-    ~Material()
+    ~Shader()
     {
     }
     void Load(const wchar_t* const filePath)
@@ -1491,12 +1490,12 @@ public:
     {
         _vertexShader.Reset();
         ComPtr<ID3DBlob> vertexShaderBlob = nullptr;
-        CompileShader(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
+        Compile(source, "VS", "vs_5_0", vertexShaderBlob.GetAddressOf());
         Graphics::GetDevice3D().CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, _vertexShader.GetAddressOf());
 
         _pixelShader.Reset();
         ComPtr<ID3DBlob> pixelShaderBlob = nullptr;
-        CompileShader(source, "PS", "ps_5_0", pixelShaderBlob.GetAddressOf());
+        Compile(source, "PS", "ps_5_0", pixelShaderBlob.GetAddressOf());
         Graphics::GetDevice3D().CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), nullptr, _pixelShader.GetAddressOf());
 
         _inputLayout.Reset();
@@ -1522,13 +1521,13 @@ public:
         if (_inputLayout != nullptr)
             Graphics::GetContext3D().IASetInputLayout(_inputLayout.Get());
     }
-    static Material GetDiffuseMaterial()
+    static Shader GetDiffuseShader()
     {
-        static std::unique_ptr<Material> diffuseMaterial;
+        static std::unique_ptr<Shader> diffuseShader;
 
-        if (diffuseMaterial == nullptr)
+        if (diffuseShader == nullptr)
         {
-            diffuseMaterial.reset(new Material(
+            diffuseShader.reset(new Shader(
                 "struct Vertex"
                 "{"
                 "    float4 position : POSITION;"
@@ -1602,15 +1601,15 @@ public:
             ));
         }
 
-        return *diffuseMaterial.get();
+        return *diffuseShader.get();
     }
-    static Material GetSpriteMaterial()
+    static Shader GetSpriteShader()
     {
-        static std::unique_ptr<Material> spriteMaterial;
+        static std::unique_ptr<Shader> spriteShader;
 
-        if (spriteMaterial == nullptr)
+        if (spriteShader == nullptr)
         {
-            spriteMaterial.reset(new Material(
+            spriteShader.reset(new Shader(
                 "cbuffer Camera : register(b0)"
                 "{"
                 "    matrix view;"
@@ -1655,7 +1654,7 @@ public:
             ));
         }
 
-        return *spriteMaterial.get();
+        return *spriteShader.get();
     }
 
 private:
@@ -1663,7 +1662,7 @@ private:
     ComPtr<ID3D11PixelShader> _pixelShader = nullptr;
     ComPtr<ID3D11InputLayout> _inputLayout = nullptr;
 
-    static void CompileShader(const std::string& source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
+    static void Compile(const std::string& source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {
         UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined(_DEBUG)
@@ -1714,7 +1713,7 @@ public:
         _nearClip = nearClip;
         _farClip = farClip;
         float aspectRatio = float(Window::GetSize().x) / Window::GetSize().y;
-        _cbuffer.GetData().projection = DirectX::XMMatrixTranspose(
+        _cbuffer.Get().projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
@@ -1726,13 +1725,13 @@ public:
         _nearClip = nearClip;
         _farClip = farClip;
         float aspectRatio = float(Window::GetSize().x) / Window::GetSize().y;
-        _cbuffer.GetData().projection = DirectX::XMMatrixTranspose(
+        _cbuffer.Get().projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixOrthographicLH(size * aspectRatio, size, nearClip, farClip)
         );
     }
     void Update()
     {
-        _cbuffer.GetData().view = DirectX::XMMatrixTranspose(
+        _cbuffer.Get().view = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixInverse(
                 nullptr,
                 DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
@@ -1896,7 +1895,7 @@ public:
     Float3 scale;
     std::vector<Vertex> vertices;
     std::vector<UINT> indices;
-    Material material = Material::GetDiffuseMaterial();
+    Shader material = Shader::GetDiffuseShader();
 
     Mesh()
     {
@@ -2070,7 +2069,7 @@ public:
         if (_texture != nullptr)
             _texture->Attach(0);
 
-        _cbuffer.GetData().world = DirectX::XMMatrixTranspose(
+        _cbuffer.Get().world = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
             DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
             DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
@@ -2118,7 +2117,7 @@ public:
     Float3 angles;
     Float3 scale;
     Float4 color;
-    Material material = Material::GetSpriteMaterial();
+    Shader material = Shader::GetSpriteShader();
 
     Sprite()
     {
@@ -2166,7 +2165,7 @@ public:
     }
     void Draw()
     {
-        _cbuffer.GetData() = color;
+        _cbuffer.Get() = color;
         _cbuffer.Attach(6);
 
         _mesh.position = position;

@@ -31,7 +31,7 @@ public:
         _nearClip = nearClip;
         _farClip = farClip;
         float aspectRatio = float(Window::GetSize().x) / Window::GetSize().y;
-        _cbuffer.GetData().projection = DirectX::XMMatrixTranspose(
+        _cbuffer.Get().projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
@@ -43,13 +43,13 @@ public:
         _nearClip = nearClip;
         _farClip = farClip;
         float aspectRatio = float(Window::GetSize().x) / Window::GetSize().y;
-        _cbuffer.GetData().projection = DirectX::XMMatrixTranspose(
+        _cbuffer.Get().projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixOrthographicLH(size * aspectRatio, size, nearClip, farClip)
         );
     }
     void Update()
     {
-        _cbuffer.GetData().view = DirectX::XMMatrixTranspose(
+        _cbuffer.Get().view = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixInverse(
                 nullptr,
                 DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *

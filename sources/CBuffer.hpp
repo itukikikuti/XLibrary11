@@ -19,7 +19,7 @@ public:
     ~CBuffer()
     {
     }
-    T& GetData()
+    T& Get()
     {
         return *data.get();
     }

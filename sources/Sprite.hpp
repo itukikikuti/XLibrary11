@@ -5,7 +5,7 @@ public:
     Float3 angles;
     Float3 scale;
     Float4 color;
-    Material material = Material::GetSpriteMaterial();
+    Shader material = Shader::GetSpriteShader();
 
     Sprite()
     {
@@ -53,7 +53,7 @@ public:
     }
     void Draw()
     {
-        _cbuffer.GetData() = color;
+        _cbuffer.Get() = color;
         _cbuffer.Attach(6);
 
         _mesh.position = position;
