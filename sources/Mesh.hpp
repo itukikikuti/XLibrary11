@@ -180,15 +180,15 @@ public:
         if (_texture != nullptr)
             _texture->Attach(0);
 
-        material.SetBuffer(5, &_constant, sizeof(Constant));
-
-        _constant.world = DirectX::XMMatrixTranspose(
+        _cbuffer.GetData().world = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
             DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
             DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
             DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
             DirectX::XMMatrixTranslation(position.x, position.y, position.z)
         );
+
+        _cbuffer.Attach(5);
 
         material.Attach();
 
@@ -216,7 +216,7 @@ private:
     };
 
     Texture* _texture;
-    Constant _constant;
+    CBuffer<Constant> _cbuffer;
     ComPtr<ID3D11Buffer> _vertexBuffer = nullptr;
     ComPtr<ID3D11Buffer> _indexBuffer = nullptr;
     ComPtr<ID3D11RasterizerState> _rasterizerState = nullptr;

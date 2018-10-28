@@ -3,6 +3,7 @@
 
 #define NOMINMAX
 #define OEMRESOURCE
+#include <array>
 #include <chrono>
 #include <cstdio>
 #include <fstream>
@@ -1108,9 +1109,6 @@ public:
 
         Graphics::GetContext3D().UpdateSubresource(Get().constantBuffer.Get(), 0, nullptr, Get().constant, 0, 0);
         Graphics::GetContext3D().VSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().HSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().DSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().GSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
         Graphics::GetContext3D().PSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
     }
 
@@ -1423,21 +1421,57 @@ private:
     ComPtr<ID3D11ShaderResourceView> _shaderResourceView = nullptr;
     ComPtr<ID3D11SamplerState> _samplerState = nullptr;
 };
+template <class T>
+class CBuffer
+{
+public:
+    CBuffer()
+    {
+        data = std::make_unique<T>();
+
+        buffer.Reset();
+        D3D11_BUFFER_DESC constantBufferDesc = {};
+        constantBufferDesc.ByteWidth = sizeof(T);
+        constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+        constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        HRESULT result = Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, buffer.GetAddressOf());
+
+        if (buffer == nullptr)
+            Utility::Alert(result);
+    }
+    ~CBuffer()
+    {
+    }
+    T& GetData()
+    {
+        return *data.get();
+    }
+    void Attach(int slot)
+    {
+        Graphics::GetContext3D().UpdateSubresource(buffer.Get(), 0, nullptr, data.get(), 0, 0);
+        Graphics::GetContext3D().VSSetConstantBuffers(slot, 1, buffer.GetAddressOf());
+        Graphics::GetContext3D().PSSetConstantBuffers(slot, 1, buffer.GetAddressOf());
+    }
+
+private:
+    ComPtr<ID3D11Buffer> buffer = nullptr;
+    std::unique_ptr<T> data;
+};
 class Material
 {
 public:
     Material()
     {
-        Initialize();
+        InitializeApplication();
     }
     Material(const wchar_t* const filePath)
     {
-        Initialize();
+        InitializeApplication();
         Load(filePath);
     }
     Material(const std::string& source)
     {
-        Initialize();
+        InitializeApplication();
         Create(source);
     }
     ~Material()
@@ -1477,24 +1511,6 @@ public:
 
         Graphics::GetDevice3D().CreateInputLayout(inputElementDesc.data(), (UINT)inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), _inputLayout.GetAddressOf());
     }
-    void SetBuffer(int slot, void* cbuffer, size_t size)
-    {
-        _constantBuffer[slot].ptr = cbuffer;
-
-        _constantBuffer[slot].buffer.Reset();
-        D3D11_BUFFER_DESC constantBufferDesc = {};
-        constantBufferDesc.ByteWidth = (UINT)size;
-        constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-        constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        HRESULT result = Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, _constantBuffer[slot].buffer.GetAddressOf());
-
-        if (_constantBuffer[slot].buffer == nullptr)
-            Utility::Alert(result);
-    }
-    void SetTexture(int slot, Texture* texture)
-    {
-        _textures[slot] = texture;
-    }
     void Attach()
     {
         if (_vertexShader != nullptr)
@@ -1505,27 +1521,6 @@ public:
 
         if (_inputLayout != nullptr)
             Graphics::GetContext3D().IASetInputLayout(_inputLayout.Get());
-
-        for (int i = 0; i < 10; i++)
-        {
-            if (_constantBuffer[i].ptr != nullptr)
-            {
-                Graphics::GetContext3D().UpdateSubresource(_constantBuffer[i].buffer.Get(), 0, nullptr, _constantBuffer[i].ptr, 0, 0);
-                Graphics::GetContext3D().VSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
-                Graphics::GetContext3D().HSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
-                Graphics::GetContext3D().DSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
-                Graphics::GetContext3D().GSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
-                Graphics::GetContext3D().PSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
-            }
-        }
-
-        for (int i = 0; i < 10; i++)
-        {
-            if (_textures[i] != nullptr)
-            {
-                _textures[i]->Attach(i);
-            }
-        }
     }
     static Material GetDiffuseMaterial()
     {
@@ -1664,27 +1659,10 @@ public:
     }
 
 private:
-    struct ConstantBuffer
-    {
-        void* ptr = nullptr;
-        ComPtr<ID3D11Buffer> buffer = nullptr;
-    };
-
-    ConstantBuffer _constantBuffer[10];
-    Texture* _textures[10];
     ComPtr<ID3D11VertexShader> _vertexShader = nullptr;
     ComPtr<ID3D11PixelShader> _pixelShader = nullptr;
     ComPtr<ID3D11InputLayout> _inputLayout = nullptr;
 
-    void Initialize()
-    {
-        InitializeApplication();
-
-        for (int i = 0; i < 10; i++)
-        {
-            _textures[i] = nullptr;
-        }
-    }
     static void CompileShader(const std::string& source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {
         UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -1736,7 +1714,7 @@ public:
         _nearClip = nearClip;
         _farClip = farClip;
         float aspectRatio = float(Window::GetSize().x) / Window::GetSize().y;
-        _constant.projection = DirectX::XMMatrixTranspose(
+        _cbuffer.GetData().projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
@@ -1748,13 +1726,13 @@ public:
         _nearClip = nearClip;
         _farClip = farClip;
         float aspectRatio = float(Window::GetSize().x) / Window::GetSize().y;
-        _constant.projection = DirectX::XMMatrixTranspose(
+        _cbuffer.GetData().projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixOrthographicLH(size * aspectRatio, size, nearClip, farClip)
         );
     }
     void Update()
     {
-        _constant.view = DirectX::XMMatrixTranspose(
+        _cbuffer.GetData().view = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixInverse(
                 nullptr,
                 DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
@@ -1764,12 +1742,7 @@ public:
             )
         );
 
-        Graphics::GetContext3D().UpdateSubresource(_constantBuffer.Get(), 0, nullptr, &_constant, 0, 0);
-        Graphics::GetContext3D().VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().HSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().DSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().GSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().PSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
+        _cbuffer.Attach(0);
 
         if (clear)
         {
@@ -1801,12 +1774,11 @@ private:
     bool _isAdjust;
     float _nearClip;
     float _farClip;
-    Constant _constant;
+    CBuffer<Constant> _cbuffer;
     ComPtr<ID3D11RenderTargetView> _renderTargetView = nullptr;
     ComPtr<ID3D11DepthStencilView> _depthStencilView = nullptr;
     ComPtr<ID3D11Texture2D> _renderTexture = nullptr;
     ComPtr<ID3D11Texture2D> _depthTexture = nullptr;
-    ComPtr<ID3D11Buffer> _constantBuffer = nullptr;
 
     void Create()
     {
@@ -1846,14 +1818,6 @@ private:
             depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
         }
         Graphics::GetDevice3D().CreateDepthStencilView(_depthTexture.Get(), &depthStencilViewDesc, _depthStencilView.GetAddressOf());
-
-        _constantBuffer.Reset();
-        D3D11_BUFFER_DESC constantBufferDesc = {};
-        constantBufferDesc.ByteWidth = sizeof(Constant);
-        constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-        constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        constantBufferDesc.CPUAccessFlags = 0;
-        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, _constantBuffer.GetAddressOf());
     }
     void OnProceedMessage(HWND, UINT message, WPARAM, LPARAM) override
     {
@@ -2106,15 +2070,15 @@ public:
         if (_texture != nullptr)
             _texture->Attach(0);
 
-        material.SetBuffer(5, &_constant, sizeof(Constant));
-
-        _constant.world = DirectX::XMMatrixTranspose(
+        _cbuffer.GetData().world = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
             DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
             DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
             DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
             DirectX::XMMatrixTranslation(position.x, position.y, position.z)
         );
+
+        _cbuffer.Attach(5);
 
         material.Attach();
 
@@ -2142,7 +2106,7 @@ private:
     };
 
     Texture* _texture;
-    Constant _constant;
+    CBuffer<Constant> _cbuffer;
     ComPtr<ID3D11Buffer> _vertexBuffer = nullptr;
     ComPtr<ID3D11Buffer> _indexBuffer = nullptr;
     ComPtr<ID3D11RasterizerState> _rasterizerState = nullptr;
@@ -2202,7 +2166,8 @@ public:
     }
     void Draw()
     {
-        material.SetBuffer(6, &color, sizeof(Float4));
+        _cbuffer.GetData() = color;
+        _cbuffer.Attach(6);
 
         _mesh.position = position;
         _mesh.angles = angles;
@@ -2214,6 +2179,7 @@ public:
 protected:
     Mesh _mesh;
     Texture _texture;
+    CBuffer<Float4> _cbuffer;
 
     void Initialize()
     {

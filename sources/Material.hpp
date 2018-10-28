@@ -3,16 +3,16 @@
 public:
     Material()
     {
-        Initialize();
+        InitializeApplication();
     }
     Material(const wchar_t* const filePath)
     {
-        Initialize();
+        InitializeApplication();
         Load(filePath);
     }
     Material(const std::string& source)
     {
-        Initialize();
+        InitializeApplication();
         Create(source);
     }
     ~Material()
@@ -52,24 +52,6 @@ public:
 
         Graphics::GetDevice3D().CreateInputLayout(inputElementDesc.data(), (UINT)inputElementDesc.size(), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), _inputLayout.GetAddressOf());
     }
-    void SetBuffer(int slot, void* cbuffer, size_t size)
-    {
-        _constantBuffer[slot].ptr = cbuffer;
-
-        _constantBuffer[slot].buffer.Reset();
-        D3D11_BUFFER_DESC constantBufferDesc = {};
-        constantBufferDesc.ByteWidth = (UINT)size;
-        constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-        constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        HRESULT result = Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, _constantBuffer[slot].buffer.GetAddressOf());
-
-        if (_constantBuffer[slot].buffer == nullptr)
-            Utility::Alert(result);
-    }
-    void SetTexture(int slot, Texture* texture)
-    {
-        _textures[slot] = texture;
-    }
     void Attach()
     {
         if (_vertexShader != nullptr)
@@ -80,27 +62,6 @@ public:
 
         if (_inputLayout != nullptr)
             Graphics::GetContext3D().IASetInputLayout(_inputLayout.Get());
-
-        for (int i = 0; i < 10; i++)
-        {
-            if (_constantBuffer[i].ptr != nullptr)
-            {
-                Graphics::GetContext3D().UpdateSubresource(_constantBuffer[i].buffer.Get(), 0, nullptr, _constantBuffer[i].ptr, 0, 0);
-                Graphics::GetContext3D().VSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
-                Graphics::GetContext3D().HSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
-                Graphics::GetContext3D().DSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
-                Graphics::GetContext3D().GSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
-                Graphics::GetContext3D().PSSetConstantBuffers(i, 1, _constantBuffer[i].buffer.GetAddressOf());
-            }
-        }
-
-        for (int i = 0; i < 10; i++)
-        {
-            if (_textures[i] != nullptr)
-            {
-                _textures[i]->Attach(i);
-            }
-        }
     }
     static Material GetDiffuseMaterial()
     {
@@ -239,27 +200,10 @@ public:
     }
 
 private:
-    struct ConstantBuffer
-    {
-        void* ptr = nullptr;
-        ComPtr<ID3D11Buffer> buffer = nullptr;
-    };
-
-    ConstantBuffer _constantBuffer[10];
-    Texture* _textures[10];
     ComPtr<ID3D11VertexShader> _vertexShader = nullptr;
     ComPtr<ID3D11PixelShader> _pixelShader = nullptr;
     ComPtr<ID3D11InputLayout> _inputLayout = nullptr;
 
-    void Initialize()
-    {
-        InitializeApplication();
-
-        for (int i = 0; i < 10; i++)
-        {
-            _textures[i] = nullptr;
-        }
-    }
     static void CompileShader(const std::string& source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {
         UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;

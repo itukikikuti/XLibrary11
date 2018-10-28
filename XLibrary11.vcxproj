@@ -120,6 +120,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="sources\CBuffer.hpp" />
     <ClInclude Include="sources\Library.hpp" />
     <ClInclude Include="sources\Light.hpp" />
     <ClInclude Include="sources\LightManager.hpp" />

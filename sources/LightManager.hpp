@@ -33,9 +33,6 @@ public:
 
         Graphics::GetContext3D().UpdateSubresource(Get().constantBuffer.Get(), 0, nullptr, Get().constant, 0, 0);
         Graphics::GetContext3D().VSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().HSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().DSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().GSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
         Graphics::GetContext3D().PSSetConstantBuffers(1, 1, Get().constantBuffer.GetAddressOf());
     }
 

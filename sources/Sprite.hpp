@@ -53,7 +53,8 @@ public:
     }
     void Draw()
     {
-        material.SetBuffer(6, &color, sizeof(Float4));
+        _cbuffer.GetData() = color;
+        _cbuffer.Attach(6);
 
         _mesh.position = position;
         _mesh.angles = angles;
@@ -65,6 +66,7 @@ public:
 protected:
     Mesh _mesh;
     Texture _texture;
+    CBuffer<Float4> _cbuffer;
 
     void Initialize()
     {

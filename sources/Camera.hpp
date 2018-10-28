@@ -31,7 +31,7 @@ public:
         _nearClip = nearClip;
         _farClip = farClip;
         float aspectRatio = float(Window::GetSize().x) / Window::GetSize().y;
-        _constant.projection = DirectX::XMMatrixTranspose(
+        _cbuffer.GetData().projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
     }
@@ -43,13 +43,13 @@ public:
         _nearClip = nearClip;
         _farClip = farClip;
         float aspectRatio = float(Window::GetSize().x) / Window::GetSize().y;
-        _constant.projection = DirectX::XMMatrixTranspose(
+        _cbuffer.GetData().projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixOrthographicLH(size * aspectRatio, size, nearClip, farClip)
         );
     }
     void Update()
     {
-        _constant.view = DirectX::XMMatrixTranspose(
+        _cbuffer.GetData().view = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixInverse(
                 nullptr,
                 DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
@@ -59,12 +59,7 @@ public:
             )
         );
 
-        Graphics::GetContext3D().UpdateSubresource(_constantBuffer.Get(), 0, nullptr, &_constant, 0, 0);
-        Graphics::GetContext3D().VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().HSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().DSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().GSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
-        Graphics::GetContext3D().PSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
+        _cbuffer.Attach(0);
 
         if (clear)
         {
@@ -96,12 +91,11 @@ private:
     bool _isAdjust;
     float _nearClip;
     float _farClip;
-    Constant _constant;
+    CBuffer<Constant> _cbuffer;
     ComPtr<ID3D11RenderTargetView> _renderTargetView = nullptr;
     ComPtr<ID3D11DepthStencilView> _depthStencilView = nullptr;
     ComPtr<ID3D11Texture2D> _renderTexture = nullptr;
     ComPtr<ID3D11Texture2D> _depthTexture = nullptr;
-    ComPtr<ID3D11Buffer> _constantBuffer = nullptr;
 
     void Create()
     {
@@ -141,14 +135,6 @@ private:
             depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
         }
         Graphics::GetDevice3D().CreateDepthStencilView(_depthTexture.Get(), &depthStencilViewDesc, _depthStencilView.GetAddressOf());
-
-        _constantBuffer.Reset();
-        D3D11_BUFFER_DESC constantBufferDesc = {};
-        constantBufferDesc.ByteWidth = sizeof(Constant);
-        constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-        constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        constantBufferDesc.CPUAccessFlags = 0;
-        Graphics::GetDevice3D().CreateBuffer(&constantBufferDesc, nullptr, _constantBuffer.GetAddressOf());
     }
     void OnProceedMessage(HWND, UINT message, WPARAM, LPARAM) override
     {
