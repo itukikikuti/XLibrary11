@@ -431,40 +431,14 @@ struct Vertex
 class Utility
 {
 public:
-    static std::string Format(const char* const format, ...)
-    {
-        va_list arguments;
-
-        va_start(arguments, format);
-        int size = vprintf_s(format, arguments);
-        va_end(arguments);
-
-        std::unique_ptr<char[]> buffer(new char[size + 1]);
-        va_start(arguments, format);
-        vsprintf_s(buffer.get(), size + 1, format, arguments);
-        va_end(arguments);
-
-        return std::string(buffer.get());
-    }
-    static std::wstring WFormat(const wchar_t* const format, ...)
-    {
-        va_list arguments;
-
-        va_start(arguments, format);
-        int size = vwprintf_s(format, arguments);
-        va_end(arguments);
-
-        std::unique_ptr<wchar_t[]> buffer(new wchar_t[size + 1]);
-        va_start(arguments, format);
-        vswprintf_s(buffer.get(), size + 1, format, arguments);
-        va_end(arguments);
-
-        return std::wstring(buffer.get());
-    }
     static void Alert(DWORD errorCodeValue)
     {
         std::error_code errorCode(errorCodeValue, std::system_category());
-        MessageBoxA(nullptr, errorCode.message().c_str(), Utility::Format("Error code 0x%x(%d)", errorCode.value(), errorCode.value()).c_str(), MB_ICONERROR | MB_OK);
+
+        std::stringstream ss;
+        ss << "Error code 0x" << std::hex << errorCode.value() << "(" << std::dec << errorCode.value() << ")";
+
+        MessageBoxA(nullptr, errorCode.message().c_str(), ss.str().c_str(), MB_ICONERROR | MB_OK);
 #if defined(_DEBUG)
         throw std::system_error(errorCode);
 #else

@@ -11,6 +11,7 @@
 #include <list>
 #include <memory>
 #include <random>
+#include <sstream>
 #include <string>
 #include <system_error>
 #include <thread>
