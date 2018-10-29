@@ -43,7 +43,7 @@
 #pragma comment(lib, "windowscodecs.lib")
 #pragma comment(lib, "Xinput.lib")
 
-#define MAIN() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+#define Main() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 /// XLibraryの名前空間です。
 XLIBRARY_NAMESPACE_BEGIN
