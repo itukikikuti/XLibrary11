@@ -1,3 +1,4 @@
+﻿/// ライトをシェーダに渡したりしているクラスです🤔
 class LightManager
 {
 public:

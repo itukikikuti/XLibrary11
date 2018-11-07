@@ -1,38 +1,31 @@
-﻿/// DirectX 11の機能にアクセスできます。
+﻿/// Direct3D 11のオブジェクトにアクセスできます🤔
 class Graphics
 {
 public:
-    /// ID3D11Deviceを取得します。
     static ID3D11Device& GetDevice3D()
     {
         return *Get().device3D.Get();
     }
-    /// ID3D11DeviceContextを取得します。
     static ID3D11DeviceContext& GetContext3D()
     {
         return *Get().context3D.Get();
     }
-    /// ID2D1Deviceを取得します。
     static ID2D1Device& GetDevice2D()
     {
         return *Get().device2D.Get();
     }
-    /// ID2D1DeviceContextを取得します。
     static ID2D1DeviceContext& GetContext2D()
     {
         return *Get().context2D.Get();
     }
-    /// IDXGISwapChainを取得します。
     static IDXGISwapChain& GetSwapChain()
     {
         return *Get().swapChain.Get();
     }
-    /// IWICImagingFactoryを取得します。
     static IWICImagingFactory& GetTextureFactory()
     {
         return *Get().textureFactory.Get();
     }
-    /// IDWriteFactoryを取得します。
     static IDWriteFactory& GetTextFactory()
     {
         return *Get().textFactory.Get();
