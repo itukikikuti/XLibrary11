@@ -11,7 +11,7 @@ public:
     Mesh()
     {
         InitializeApplication();
-
+		
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
@@ -180,13 +180,14 @@ public:
         if (_texture != nullptr)
             _texture->Attach(0);
 
-        _cbuffer.Get().world = DirectX::XMMatrixTranspose(
+        DirectX::XMMATRIX world = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
             DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
             DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
             DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
             DirectX::XMMatrixTranslation(position.x, position.y, position.z)
         );
+        DirectX::XMStoreFloat4x4(&_cbuffer.Get().world, world);
 
         _cbuffer.Attach(5);
 
@@ -212,7 +213,7 @@ public:
 private:
     struct Constant
     {
-        DirectX::XMMATRIX world;
+        DirectX::XMFLOAT4X4 world;
     };
 
     Texture* _texture;

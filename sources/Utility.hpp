@@ -445,4 +445,8 @@ public:
         std::exit(errorCode.value());
 #endif
     }
+	static void DrawLine()
+	{
+
+	}
 };

@@ -46,7 +46,7 @@
 #define Main() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 /// XLibraryの名前空間です。
-namespace XLibrary
+namespace XLibrary11
 {
 
 using namespace DirectX;
@@ -511,6 +511,10 @@ public:
         std::exit(errorCode.value());
 #endif
     }
+	static void DrawLine()
+	{
+
+	}
 };
 
 /// ウィンドウに関する操作ができます🤔
@@ -1680,9 +1684,10 @@ public:
         _nearClip = nearClip;
         _farClip = farClip;
         float aspectRatio = float(Window::GetSize().x) / Window::GetSize().y;
-        _cbuffer.Get().projection = DirectX::XMMatrixTranspose(
+        DirectX::XMMATRIX projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(fieldOfView), aspectRatio, nearClip, farClip)
         );
+        DirectX::XMStoreFloat4x4(&_cbuffer.Get().projection, projection);
     }
     void SetupOrthographic(float size = (float)Window::GetSize().y, bool isAdjust = true, float nearClip = std::numeric_limits<float>::lowest(), float farClip = std::numeric_limits<float>::max())
     {
@@ -1692,13 +1697,14 @@ public:
         _nearClip = nearClip;
         _farClip = farClip;
         float aspectRatio = float(Window::GetSize().x) / Window::GetSize().y;
-        _cbuffer.Get().projection = DirectX::XMMatrixTranspose(
+        DirectX::XMMATRIX projection = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixOrthographicLH(size * aspectRatio, size, nearClip, farClip)
         );
+        DirectX::XMStoreFloat4x4(&_cbuffer.Get().projection, projection);
     }
     void Update()
     {
-        _cbuffer.Get().view = DirectX::XMMatrixTranspose(
+        DirectX::XMMATRIX view = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixInverse(
                 nullptr,
                 DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
@@ -1707,6 +1713,7 @@ public:
                 DirectX::XMMatrixTranslation(position.x, position.y, position.z)
             )
         );
+        DirectX::XMStoreFloat4x4(&_cbuffer.Get().view, view);
 
         _cbuffer.Attach(0);
 
@@ -1730,8 +1737,8 @@ public:
 private:
     struct Constant
     {
-        DirectX::XMMATRIX view;
-        DirectX::XMMATRIX projection;
+        DirectX::XMFLOAT4X4 view;
+        DirectX::XMFLOAT4X4 projection;
     };
 
     bool _is3D;
@@ -1867,7 +1874,7 @@ public:
     Mesh()
     {
         InitializeApplication();
-
+		
         position = Float3(0.0f, 0.0f, 0.0f);
         angles = Float3(0.0f, 0.0f, 0.0f);
         scale = Float3(1.0f, 1.0f, 1.0f);
@@ -2036,13 +2043,14 @@ public:
         if (_texture != nullptr)
             _texture->Attach(0);
 
-        _cbuffer.Get().world = DirectX::XMMatrixTranspose(
+        DirectX::XMMATRIX world = DirectX::XMMatrixTranspose(
             DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
             DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(angles.x)) *
             DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(angles.z)) *
             DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(angles.y)) *
             DirectX::XMMatrixTranslation(position.x, position.y, position.z)
         );
+        DirectX::XMStoreFloat4x4(&_cbuffer.Get().world, world);
 
         _cbuffer.Attach(5);
 
@@ -2068,7 +2076,7 @@ public:
 private:
     struct Constant
     {
-        DirectX::XMMATRIX world;
+        DirectX::XMFLOAT4X4 world;
     };
 
     Texture* _texture;

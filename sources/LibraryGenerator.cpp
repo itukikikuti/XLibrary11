@@ -62,7 +62,7 @@ public:
             MargeSourceCode(fileName.c_str(), library);
         }
 
-        library = regex_replace(library, wregex(L"XLIBRARY_NAMESPACE_BEGIN"), L"namespace XLibrary\n{");
+        library = regex_replace(library, wregex(L"XLIBRARY_NAMESPACE_BEGIN"), L"namespace XLibrary11\n{");
         library = regex_replace(library, wregex(L"XLIBRARY_NAMESPACE_END"), L"}");
 
         wofstream libraryFile(outputFilePath);
