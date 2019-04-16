@@ -439,14 +439,6 @@ public:
         ss << "Error code 0x" << std::hex << errorCode.value() << "(" << std::dec << errorCode.value() << ")";
 
         MessageBoxA(nullptr, errorCode.message().c_str(), ss.str().c_str(), MB_ICONERROR | MB_OK);
-#if defined(_DEBUG)
-        throw std::system_error(errorCode);
-#else
         std::exit(errorCode.value());
-#endif
     }
-	static void DrawLine()
-	{
-
-	}
 };

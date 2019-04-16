@@ -207,9 +207,7 @@ private:
     static void Compile(const std::string& source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {
         UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-#if defined(_DEBUG)
-        shaderFlags |= D3DCOMPILE_DEBUG;
-#endif
+        //shaderFlags |= D3DCOMPILE_DEBUG; // DEBUG
 
         ComPtr<ID3DBlob> errorBlob = nullptr;
         D3DCompile(source.c_str(), source.length(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, errorBlob.GetAddressOf());

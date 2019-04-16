@@ -74,9 +74,7 @@ private:
             InitializeApplication();
 
             UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-#if defined(_DEBUG)
-            flags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
+            //flags |= D3D11_CREATE_DEVICE_DEBUG; // DEBUG
 
             std::vector<D3D_DRIVER_TYPE> driverTypes
             {
@@ -119,9 +117,7 @@ private:
             Get().context3D->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
 
             D2D1_FACTORY_OPTIONS options = {};
-#if defined(_DEBUG)
-            options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
-#endif
+            //options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION; // DEBUG
 
             ComPtr<ID2D1Factory1> factory = nullptr;
             D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, factory.GetAddressOf());

@@ -43,7 +43,7 @@
 #pragma comment(lib, "windowscodecs.lib")
 #pragma comment(lib, "Xinput.lib")
 
-#define Main() APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+#define Main() APIENTRY wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int)
 
 /// XLibraryの名前空間です。
 namespace XLibrary11
@@ -505,16 +505,8 @@ public:
         ss << "Error code 0x" << std::hex << errorCode.value() << "(" << std::dec << errorCode.value() << ")";
 
         MessageBoxA(nullptr, errorCode.message().c_str(), ss.str().c_str(), MB_ICONERROR | MB_OK);
-#if defined(_DEBUG)
-        throw std::system_error(errorCode);
-#else
         std::exit(errorCode.value());
-#endif
     }
-	static void DrawLine()
-	{
-
-	}
 };
 
 /// ウィンドウに関する操作ができます🤔
@@ -940,9 +932,7 @@ private:
             InitializeApplication();
 
             UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-#if defined(_DEBUG)
-            flags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
+            //flags |= D3D11_CREATE_DEVICE_DEBUG; // DEBUG
 
             std::vector<D3D_DRIVER_TYPE> driverTypes
             {
@@ -985,9 +975,7 @@ private:
             Get().context3D->OMSetBlendState(blendState.Get(), blendFactor, 0xffffffff);
 
             D2D1_FACTORY_OPTIONS options = {};
-#if defined(_DEBUG)
-            options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
-#endif
+            //options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION; // DEBUG
 
             ComPtr<ID2D1Factory1> factory = nullptr;
             D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, factory.GetAddressOf());
@@ -1636,9 +1624,7 @@ private:
     static void Compile(const std::string& source, const char* const entryPoint, const char* const shaderModel, ID3DBlob** out)
     {
         UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-#if defined(_DEBUG)
-        shaderFlags |= D3DCOMPILE_DEBUG;
-#endif
+        //shaderFlags |= D3DCOMPILE_DEBUG; // DEBUG
 
         ComPtr<ID3DBlob> errorBlob = nullptr;
         D3DCompile(source.c_str(), source.length(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryPoint, shaderModel, shaderFlags, 0, out, errorBlob.GetAddressOf());
@@ -2170,80 +2156,80 @@ protected:
 class Text : public Sprite
 {
 public:
-    bool antialias = true;
+	bool antialias = true;
 
-    Text(const std::wstring& text = L"", float fontSize = 16.0f, DWRITE_TEXT_ALIGNMENT align = DWRITE_TEXT_ALIGNMENT_CENTER, const wchar_t* const fontFace = L"ＭＳ ゴシック")
-    {
-        Sprite::Initialize();
-        color = Float4(0.0f, 0.0f, 0.0f, 1.0f);
-        Create(text, fontSize, align, fontFace);
-    }
-    void Create(const std::wstring& text = L"", float fontSize = 16.0f, DWRITE_TEXT_ALIGNMENT align = DWRITE_TEXT_ALIGNMENT_CENTER, const wchar_t* const fontFace = L"ＭＳ ゴシック")
-    {
-        if (text == L"")
-            return;
+	Text(const std::wstring& text = L"", float fontSize = 16.0f, DWRITE_TEXT_ALIGNMENT align = DWRITE_TEXT_ALIGNMENT_CENTER, const wchar_t* const fontFace = L"ＭＳ ゴシック")
+	{
+		Sprite::Initialize();
+		color = Float4(0.0f, 0.0f, 0.0f, 1.0f);
+		Create(text, fontSize, align, fontFace);
+	}
+	void Create(const std::wstring& text = L"", float fontSize = 16.0f, DWRITE_TEXT_ALIGNMENT align = DWRITE_TEXT_ALIGNMENT_CENTER, const wchar_t* const fontFace = L"ＭＳ ゴシック")
+	{
+		if (text == L"")
+			return;
 
-        _brush.Reset();
-        Graphics::GetContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), _brush.GetAddressOf());
+		_brush.Reset();
+		Graphics::GetContext2D().CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), _brush.GetAddressOf());
 
-        ComPtr<IDWriteTextFormat> textFormat = nullptr;
-        Graphics::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
+		ComPtr<IDWriteTextFormat> textFormat = nullptr;
+		Graphics::GetTextFactory().CreateTextFormat(fontFace, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.GetAddressOf());
 
-        textFormat->SetTextAlignment(align);
-        textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+		textFormat->SetTextAlignment(align);
+		textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
-        _textLayout.Reset();
-        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), _textLayout.GetAddressOf());
-        
-        DWRITE_TEXT_METRICS textMetrics;
-        _textLayout->GetMetrics(&textMetrics);
+		_textLayout.Reset();
+		Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), _textLayout.GetAddressOf());
 
-        _textLayout.Reset();
-        Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, _textLayout.GetAddressOf());
+		DWRITE_TEXT_METRICS textMetrics;
+		_textLayout->GetMetrics(&textMetrics);
 
-        std::unique_ptr<BYTE[]> buffer(new BYTE[int(textMetrics.width * textMetrics.height) * 4]);
-        _texture.Create(buffer.get(), (int)textMetrics.width, (int)textMetrics.height);
+		_textLayout.Reset();
+		Graphics::GetTextFactory().CreateTextLayout(text.c_str(), (UINT32)text.length(), textFormat.Get(), textMetrics.width, textMetrics.height, _textLayout.GetAddressOf());
 
-        ComPtr<IDXGISurface> surface = nullptr;
-        _texture.GetInterface().QueryInterface(surface.GetAddressOf());
+		std::unique_ptr<BYTE[]> buffer(new BYTE[int(textMetrics.width * textMetrics.height) * 4]);
+		_texture.Create(buffer.get(), (int)textMetrics.width, (int)textMetrics.height);
 
-        D2D1_BITMAP_PROPERTIES1 bitmapProperties = {};
-        bitmapProperties.pixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
-        bitmapProperties.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
-        bitmapProperties.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET;
+		ComPtr<IDXGISurface> surface = nullptr;
+		_texture.GetInterface().QueryInterface(surface.GetAddressOf());
 
-        _bitmap.Reset();
-        Graphics::GetContext2D().CreateBitmapFromDxgiSurface(surface.Get(), bitmapProperties, _bitmap.GetAddressOf());
+		D2D1_BITMAP_PROPERTIES1 bitmapProperties = {};
+		bitmapProperties.pixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
+		bitmapProperties.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
+		bitmapProperties.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET;
 
-        _mesh.SetTexture(&_texture);
+		_bitmap.Reset();
+		Graphics::GetContext2D().CreateBitmapFromDxgiSurface(surface.Get(), bitmapProperties, _bitmap.GetAddressOf());
 
-        SetPivot(0.0f);
-    }
-    void Draw()
-    {
-        if (antialias)
-            Graphics::GetContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_DEFAULT);
-        else
-            Graphics::GetContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+		_mesh.SetTexture(&_texture);
 
-        Graphics::GetContext2D().SetTarget(_bitmap.Get());
+		SetPivot(0.0f);
+	}
+	void Draw()
+	{
+		if (antialias)
+			Graphics::GetContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_DEFAULT);
+		else
+			Graphics::GetContext2D().SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
 
-        Graphics::GetContext2D().BeginDraw();
+		Graphics::GetContext2D().SetTarget(_bitmap.Get());
 
-        Graphics::GetContext2D().Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
-        Graphics::GetContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), _textLayout.Get(), _brush.Get());
+		Graphics::GetContext2D().BeginDraw();
 
-        Graphics::GetContext2D().EndDraw();
+		Graphics::GetContext2D().Clear(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f));
+		Graphics::GetContext2D().DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), _textLayout.Get(), _brush.Get());
 
-        Sprite::Draw();
-    }
-    void Load(const wchar_t* const filePath) = delete;
-    void Create(const BYTE* const buffer, int width, int height) = delete;
+		Graphics::GetContext2D().EndDraw();
+
+		Sprite::Draw();
+	}
+	void Load(const wchar_t* const filePath) = delete;
+	void Create(const BYTE * const buffer, int width, int height) = delete;
 
 private:
-    ComPtr<ID2D1Bitmap1> _bitmap = nullptr;
-    ComPtr<ID2D1SolidColorBrush> _brush = nullptr;
-    ComPtr<IDWriteTextLayout> _textLayout = nullptr;
+	ComPtr<ID2D1Bitmap1> _bitmap = nullptr;
+	ComPtr<ID2D1SolidColorBrush> _brush = nullptr;
+	ComPtr<IDWriteTextLayout> _textLayout = nullptr;
 };
 class Sound : public Window::Proceedable
 {

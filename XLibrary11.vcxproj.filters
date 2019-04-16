@@ -66,6 +66,9 @@
     <ClInclude Include="sources\Shader.hpp">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\Debug.hpp">
+      <Filter>sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\LibraryGenerator.cpp">
