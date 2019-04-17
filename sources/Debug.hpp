@@ -1,14 +1,11 @@
 class Debug
 {
 public:
-	static void Update()
+	static void OpenConsole()
 	{
-
+		AllocConsole();
+		FILE* fp = nullptr;
+		freopen_s(&fp, "CONOUT$", "w", stdout);
+		freopen_s(&fp, "CONIN$", "r", stdin);
 	}
-
-private:
-	struct Property
-	{
-		Text text;
-	};
 };

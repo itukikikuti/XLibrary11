@@ -6,9 +6,12 @@
 #include "Sub.hpp"
 using namespace std;
 
-void Type1()
+int Main()
 {
 	LibraryGenerator::Generate(L"sources/Library.hpp", L"XLibrary11.hpp");
+
+	Debug::OpenConsole();
+	printf("aaaaaa");
 
 	Sprite sprite1(L"assets/box.jpg");
 	Camera camera;
@@ -182,34 +185,6 @@ void Type1()
 		clock.position = Input::GetMousePosition();
 		clock.Draw();
 	}
-}
 
-void Type2()
-{
-	Window::SetTitle(L"Copyright © 2019 菊池いつき All Rights Reserved.");
-
-	int w = 1280;
-	int h = 1920;
-	int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
-	int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
-	SetWindowPos(Window::GetHandle(), nullptr, x, y, w, h, SWP_FRAMECHANGED);
-
-	Camera camera;
-
-	Mesh triangle;
-	triangle.CreateCube(Float3(2.0f, 1.0f, 0.5f));
-
-	Text title(L"DirectX11のすゝめ", 100.0f, DWRITE_TEXT_ALIGNMENT_CENTER, L"Mplus 1p");
-	//Text author(L"菊池いつき", 20.0f, DWRITE_TEXT_ALIGNMENT_CENTER, L"Mplus 1p");
-
-	while (Refresh())
-	{
-		camera.Update();
-	}
-}
-
-int main()
-{
-	Type1();
 	return 0;
 }
