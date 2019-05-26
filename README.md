@@ -10,7 +10,7 @@ DirectX 11の理解を深める手助けになればと思います。
 * [リポジトリ](https://gitlab.com/itukikikuti/XLibrary11)
 * [XLibrary11.hppをダウンロード](https://github.com/itukikikuti/XLibrary11/releases/download/0.1.0/XLibrary11.hpp)
 
-### サンプル
+### サンプルリポジトリ
 * [フラッピーバード風ゲーム](https://gitlab.com/itukikikuti/Bird)
 * [2D全方向シューティングゲーム](https://gitlab.com/itukikikuti/Shooting)
 * [マリオ風アクションゲーム](https://gitlab.com/itukikikuti/Action2D)
@@ -21,3 +21,7 @@ DirectX 11の理解を深める手助けになればと思います。
 * [ぷよぷよ風ゲーム](https://gitlab.com/itukikikuti/puyopuyo)
 * [3Dランゲーム](https://gitlab.com/itukikikuti/run3d)
 * [2Dダンジョンの自動生成](https://gitlab.com/itukikikuti/dangeon)
+* [ビリヤードの球の挙動](https://gitlab.com/itukikikuti/Billiards)
+* [2Dプラットフォーム](https://gitlab.com/itukikikuti/Platform2D)
+* [ガチャ](https://gitlab.com/itukikikuti/Gacha)
+* [ポケモン風対戦画面](https://gitlab.com/itukikikuti/Damage)
