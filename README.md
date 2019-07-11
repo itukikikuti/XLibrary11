@@ -25,3 +25,4 @@ DirectX 11の理解を深める手助けになればと思います。
 * [2Dプラットフォーム](https://gitlab.com/itukikikuti/Platform2D)
 * [ガチャ](https://gitlab.com/itukikikuti/Gacha)
 * [ポケモン風対戦画面](https://gitlab.com/itukikikuti/Damage)
+* [OBB当たり判定](https://gitlab.com/itukikikuti/OBB)
